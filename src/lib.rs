@@ -1,29 +1,34 @@
-use std::time::SystemTime;
+use std::time::{SystemTime, Duration};
 use std::fs::File;
 use std::io::prelude::*;
 use serde::{Deserialize, Serialize};
 use reqwest::{Error};
 
+const CACHE_TIME: u64 = 2;
+
 #[derive(Serialize, Deserialize, Debug)]
-struct Response {
+pub struct Response {
     ip: String,
     ip_decimal: u32,
-    country: String,
-    country_iso: String,
-    country_eu: bool,
-    region_name: String,
-    region_code: String,
-    zip_code: String,
-    city: String,
-    latitude: f32,
-    longitude: f32,
-    time_zone: String,
-    asn: String,
-    asn_org: String,
+    country: Option<String>,
+    country_iso: Option<String>,
+    country_eu: Option<bool>,
+    region_name: Option<String>,
+    region_code: Option<String>,
+    metro_code: Option<String>,
+    zip_code: Option<String>,
+    city: Option<String>,
+    latitude: Option<f32>,
+    longitude: Option<f32>,
+    time_zone: Option<String>,
+    asn: Option<String>,
+    asn_org: Option<String>,
+    hostname: Option<String>,
+    user_agent: Option<String>,
 }
 
 impl Response {
-    fn parse(input: String) -> Result<Response, Error> {
+    pub fn parse(input: String) -> Result<Response, Error> {
         let deserialized: Response = serde_json::from_str(&input).unwrap();
         Ok(deserialized)
     }
@@ -43,7 +48,6 @@ impl Cache {
 
     fn new(response: Response) -> Cache {
         let cache = Cache{response, response_time: SystemTime::now()};
-        cache.save().unwrap();
         cache
     }
 
@@ -68,10 +72,31 @@ fn make_api_request() -> Result<String, Error> {
     Ok(response)
 }
 
+pub fn get_response() -> Option<Response> {
+    let cached = Cache::load();
+    if let Some(cache) = cached {
+        let difference = SystemTime::now().duration_since(cache.response_time).unwrap();
+        println!("Difference: {:?}", difference);
+        if difference <= Duration::from_secs(CACHE_TIME) {
+            println!("Using cache");
+            return Some(cache.response);
+        }
+    }
+    println!("Making new request");
+    // no chache or it's too old, make a new request.
+    if let Ok(result) = make_api_request() {
+        let response = Response::parse(result).unwrap();
+        let cache = Cache::new(response);
+        cache.save().unwrap();
+        return Some(cache.response);
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    const TEST_INPUT: &str = "{\n  \"ip\": \"1.1.1.1\",\n  \"ip_decimal\": 16843009,\n  \"country\": \"Germany\",\n  \"country_iso\": \"DE\",\n  \"country_eu\": true,\n  \"region_name\": \"Hesse\",\n  \"region_code\": \"HE\",\n  \"zip_code\": \"60326\",\n  \"city\": \"Frankfurt am Main\",\n  \"latitude\": 50.1049,\n  \"longitude\": 8.6295,\n  \"time_zone\": \"Europe/Berlin\",\n  \"asn\": \"AS9009\",\n  \"asn_org\": \"M247 Europe SRL\"\n}";
+    const TEST_INPUT: &str = "{\n \"ip\": \"1.1.1.1\",\n \"ip_decimal\": 16843009,\n}";
 
     #[test]
     fn test_request() {
@@ -92,8 +117,16 @@ mod tests {
     fn test_cache() {
         let response = Response::parse(TEST_INPUT.to_string()).unwrap();
         let cache = Cache::new(response);
+        cache.save().unwrap();
         let cached = Cache::load().unwrap();
         assert_eq!(cached.response.ip, "1.1.1.1", "IP address not matching");
         assert_eq!(cache.response.ip_decimal, cached.response.ip_decimal, "IP address not matching");
+    }
+
+    #[test]
+    fn test_get_response() {
+        let response = get_response();
+        println!("{:#?}", response);
+        assert!(response.is_some());
     }
 }
