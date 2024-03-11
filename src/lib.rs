@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
+use std::{error, u128};
 use std::fs::File;
 use std::io::prelude::*;
 use std::time::{Duration, SystemTime};
-use std::error;
 
 const CACHE_TIME: u64 = 2;
 
@@ -11,7 +11,7 @@ type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Response {
     ip: String,
-    ip_decimal: u32,
+    ip_decimal: u128, // for ip_v6
     country: Option<String>,
     country_iso: Option<String>,
     country_eu: Option<bool>,
@@ -20,8 +20,8 @@ pub struct Response {
     metro_code: Option<String>,
     zip_code: Option<String>,
     city: Option<String>,
-    latitude: Option<f32>,
-    longitude: Option<f32>,
+    latitude: Option<f64>,
+    longitude: Option<f64>,
     time_zone: Option<String>,
     asn: Option<String>,
     asn_org: Option<String>,
