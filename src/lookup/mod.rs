@@ -1,6 +1,7 @@
 use crate::LookupResponse;
 use crate::Result;
 
+pub mod freeipapi;
 pub mod ifconfig;
 pub mod mock;
 
