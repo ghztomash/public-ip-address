@@ -3,6 +3,7 @@ use crate::LookupResponse;
 use crate::Result;
 use serde::{Deserialize, Serialize};
 
+// https://github.com/leafcloudhq/echoip/blob/master/http/http.go
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IfconfigResponse {
     ip: String,
@@ -33,9 +34,16 @@ impl IfconfigResponse {
     pub fn convert(&self) -> LookupResponse {
         let mut response = LookupResponse::new(self.ip.clone());
         response.country = self.country.clone();
+        response.country_iso = self.country_iso.clone();
+        response.region_name = self.region_name.clone();
+        response.region_code = self.region_code.clone();
+        response.zip_code = self.zip_code.clone();
         response.city = self.city.clone();
         response.latitude = self.latitude;
         response.longitude = self.longitude;
+        response.time_zone = self.time_zone.clone();
+        response.asn = self.asn_org.clone();
+        response.hostname = self.hostname.clone();
         response
     }
 }

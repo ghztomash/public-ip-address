@@ -31,9 +31,13 @@ impl FreeIpApiResponse {
     pub fn convert(&self) -> LookupResponse {
         let mut response = LookupResponse::new(self.ip_address.clone());
         response.country = self.country_name.clone();
+        response.country_iso = self.country_code.clone();
+        response.region_name = self.region_name.clone();
+        response.zip_code = self.zip_code.clone();
         response.city = self.city_name.clone();
         response.latitude = self.latitude;
         response.longitude = self.longitude;
+        response.time_zone = self.time_zone.clone();
         response
     }
 }

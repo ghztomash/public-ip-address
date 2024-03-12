@@ -88,7 +88,7 @@ impl Cache {
 }
 
 pub fn get_response() -> Result<LookupResponse> {
-    let service = lookup::Service::new(Box::new(Ifconfig));
+    let service = Service::new(Box::new(Ifconfig));
     get_response_with_service(service)
 }
 
@@ -132,7 +132,6 @@ mod tests {
     fn test_get_response() {
         let response =
             get_response_with_service(lookup::Service::new(Box::new(Mock { ip: "1.1.1.1" })));
-        println!("{:#?}", response);
         assert!(response.is_ok());
         assert_eq!(response.unwrap().ip, "1.1.1.1", "IP address not matching");
     }
