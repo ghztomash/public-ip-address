@@ -1,5 +1,5 @@
 use error::Result;
-use lookup::mock::Mock;
+use lookup::ifconfig::Ifconfig;
 use lookup::Service;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -88,7 +88,7 @@ impl Cache {
 }
 
 pub fn get_response() -> Result<LookupResponse> {
-    let service = lookup::Service::new(Box::new(Mock { ip: "1.1.1.1" }));
+    let service = lookup::Service::new(Box::new(Ifconfig));
     get_response_with_service(service)
 }
 
@@ -115,6 +115,7 @@ pub fn get_response_with_service(service: Service) -> Result<LookupResponse> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use lookup::mock::Mock;
 
     #[test]
     fn test_cache() {
