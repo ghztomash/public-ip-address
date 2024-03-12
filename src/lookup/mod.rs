@@ -4,6 +4,7 @@ use reqwest::StatusCode;
 
 pub mod freeipapi;
 pub mod ifconfig;
+pub mod ipinfo;
 pub mod mock;
 
 pub trait LookupService {
