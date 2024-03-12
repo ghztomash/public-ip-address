@@ -1,5 +1,6 @@
 use error::Result;
 use lookup::mock::Mock;
+use lookup::Service;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::prelude::*;
@@ -64,11 +65,10 @@ impl Cache {
     const CACHE_PATH: &'static str = "public-ip-cache.txt";
 
     fn new(response: LookupResponse) -> Cache {
-        let cache = Cache {
+        Cache {
             response,
             response_time: SystemTime::now(),
-        };
-        cache
+        }
     }
 
     fn save(&self) -> Result<()> {
@@ -88,6 +88,11 @@ impl Cache {
 }
 
 pub fn get_response() -> Result<LookupResponse> {
+    let service = lookup::Service::new(Box::new(Mock { ip: "1.1.1.1" }));
+    get_response_with_service(service)
+}
+
+pub fn get_response_with_service(service: Service) -> Result<LookupResponse> {
     let cached = Cache::load();
     if let Ok(cache) = cached {
         let difference = SystemTime::now().duration_since(cache.response_time)?;
@@ -99,7 +104,6 @@ pub fn get_response() -> Result<LookupResponse> {
     }
     println!("Making new request");
     // no chache or it's too old, make a new request.
-    let service = lookup::Service::new(Box::new(Mock { ip: "1.1.1.1" }));
     if let Ok(result) = service.make_request() {
         let cache = Cache::new(result);
         cache.save()?;
@@ -123,8 +127,10 @@ mod tests {
 
     #[test]
     fn test_get_response() {
-        let response = get_response();
+        let response =
+            get_response_with_service(lookup::Service::new(Box::new(Mock { ip: "1.1.1.1" })));
         println!("{:#?}", response);
         assert!(response.is_ok());
+        assert_eq!(response.unwrap().ip, "1.1.1.1", "IP address not matching");
     }
 }
