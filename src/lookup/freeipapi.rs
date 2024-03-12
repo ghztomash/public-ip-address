@@ -1,4 +1,4 @@
-use crate::lookup::LookupService;
+use crate::lookup::{handle_response, LookupService};
 use crate::LookupResponse;
 use crate::Result;
 use serde::{Deserialize, Serialize};
@@ -41,9 +41,10 @@ impl FreeIpApiResponse {
 pub struct FreeIpApi;
 impl LookupService for FreeIpApi {
     fn make_api_request(&self) -> Result<String> {
-        let response = reqwest::blocking::get("https://freeipapi.com/api/json")?.text()?;
-        Ok(response)
+        let response = reqwest::blocking::get("https://freeipapi.com/api/json");
+        handle_response(response)
     }
+
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = FreeIpApiResponse::parse(json)?;
         Ok(response.convert())
@@ -77,7 +78,7 @@ mod tests {
         assert!(result.is_ok(), "Failed getting result");
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("{:#?}", result);
+        println!("FreeIpApi: {:#?}", result);
     }
 
     #[test]

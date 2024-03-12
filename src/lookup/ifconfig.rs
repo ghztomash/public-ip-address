@@ -1,4 +1,4 @@
-use crate::lookup::LookupService;
+use crate::lookup::{handle_response, LookupService};
 use crate::LookupResponse;
 use crate::Result;
 use serde::{Deserialize, Serialize};
@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IfconfigResponse {
     ip: String,
-    ip_decimal: u128, // for ip_v6
+    ip_decimal: u128, // enough to hold ipv6 address
     country: Option<String>,
     country_iso: Option<String>,
     country_eu: Option<bool>,
@@ -43,9 +43,10 @@ impl IfconfigResponse {
 pub struct Ifconfig;
 impl LookupService for Ifconfig {
     fn make_api_request(&self) -> Result<String> {
-        let response = reqwest::blocking::get("http://ifconfig.co/json")?.text()?;
-        Ok(response)
+        let response = reqwest::blocking::get("http://ifconfig.co/json");
+        handle_response(response)
     }
+
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = IfconfigResponse::parse(json)?;
         Ok(response.convert())
@@ -64,7 +65,7 @@ mod tests {
         assert!(result.is_ok(), "Failed getting result");
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("{:#?}", result);
+        println!("Ifconfig: {:#?}", result);
     }
 
     #[test]

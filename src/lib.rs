@@ -9,7 +9,7 @@ use std::time::{Duration, SystemTime};
 mod error;
 mod lookup;
 
-const CACHE_TIME: u64 = 2;
+static CACHE_TIME: u64 = 1;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LookupResponse {
@@ -104,12 +104,14 @@ pub fn get_response_with_service(service: Service) -> Result<LookupResponse> {
     }
     println!("Making new request");
     // no chache or it's too old, make a new request.
-    if let Ok(result) = service.make_request() {
-        let cache = Cache::new(result);
-        cache.save()?;
-        return Ok(cache.response);
+    match service.make_request() {
+        Ok(result) => {
+            let cache = Cache::new(result);
+            cache.save()?;
+            Ok(cache.response)
+        }
+        Err(e) => Err(format!("Error getting lookup response: {}", e).into()),
     }
-    Err("Error getting response".into())
 }
 
 #[cfg(test)]
