@@ -1,17 +1,18 @@
+use error::Result;
+use lookup::mock::Mock;
 use serde::{Deserialize, Serialize};
-use std::{error, u128};
 use std::fs::File;
 use std::io::prelude::*;
 use std::time::{Duration, SystemTime};
 
+mod error;
+mod lookup;
+
 const CACHE_TIME: u64 = 2;
 
-type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
-
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Response {
+pub struct LookupResponse {
     ip: String,
-    ip_decimal: u128, // for ip_v6
     country: Option<String>,
     country_iso: Option<String>,
     country_eu: Option<bool>,
@@ -26,19 +27,33 @@ pub struct Response {
     asn: Option<String>,
     asn_org: Option<String>,
     hostname: Option<String>,
-    user_agent: Option<String>,
 }
 
-impl Response {
-    pub fn parse(input: String) -> Result<Response> {
-        let deserialized: Response = serde_json::from_str(&input)?;
-        Ok(deserialized)
+impl LookupResponse {
+    pub fn new(ip: String) -> Self {
+        LookupResponse {
+            ip,
+            country: None,
+            country_iso: None,
+            country_eu: None,
+            region_name: None,
+            region_code: None,
+            metro_code: None,
+            zip_code: None,
+            city: None,
+            latitude: None,
+            longitude: None,
+            time_zone: None,
+            asn: None,
+            asn_org: None,
+            hostname: None,
+        }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Cache {
-    response: Response,
+    response: LookupResponse,
     response_time: SystemTime,
 }
 
@@ -48,7 +63,7 @@ impl Cache {
     #[cfg(not(unix))]
     const CACHE_PATH: &'static str = "public-ip-cache.txt";
 
-    fn new(response: Response) -> Cache {
+    fn new(response: LookupResponse) -> Cache {
         let cache = Cache {
             response,
             response_time: SystemTime::now(),
@@ -72,16 +87,10 @@ impl Cache {
     }
 }
 
-fn make_api_request() -> Result<String> {
-    let response = reqwest::blocking::get("http://ifconfig.co/json")?.text()?;
-    Ok(response)
-}
-
-pub fn get_response() -> Result<Response> {
+pub fn get_response() -> Result<LookupResponse> {
     let cached = Cache::load();
     if let Ok(cache) = cached {
-        let difference = SystemTime::now()
-            .duration_since(cache.response_time)?;
+        let difference = SystemTime::now().duration_since(cache.response_time)?;
         println!("Difference: {:?}", difference);
         if difference <= Duration::from_secs(CACHE_TIME) {
             println!("Using cache");
@@ -90,9 +99,9 @@ pub fn get_response() -> Result<Response> {
     }
     println!("Making new request");
     // no chache or it's too old, make a new request.
-    if let Ok(result) = make_api_request() {
-        let response = Response::parse(result)?;
-        let cache = Cache::new(response);
+    let service = lookup::Service::new(Box::new(Mock { ip: "1.1.1.1" }));
+    if let Ok(result) = service.make_request() {
+        let cache = Cache::new(result);
         cache.save()?;
         return Ok(cache.response);
     }
@@ -102,34 +111,14 @@ pub fn get_response() -> Result<Response> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const TEST_INPUT: &str = "{\n \"ip\": \"1.1.1.1\",\n \"ip_decimal\": 16843009\n}";
-
-    #[test]
-    fn test_request() {
-        let result = make_api_request();
-        assert!(result.is_ok(), "Failed getting result");
-        let result = result.unwrap();
-        assert!(!result.is_empty(), "Result is empty");
-        println!("{:#?}", result);
-    }
-
-    #[test]
-    fn test_parse() {
-        let response = Response::parse(TEST_INPUT.to_string()).unwrap();
-        assert_eq!(response.ip, "1.1.1.1", "IP address not matching");
-    }
 
     #[test]
     fn test_cache() {
-        let response = Response::parse(TEST_INPUT.to_string()).unwrap();
+        let response = LookupResponse::new("1.1.1.1".to_string());
         let cache = Cache::new(response);
         cache.save().unwrap();
         let cached = Cache::load().unwrap();
         assert_eq!(cached.response.ip, "1.1.1.1", "IP address not matching");
-        assert_eq!(
-            cache.response.ip_decimal, cached.response.ip_decimal,
-            "IP address not matching"
-        );
     }
 
     #[test]
