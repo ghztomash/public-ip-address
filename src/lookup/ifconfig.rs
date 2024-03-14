@@ -35,14 +35,17 @@ impl IfconfigResponse {
         let mut response = LookupResponse::new(self.ip.clone());
         response.country = self.country.clone();
         response.country_iso = self.country_iso.clone();
+        response.country_eu = self.country_eu;
         response.region_name = self.region_name.clone();
         response.region_code = self.region_code.clone();
+        response.metro_code = self.metro_code.clone();
         response.zip_code = self.zip_code.clone();
         response.city = self.city.clone();
         response.latitude = self.latitude;
         response.longitude = self.longitude;
         response.time_zone = self.time_zone.clone();
-        response.asn = self.asn_org.clone();
+        response.asn = self.asn.clone();
+        response.asn_org = self.asn_org.clone();
         response.hostname = self.hostname.clone();
         response
     }
