@@ -3,11 +3,11 @@ use crate::LookupResponse;
 use crate::Result;
 use std::{thread, time};
 
-pub struct Mock<'a> {
-    pub ip: &'a str,
+pub struct Mock {
+    pub ip: String,
 }
 
-impl LookupService for Mock<'_> {
+impl LookupService for Mock {
     fn make_api_request(&self) -> Result<String> {
         // simulate blocking api call
         thread::sleep(time::Duration::from_millis(100));
