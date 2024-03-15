@@ -1,4 +1,4 @@
-use cache::LookupCache;
+use cache::ResponseCache;
 use error::Result;
 use lookup::{LookupProvider, Service};
 use serde::{Deserialize, Serialize};
@@ -62,7 +62,7 @@ pub fn lookup_with_service(service: Service) -> Result<LookupResponse> {
     println!("Making new request");
     match service.make_request() {
         Ok(result) => {
-            let cache = LookupCache::new(result);
+            let cache = ResponseCache::new(result);
             cache.save()?;
             Ok(cache.response)
         }
@@ -76,7 +76,7 @@ pub fn lookup_with_service_cache(
     cache_time: Option<u64>,
 ) -> Result<LookupResponse> {
     if cache {
-        let cached = LookupCache::load();
+        let cached = ResponseCache::load();
         if let Ok(cache) = cached {
             let difference = SystemTime::now().duration_since(cache.response_time)?;
             println!("Difference: {:?}", difference);
@@ -91,7 +91,7 @@ pub fn lookup_with_service_cache(
     // no chache or it's too old, make a new request.
     match service.make_request() {
         Ok(result) => {
-            let cache = LookupCache::new(result);
+            let cache = ResponseCache::new(result);
             cache.save()?;
             Ok(cache.response)
         }
