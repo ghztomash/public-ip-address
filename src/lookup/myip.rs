@@ -33,7 +33,7 @@ struct Location {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Asn {
-    number: Option<u32>,
+    number: Option<i64>,
     name: Option<String>,
     network: Option<String>,
 }

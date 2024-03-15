@@ -35,7 +35,9 @@ impl IfconfigResponse {
         let mut response = LookupResponse::new(self.ip.clone());
         response.country = self.country.clone();
         response.country_iso = self.country_iso.clone();
-        response.country_eu = self.country_eu;
+        if self.country_eu.unwrap_or(false) {
+            response.continent = Some("Europe".to_string());
+        }
         response.region_name = self.region_name.clone();
         response.region_code = self.region_code.clone();
         response.metro_code = self.metro_code.clone();

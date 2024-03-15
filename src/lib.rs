@@ -7,7 +7,7 @@ use std::io::prelude::*;
 use std::time::{Duration, SystemTime};
 
 mod error;
-mod lookup;
+pub mod lookup;
 
 static CACHE_TIME: u64 = 1;
 
@@ -16,7 +16,7 @@ pub struct LookupResponse {
     ip: String,
     country: Option<String>,
     country_iso: Option<String>,
-    country_eu: Option<bool>,
+    continent: Option<String>,
     region_name: Option<String>,
     region_code: Option<String>,
     metro_code: Option<String>,
@@ -28,6 +28,7 @@ pub struct LookupResponse {
     asn: Option<String>,
     asn_org: Option<String>,
     hostname: Option<String>,
+    proxy: Option<bool>,
 }
 
 impl LookupResponse {
@@ -36,7 +37,7 @@ impl LookupResponse {
             ip,
             country: None,
             country_iso: None,
-            country_eu: None,
+            continent: None,
             region_name: None,
             region_code: None,
             metro_code: None,
@@ -48,6 +49,7 @@ impl LookupResponse {
             asn: None,
             asn_org: None,
             hostname: None,
+            proxy: None,
         }
     }
 }
