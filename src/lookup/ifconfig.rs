@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 // https://github.com/leafcloudhq/echoip/blob/master/http/http.go
 #[derive(Serialize, Deserialize, Debug)]
-pub struct IfconfigResponse {
+pub struct IfConfigResponse {
     ip: String,
     ip_decimal: u128, // enough to hold ipv6 address
     country: Option<String>,
@@ -25,9 +25,9 @@ pub struct IfconfigResponse {
     user_agent: Option<String>,
 }
 
-impl IfconfigResponse {
-    pub fn parse(input: String) -> Result<IfconfigResponse> {
-        let deserialized: IfconfigResponse = serde_json::from_str(&input)?;
+impl IfConfigResponse {
+    pub fn parse(input: String) -> Result<IfConfigResponse> {
+        let deserialized: IfConfigResponse = serde_json::from_str(&input)?;
         Ok(deserialized)
     }
 
@@ -53,15 +53,15 @@ impl IfconfigResponse {
     }
 }
 
-pub struct Ifconfig;
-impl LookupService for Ifconfig {
+pub struct IfConfig;
+impl LookupService for IfConfig {
     fn make_api_request(&self) -> Result<String> {
         let response = reqwest::blocking::get("http://ifconfig.co/json");
         handle_response(response)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
-        let response = IfconfigResponse::parse(json)?;
+        let response = IfConfigResponse::parse(json)?;
         Ok(response.convert())
     }
 }
@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn test_request() {
-        let service = Box::new(Ifconfig);
+        let service = Box::new(IfConfig);
         let result = service.make_api_request();
         assert!(result.is_ok(), "Failed getting result");
         let result = result.unwrap();
@@ -83,7 +83,7 @@ mod tests {
 
     #[test]
     fn test_parse() {
-        let response = IfconfigResponse::parse(TEST_INPUT.to_string()).unwrap();
+        let response = IfConfigResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip, "1.1.1.1", "IP address not matching");
     }
 }
