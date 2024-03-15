@@ -29,7 +29,7 @@ pub enum LookupProvider {
 }
 
 impl LookupProvider {
-    pub fn get_service(&self) -> Box<dyn LookupService> {
+    pub fn get(&self) -> Box<dyn LookupService> {
         match self {
             LookupProvider::FreeIpApi => Box::new(freeipapi::FreeIpApi),
             LookupProvider::IfConfig => Box::new(ifconfig::IfConfig),
@@ -44,12 +44,12 @@ impl LookupProvider {
 impl Service {
     pub fn new(provider: LookupProvider) -> Self {
         Service {
-            provider: provider.get_service(),
+            provider: provider.get(),
         }
     }
 
     pub fn set_provider(&mut self, provider: LookupProvider) -> &Self {
-        self.provider = provider.get_service();
+        self.provider = provider.get();
         self
     }
 
