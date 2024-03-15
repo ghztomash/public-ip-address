@@ -1,14 +1,14 @@
+use cache::LookupCache;
 use error::Result;
 use lookup::{LookupProvider, Service};
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::io::prelude::*;
 use std::time::{Duration, SystemTime};
 
+pub mod cache;
 mod error;
 pub mod lookup;
 
-static CACHE_TIME: u64 = 1;
+static DEFAULT_CACHE_TIME: u64 = 2;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LookupResponse {
@@ -53,61 +53,45 @@ impl LookupResponse {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Cache {
-    response: LookupResponse,
-    response_time: SystemTime,
-}
-
-impl Cache {
-    #[cfg(unix)]
-    const CACHE_PATH: &'static str = "/private/tmp/public-ip-cache.txt";
-    #[cfg(not(unix))]
-    const CACHE_PATH: &'static str = "public-ip-cache.txt";
-
-    fn new(response: LookupResponse) -> Cache {
-        Cache {
-            response,
-            response_time: SystemTime::now(),
-        }
-    }
-
-    fn save(&self) -> Result<()> {
-        let serialized = serde_json::to_string(self)?;
-        let mut file = File::create(Self::CACHE_PATH)?;
-        file.write_all(serialized.as_bytes())?;
-        Ok(())
-    }
-
-    fn load() -> Result<Cache> {
-        let mut file = File::open(Self::CACHE_PATH)?;
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
-        let deserialized: Cache = serde_json::from_str(&contents)?;
-        Ok(deserialized)
-    }
-}
-
-pub fn get_response() -> Result<LookupResponse> {
+pub fn lookup() -> Result<LookupResponse> {
     let service = Service::new(LookupProvider::IfConfig);
-    get_response_with_service(service)
+    lookup_with_service_cache(service, true, None)
 }
 
-pub fn get_response_with_service(service: Service) -> Result<LookupResponse> {
-    let cached = Cache::load();
-    if let Ok(cache) = cached {
-        let difference = SystemTime::now().duration_since(cache.response_time)?;
-        println!("Difference: {:?}", difference);
-        if difference <= Duration::from_secs(CACHE_TIME) {
-            println!("Using cache");
-            return Ok(cache.response);
+pub fn lookup_with_service(service: Service) -> Result<LookupResponse> {
+    println!("Making new request");
+    match service.make_request() {
+        Ok(result) => {
+            let cache = LookupCache::new(result);
+            cache.save()?;
+            Ok(cache.response)
+        }
+        Err(e) => Err(format!("Error getting lookup response: {}", e).into()),
+    }
+}
+
+pub fn lookup_with_service_cache(
+    service: Service,
+    cache: bool,
+    cache_time: Option<u64>,
+) -> Result<LookupResponse> {
+    if cache {
+        let cached = LookupCache::load();
+        if let Ok(cache) = cached {
+            let difference = SystemTime::now().duration_since(cache.response_time)?;
+            println!("Difference: {:?}", difference);
+            if difference <= Duration::from_secs(cache_time.unwrap_or(DEFAULT_CACHE_TIME)) {
+                println!("Using cache");
+                return Ok(cache.response);
+            }
         }
     }
+
     println!("Making new request");
     // no chache or it's too old, make a new request.
     match service.make_request() {
         Ok(result) => {
-            let cache = Cache::new(result);
+            let cache = LookupCache::new(result);
             cache.save()?;
             Ok(cache.response)
         }
@@ -120,18 +104,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_cache() {
-        let response = LookupResponse::new("1.1.1.1".to_string());
-        let cache = Cache::new(response);
-        cache.save().unwrap();
-        let cached = Cache::load().unwrap();
-        assert_eq!(cached.response.ip, "1.1.1.1", "IP address not matching");
-    }
-
-    #[test]
     fn test_get_response() {
         let response =
-            get_response_with_service(Service::new(LookupProvider::Mock("1.1.1.1".to_string())));
+            lookup_with_service(Service::new(LookupProvider::Mock("1.1.1.1".to_string())));
         assert!(response.is_ok());
         assert_eq!(response.unwrap().ip, "1.1.1.1", "IP address not matching");
     }
