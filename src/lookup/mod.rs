@@ -28,17 +28,29 @@ pub enum LookupProvider {
     Mock(String),
 }
 
-impl Service {
-    pub fn new(provider: LookupProvider) -> Self {
-        let provider: Box<dyn LookupService> = match provider {
+impl LookupProvider {
+    pub fn get_service(&self) -> Box<dyn LookupService> {
+        match self {
             LookupProvider::FreeIpApi => Box::new(freeipapi::FreeIpApi),
             LookupProvider::IfConfig => Box::new(ifconfig::IfConfig),
             LookupProvider::IpInfo => Box::new(ipinfo::IpInfo),
             LookupProvider::MyIp => Box::new(myip::MyIp),
             LookupProvider::IpApi => Box::new(ipapi::IpApi),
-            LookupProvider::Mock(ip) => Box::new(mock::Mock { ip }),
-        };
-        Service { provider }
+            LookupProvider::Mock(ip) => Box::new(mock::Mock { ip: ip.clone() }),
+        }
+    }
+}
+
+impl Service {
+    pub fn new(provider: LookupProvider) -> Self {
+        Service {
+            provider: provider.get_service(),
+        }
+    }
+
+    pub fn set_provider(&mut self, provider: LookupProvider) -> &Self {
+        self.provider = provider.get_service();
+        self
     }
 
     pub fn make_request(&self) -> Result<LookupResponse> {
