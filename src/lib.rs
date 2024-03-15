@@ -1,6 +1,6 @@
 use cache::ResponseCache;
 use error::Result;
-use lookup::{LookupProvider, Service};
+use lookup::{LookupProvider, LookupService};
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, SystemTime};
 
@@ -54,11 +54,11 @@ impl LookupResponse {
 }
 
 pub fn lookup() -> Result<LookupResponse> {
-    let service = Service::new(LookupProvider::IfConfig);
+    let service = LookupService::new(LookupProvider::IfConfig);
     lookup_with_service_cache(service, true, None)
 }
 
-pub fn lookup_with_service(service: Service) -> Result<LookupResponse> {
+pub fn lookup_with_service(service: LookupService) -> Result<LookupResponse> {
     println!("Making new request");
     match service.make_request() {
         Ok(result) => {
@@ -71,7 +71,7 @@ pub fn lookup_with_service(service: Service) -> Result<LookupResponse> {
 }
 
 pub fn lookup_with_service_cache(
-    service: Service,
+    service: LookupService,
     cache: bool,
     cache_time: Option<u64>,
 ) -> Result<LookupResponse> {
@@ -105,8 +105,9 @@ mod tests {
 
     #[test]
     fn test_get_response() {
-        let response =
-            lookup_with_service(Service::new(LookupProvider::Mock("1.1.1.1".to_string())));
+        let response = lookup_with_service(LookupService::new(LookupProvider::Mock(
+            "1.1.1.1".to_string(),
+        )));
         assert!(response.is_ok());
         assert_eq!(response.unwrap().ip, "1.1.1.1", "IP address not matching");
     }

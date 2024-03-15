@@ -1,4 +1,4 @@
-use crate::lookup::{handle_response, LookupService};
+use crate::lookup::{handle_response, Provider};
 use crate::LookupResponse;
 use crate::Result;
 use serde::{Deserialize, Serialize};
@@ -54,7 +54,7 @@ impl IfConfigResponse {
 }
 
 pub struct IfConfig;
-impl LookupService for IfConfig {
+impl Provider for IfConfig {
     fn make_api_request(&self) -> Result<String> {
         let response = reqwest::blocking::get("http://ifconfig.co/json");
         handle_response(response)

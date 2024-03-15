@@ -1,4 +1,4 @@
-use crate::lookup::{handle_response, LookupService};
+use crate::lookup::{handle_response, Provider};
 use crate::LookupResponse;
 use crate::Result;
 use serde::{Deserialize, Serialize};
@@ -45,7 +45,7 @@ impl FreeIpApiResponse {
 }
 
 pub struct FreeIpApi;
-impl LookupService for FreeIpApi {
+impl Provider for FreeIpApi {
     fn make_api_request(&self) -> Result<String> {
         let response = reqwest::blocking::get("https://freeipapi.com/api/json");
         handle_response(response)

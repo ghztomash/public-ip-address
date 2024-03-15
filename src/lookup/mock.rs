@@ -1,4 +1,4 @@
-use crate::lookup::LookupService;
+use crate::lookup::Provider;
 use crate::LookupResponse;
 use crate::Result;
 use std::{thread, time};
@@ -7,7 +7,7 @@ pub struct Mock {
     pub ip: String,
 }
 
-impl LookupService for Mock {
+impl Provider for Mock {
     fn make_api_request(&self) -> Result<String> {
         // simulate blocking api call
         thread::sleep(time::Duration::from_millis(100));

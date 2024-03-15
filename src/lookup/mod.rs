@@ -10,13 +10,13 @@ pub mod ipinfo;
 pub mod mock;
 pub mod myip;
 
-pub trait LookupService {
+pub trait Provider {
     fn make_api_request(&self) -> Result<String>;
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
 }
 
-pub struct Service {
-    provider: Box<dyn LookupService>,
+pub struct LookupService {
+    provider: Box<dyn Provider>,
 }
 
 pub enum LookupProvider {
@@ -29,7 +29,7 @@ pub enum LookupProvider {
 }
 
 impl LookupProvider {
-    pub fn get(&self) -> Box<dyn LookupService> {
+    pub fn get(&self) -> Box<dyn Provider> {
         match self {
             LookupProvider::FreeIpApi => Box::new(freeipapi::FreeIpApi),
             LookupProvider::IfConfig => Box::new(ifconfig::IfConfig),
@@ -41,9 +41,9 @@ impl LookupProvider {
     }
 }
 
-impl Service {
+impl LookupService {
     pub fn new(provider: LookupProvider) -> Self {
-        Service {
+        LookupService {
             provider: provider.get(),
         }
     }

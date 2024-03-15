@@ -1,4 +1,4 @@
-use crate::lookup::{handle_response, LookupService};
+use crate::lookup::{handle_response, Provider};
 use crate::LookupResponse;
 use crate::Result;
 use serde::{Deserialize, Serialize};
@@ -68,7 +68,7 @@ impl MyIpResponse {
 }
 
 pub struct MyIp;
-impl LookupService for MyIp {
+impl Provider for MyIp {
     fn make_api_request(&self) -> Result<String> {
         let response = reqwest::blocking::get("https://api.my-ip.io/v2/ip.json");
         handle_response(response)
