@@ -6,6 +6,7 @@ pub mod freeipapi;
 pub mod ifconfig;
 pub mod ipinfo;
 pub mod mock;
+pub mod myip;
 
 pub trait LookupService {
     fn make_api_request(&self) -> Result<String>;
