@@ -1,6 +1,5 @@
 use error::Result;
-use lookup::ifconfig::Ifconfig;
-use lookup::Service;
+use lookup::{LookupProvider, Service};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::prelude::*;
@@ -90,7 +89,7 @@ impl Cache {
 }
 
 pub fn get_response() -> Result<LookupResponse> {
-    let service = Service::new(Box::new(Ifconfig));
+    let service = Service::new(LookupProvider::IfConfig);
     get_response_with_service(service)
 }
 
@@ -119,7 +118,6 @@ pub fn get_response_with_service(service: Service) -> Result<LookupResponse> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use lookup::mock::Mock;
 
     #[test]
     fn test_cache() {
@@ -133,7 +131,7 @@ mod tests {
     #[test]
     fn test_get_response() {
         let response =
-            get_response_with_service(lookup::Service::new(Box::new(Mock { ip: "1.1.1.1" })));
+            get_response_with_service(Service::new(LookupProvider::Mock("1.1.1.1".to_string())));
         assert!(response.is_ok());
         assert_eq!(response.unwrap().ip, "1.1.1.1", "IP address not matching");
     }

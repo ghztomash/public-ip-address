@@ -1,9 +1,11 @@
 use crate::LookupResponse;
 use crate::Result;
+use reqwest::blocking::Response;
 use reqwest::StatusCode;
 
 pub mod freeipapi;
 pub mod ifconfig;
+pub mod ipapi;
 pub mod ipinfo;
 pub mod mock;
 pub mod myip;
@@ -17,8 +19,25 @@ pub struct Service {
     provider: Box<dyn LookupService>,
 }
 
+pub enum LookupProvider {
+    FreeIpApi,
+    IfConfig,
+    IpInfo,
+    MyIp,
+    IpApi,
+    Mock(String),
+}
+
 impl Service {
-    pub fn new(provider: Box<dyn LookupService>) -> Self {
+    pub fn new(provider: LookupProvider) -> Self {
+        let provider: Box<dyn LookupService> = match provider {
+            LookupProvider::FreeIpApi => Box::new(freeipapi::FreeIpApi),
+            LookupProvider::IfConfig => Box::new(ifconfig::IfConfig),
+            LookupProvider::IpInfo => Box::new(ipinfo::IpInfo),
+            LookupProvider::MyIp => Box::new(myip::MyIp),
+            LookupProvider::IpApi => Box::new(ipapi::IpApi),
+            LookupProvider::Mock(ip) => Box::new(mock::Mock { ip }),
+        };
         Service { provider }
     }
 
@@ -28,7 +47,7 @@ impl Service {
     }
 }
 
-fn handle_response(response: reqwest::Result<reqwest::blocking::Response>) -> Result<String> {
+fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
     match response {
         Ok(response) => match response.status() {
             StatusCode::OK => Ok(response.text()?),
