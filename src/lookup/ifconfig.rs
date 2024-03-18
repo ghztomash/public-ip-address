@@ -1,6 +1,7 @@
-use crate::lookup::{handle_response, Provider};
-use crate::LookupResponse;
-use crate::Result;
+use crate::{
+    lookup::{LookupProvider, Provider},
+    LookupResponse, Result,
+};
 use serde::{Deserialize, Serialize};
 
 // https://github.com/leafcloudhq/echoip/blob/master/http/http.go
@@ -57,7 +58,7 @@ pub struct IfConfig;
 impl Provider for IfConfig {
     fn make_api_request(&self) -> Result<String> {
         let response = reqwest::blocking::get("http://ifconfig.co/json");
-        handle_response(response)
+        super::handle_response(response)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

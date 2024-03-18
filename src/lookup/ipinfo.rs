@@ -1,6 +1,7 @@
-use crate::lookup::{handle_response, Provider};
-use crate::LookupResponse;
-use crate::Result;
+use crate::{
+    lookup::{LookupProvider, Provider},
+    LookupResponse, Result,
+};
 use serde::{Deserialize, Serialize};
 
 // https://ipinfo.io/json
@@ -56,7 +57,7 @@ pub struct IpInfo;
 impl Provider for IpInfo {
     fn make_api_request(&self) -> Result<String> {
         let response = reqwest::blocking::get("https://ipinfo.io/json");
-        handle_response(response)
+        super::handle_response(response)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

@@ -1,7 +1,6 @@
-use crate::LookupResponse;
-use crate::Result;
-use reqwest::blocking::Response;
-use reqwest::StatusCode;
+use crate::{LookupResponse, Result};
+use reqwest::{blocking::Response, StatusCode};
+use serde::{Deserialize, Serialize};
 
 pub mod freeipapi;
 pub mod ifconfig;

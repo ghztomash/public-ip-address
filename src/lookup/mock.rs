@@ -1,6 +1,7 @@
-use crate::lookup::Provider;
-use crate::LookupResponse;
-use crate::Result;
+use crate::{
+    lookup::{LookupProvider, Provider},
+    LookupResponse, Result,
+};
 use std::{thread, time};
 
 pub struct Mock {
