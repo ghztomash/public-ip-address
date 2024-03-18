@@ -30,7 +30,7 @@ impl FreeIpApiResponse {
     }
 
     pub fn convert(&self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip_address.clone());
+        let mut response = LookupResponse::new(self.ip_address.clone(), LookupProvider::FreeIpApi);
         response.country = self.country_name.clone();
         response.country_iso = self.country_code.clone();
         response.continent = self.continent.clone();
@@ -55,6 +55,10 @@ impl Provider for FreeIpApi {
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = FreeIpApiResponse::parse(json)?;
         Ok(response.convert())
+    }
+
+    fn get_type(&self) -> LookupProvider {
+        LookupProvider::FreeIpApi
     }
 }
 

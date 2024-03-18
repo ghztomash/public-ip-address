@@ -38,7 +38,7 @@ impl IpInfoResponse {
             }
         }
 
-        let mut response = LookupResponse::new(self.ip.clone());
+        let mut response = LookupResponse::new(self.ip.clone(), LookupProvider::IpInfo);
         response.country = self.country.clone();
         response.country_iso = self.country.clone();
         response.region_name = self.region.clone();
@@ -63,6 +63,10 @@ impl Provider for IpInfo {
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = IpInfoResponse::parse(json)?;
         Ok(response.convert())
+    }
+
+    fn get_type(&self) -> LookupProvider {
+        LookupProvider::IpInfo
     }
 }
 

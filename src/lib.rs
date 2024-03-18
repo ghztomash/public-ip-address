@@ -28,10 +28,11 @@ pub struct LookupResponse {
     asn_org: Option<String>,
     hostname: Option<String>,
     proxy: Option<bool>,
+    provider: LookupProvider,
 }
 
 impl LookupResponse {
-    pub fn new(ip: String) -> Self {
+    pub fn new(ip: String, provider: LookupProvider) -> Self {
         LookupResponse {
             ip,
             country: None,
@@ -49,6 +50,7 @@ impl LookupResponse {
             asn_org: None,
             hostname: None,
             proxy: None,
+            provider,
         }
     }
 }

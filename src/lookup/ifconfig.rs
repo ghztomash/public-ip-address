@@ -33,7 +33,7 @@ impl IfConfigResponse {
     }
 
     pub fn convert(&self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip.clone());
+        let mut response = LookupResponse::new(self.ip.clone(), LookupProvider::IfConfig);
         response.country = self.country.clone();
         response.country_iso = self.country_iso.clone();
         if self.country_eu.unwrap_or(false) {
@@ -64,6 +64,10 @@ impl Provider for IfConfig {
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = IfConfigResponse::parse(json)?;
         Ok(response.convert())
+    }
+
+    fn get_type(&self) -> LookupProvider {
+        LookupProvider::IfConfig
     }
 }
 

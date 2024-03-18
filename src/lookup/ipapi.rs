@@ -42,7 +42,7 @@ impl IpApiResponse {
     }
 
     pub fn convert(&self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.query.clone());
+        let mut response = LookupResponse::new(self.query.clone(), LookupProvider::IpApi);
         response.country = self.country.clone();
         response.country_iso = self.country_code.clone();
         response.region_name = self.region_name.clone();
@@ -70,6 +70,10 @@ impl Provider for IpApi {
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = IpApiResponse::parse(json)?;
         Ok(response.convert())
+    }
+
+    fn get_type(&self) -> LookupProvider {
+        LookupProvider::IpApi
     }
 }
 

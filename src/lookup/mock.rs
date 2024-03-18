@@ -15,6 +15,12 @@ impl Provider for Mock {
         Ok(self.ip.to_string())
     }
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
-        Ok(LookupResponse::new(json))
+        Ok(LookupResponse::new(
+            json.to_string(),
+            LookupProvider::Mock(json),
+        ))
+    }
+    fn get_type(&self) -> LookupProvider {
+        LookupProvider::Mock(self.ip.to_string())
     }
 }

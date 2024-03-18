@@ -12,12 +12,14 @@ pub mod myip;
 pub trait Provider {
     fn make_api_request(&self) -> Result<String>;
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
+    fn get_type(&self) -> LookupProvider;
 }
 
 pub struct LookupService {
     provider: Box<dyn Provider>,
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum LookupProvider {
     FreeIpApi,
     IfConfig,
@@ -52,6 +54,10 @@ impl LookupService {
         self
     }
 
+    pub fn get_provider_type(&self) -> LookupProvider {
+        self.provider.get_type()
+    }
+
     pub fn make_request(&self) -> Result<LookupResponse> {
         let response = self.provider.make_api_request()?;
         self.provider.parse_reply(response)
@@ -68,5 +74,41 @@ fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
             s => Err(format!("Status: {}", s).into()),
         },
         Err(e) => Err(format!("Error GET request: {}", e).into()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_set_provider() {
+        let mut provider = LookupService::new(LookupProvider::IpApi);
+        assert_eq!(provider.get_provider_type(), LookupProvider::IpApi);
+        provider.set_provider(LookupProvider::IpInfo);
+        assert_eq!(provider.get_provider_type(), LookupProvider::IpInfo);
+    }
+
+    #[test]
+    fn test_make_request() {
+        let address = "1.1.1.1".to_string();
+        let provider = LookupService::new(LookupProvider::Mock(address.to_string()));
+        let response = provider.make_request().unwrap();
+        assert_eq!(response.ip, address);
+    }
+
+    #[test]
+    fn test_handle_response() {
+        todo!();
+    }
+
+    #[test]
+    fn test_handle_response_error() {
+        todo!();
+    }
+
+    #[test]
+    fn test_handle_response_too_many() {
+        todo!();
     }
 }

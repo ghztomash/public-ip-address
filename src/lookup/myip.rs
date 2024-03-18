@@ -46,7 +46,7 @@ impl MyIpResponse {
     }
 
     pub fn convert(&self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip.clone());
+        let mut response = LookupResponse::new(self.ip.clone(), LookupProvider::MyIp);
         if let Some(country) = &self.country {
             response.country = country.name.clone();
             response.country_iso = country.code.clone();
@@ -78,6 +78,10 @@ impl Provider for MyIp {
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = MyIpResponse::parse(json)?;
         Ok(response.convert())
+    }
+
+    fn get_type(&self) -> LookupProvider {
+        LookupProvider::MyIp
     }
 }
 

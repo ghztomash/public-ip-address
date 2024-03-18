@@ -48,10 +48,14 @@ impl ResponseCache {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::lookup::LookupProvider;
 
     #[test]
     fn test_cache() {
-        let response = LookupResponse::new("1.1.1.1".to_string());
+        let response = LookupResponse::new(
+            "1.1.1.1".to_string(),
+            LookupProvider::Mock("1.1.1.1".to_string()),
+        );
         let cache = ResponseCache::new(response);
         cache.save().unwrap();
         let cached = ResponseCache::load().unwrap();
