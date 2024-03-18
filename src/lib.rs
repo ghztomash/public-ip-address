@@ -5,12 +5,12 @@ use serde::{Deserialize, Serialize};
 use std::time::{Duration, SystemTime};
 
 pub mod cache;
-mod error;
+pub mod error;
 pub mod lookup;
 
-static DEFAULT_CACHE_TIME: u64 = 2;
+const DEFAULT_CACHE_TIME: u64 = 2;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LookupResponse {
     ip: String,
     country: Option<String>,
@@ -55,16 +55,14 @@ impl LookupResponse {
 
 pub fn lookup() -> Result<LookupResponse> {
     let service = LookupService::new(LookupProvider::IfConfig);
-    lookup_with_service_cache(service, true, None)
+    lookup_with_service_cache(service, None)
 }
 
 pub fn lookup_with_service(service: LookupService) -> Result<LookupResponse> {
-    println!("Making new request");
     match service.make_request() {
         Ok(result) => {
-            let cache = ResponseCache::new(result);
-            cache.save()?;
-            Ok(cache.response)
+            ResponseCache::new(result.clone()).save()?;
+            Ok(result)
         }
         Err(e) => Err(format!("Error getting lookup response: {}", e).into()),
     }
@@ -72,23 +70,20 @@ pub fn lookup_with_service(service: LookupService) -> Result<LookupResponse> {
 
 pub fn lookup_with_service_cache(
     service: LookupService,
-    cache: bool,
     cache_time: Option<u64>,
 ) -> Result<LookupResponse> {
-    if cache {
-        let cached = ResponseCache::load();
-        if let Ok(cache) = cached {
-            let difference = SystemTime::now().duration_since(cache.response_time)?;
-            println!("Difference: {:?}", difference);
-            if difference <= Duration::from_secs(cache_time.unwrap_or(DEFAULT_CACHE_TIME)) {
-                println!("Using cache");
-                return Ok(cache.response);
-            }
+    let cached = ResponseCache::load();
+    if let Ok(cache) = cached {
+        let difference = SystemTime::now().duration_since(cache.response_time)?;
+        println!("Difference: {:?}", difference);
+        if difference <= Duration::from_secs(cache_time.unwrap_or(DEFAULT_CACHE_TIME)) {
+            println!("Using cache");
+            return Ok(cache.response);
         }
     }
 
     println!("Making new request");
-    // no chache or it's too old, make a new request.
+    // no cache or it's too old, make a new request.
     match service.make_request() {
         Ok(result) => {
             let cache = ResponseCache::new(result);
