@@ -55,6 +55,11 @@ impl LookupResponse {
     }
 }
 
+impl std::fmt::Display for LookupResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", serde_json::to_string_pretty(self).unwrap())
+    }
+}
 pub fn lookup() -> Result<LookupResponse> {
     let service = LookupService::new(LookupProvider::IfConfig);
     lookup_with_service_cache(service, None)
