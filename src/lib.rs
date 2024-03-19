@@ -60,15 +60,16 @@ impl std::fmt::Display for LookupResponse {
         write!(f, "{}", serde_json::to_string_pretty(self).unwrap())
     }
 }
+
 pub fn lookup() -> Result<LookupResponse> {
-    let service = LookupService::new(LookupProvider::IfConfig);
-    lookup_with_service_cache(service, None)
+    lookup_with_service_cache(LookupProvider::IfConfig, None)
 }
 
-pub fn lookup_with_service(service: LookupService) -> Result<LookupResponse> {
+pub fn lookup_with_service(provider: LookupProvider) -> Result<LookupResponse> {
+    let service = LookupService::new(provider);
     match service.make_request() {
         Ok(result) => {
-            ResponseCache::new(result.clone()).save()?;
+            _ = ResponseCache::new(result.clone()).save();
             Ok(result)
         }
         Err(e) => Err(format!("Error getting lookup response: {}", e).into()),
@@ -76,7 +77,7 @@ pub fn lookup_with_service(service: LookupService) -> Result<LookupResponse> {
 }
 
 pub fn lookup_with_service_cache(
-    service: LookupService,
+    provider: LookupProvider,
     cache_time: Option<u64>,
 ) -> Result<LookupResponse> {
     let cached = ResponseCache::load();
@@ -90,6 +91,7 @@ pub fn lookup_with_service_cache(
     }
 
     println!("Making new request");
+    let service = LookupService::new(provider);
     // no cache or it's too old, make a new request.
     match service.make_request() {
         Ok(result) => {
@@ -107,9 +109,9 @@ mod tests {
 
     #[test]
     fn test_get_response() {
-        let response = lookup_with_service(LookupService::new(LookupProvider::Mock(
+        let response = lookup_with_service(LookupProvider::Mock(
             "1.1.1.1".to_string(),
-        )));
+        ));
         assert!(response.is_ok());
         assert_eq!(response.unwrap().ip, "1.1.1.1", "IP address not matching");
     }
