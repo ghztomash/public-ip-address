@@ -1,5 +1,6 @@
 use crate::{error::Result, LookupResponse};
 use base64::prelude::*;
+use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
 use std::{fs, fs::File, io::prelude::*, time::SystemTime};
 
@@ -10,11 +11,6 @@ pub struct ResponseCache {
 }
 
 impl ResponseCache {
-    #[cfg(unix)]
-    const CACHE_PATH: &'static str = "/private/tmp/public-ip-cache";
-    #[cfg(not(unix))]
-    const CACHE_PATH: &'static str = "public-ip-cache";
-
     pub fn new(response: LookupResponse) -> ResponseCache {
         ResponseCache {
             response,
@@ -25,13 +21,13 @@ impl ResponseCache {
     pub fn save(&self) -> Result<()> {
         let serialized = serde_json::to_string(self)?;
         let encoded = BASE64_STANDARD.encode(serialized);
-        let mut file = File::create(Self::CACHE_PATH)?;
+        let mut file = File::create(get_cache_path())?;
         file.write_all(encoded.as_bytes())?;
         Ok(())
     }
 
     pub fn load() -> Result<ResponseCache> {
-        let mut file = File::open(Self::CACHE_PATH)?;
+        let mut file = File::open(get_cache_path())?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let decoded = String::from_utf8(BASE64_STANDARD.decode(contents)?)?;
@@ -40,9 +36,18 @@ impl ResponseCache {
     }
 
     pub fn delete() -> Result<()> {
-        fs::remove_file(Self::CACHE_PATH)?;
+        fs::remove_file(get_cache_path())?;
         Ok(())
     }
+}
+
+fn get_cache_path() -> String {
+    if let Some(dirs) = BaseDirs::new() {
+        if let Some(path) = dirs.cache_dir().join("lookup.cache").to_str() {
+            return path.to_string();
+        }
+    };
+    "lookup.cache".to_string()
 }
 
 #[cfg(test)]
