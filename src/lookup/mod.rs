@@ -6,6 +6,7 @@ pub mod freeipapi;
 pub mod ifconfig;
 pub mod ipapi;
 pub mod ipinfo;
+pub mod ipwhois;
 pub mod mock;
 pub mod myip;
 
@@ -26,6 +27,7 @@ pub enum LookupProvider {
     IpInfo,
     MyIp,
     IpApi,
+    IpWhoIs,
     Mock(String),
 }
 
@@ -37,6 +39,7 @@ impl LookupProvider {
             LookupProvider::IpInfo => Box::new(ipinfo::IpInfo),
             LookupProvider::MyIp => Box::new(myip::MyIp),
             LookupProvider::IpApi => Box::new(ipapi::IpApi),
+            LookupProvider::IpWhoIs => Box::new(ipwhois::IpWhoIs),
             LookupProvider::Mock(ip) => Box::new(mock::Mock { ip: ip.clone() }),
         }
     }
