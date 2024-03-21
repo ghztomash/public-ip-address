@@ -2,14 +2,18 @@
 name = "public-ip-address"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Tomash Ghz <ghz.tomash@hotmail.com>"]
+description = "A simple library for performing public IP and geolocation lookups from various services."
+repository = "https://github.com/ghztomash/public-ip-address"
+keywords = ["network", "geolocation", "geoip", "public", "ip" ]
+categories = ["network-programming", "web-programming"]
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 reqwest = { version = "0.10", features = ["blocking"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-base64 = "0.22.0"
+base64 = "0.22"
 directories = "5.0"
 
 [dev-dependencies]

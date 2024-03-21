@@ -1,6 +1,6 @@
 # Public IP address
 
-This package provides a library for performing public IP lookups from various services.
+This package provides a library for performing public IP and geolocation lookups from various services.
 
 ## Usage
 
