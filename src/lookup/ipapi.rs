@@ -44,10 +44,10 @@ impl IpApiResponse {
     pub fn convert(&self) -> LookupResponse {
         let mut response = LookupResponse::new(self.query.clone(), LookupProvider::IpApi);
         response.country = self.country.clone();
-        response.country_iso = self.country_code.clone();
-        response.region_name = self.region_name.clone();
+        response.country_code = self.country_code.clone();
+        response.region = self.region_name.clone();
         response.region_code = self.region.clone();
-        response.zip_code = self.zip.clone();
+        response.postal_code = self.zip.clone();
         response.city = self.city.clone();
         response.latitude = self.lat;
         response.longitude = self.lon;

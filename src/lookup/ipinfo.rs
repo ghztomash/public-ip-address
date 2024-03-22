@@ -40,9 +40,9 @@ impl IpInfoResponse {
 
         let mut response = LookupResponse::new(self.ip.clone(), LookupProvider::IpInfo);
         response.country = self.country.clone();
-        response.country_iso = self.country.clone();
-        response.region_name = self.region.clone();
-        response.zip_code = self.postal.clone();
+        response.country_code = self.country.clone();
+        response.region = self.region.clone();
+        response.postal_code = self.postal.clone();
         response.city = self.city.clone();
         response.latitude = latitude;
         response.longitude = longitude;

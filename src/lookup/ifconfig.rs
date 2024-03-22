@@ -35,14 +35,13 @@ impl IfConfigResponse {
     pub fn convert(&self) -> LookupResponse {
         let mut response = LookupResponse::new(self.ip.clone(), LookupProvider::IfConfig);
         response.country = self.country.clone();
-        response.country_iso = self.country_iso.clone();
+        response.country_code = self.country_iso.clone();
         if self.country_eu.unwrap_or(false) {
             response.continent = Some("Europe".to_string());
         }
-        response.region_name = self.region_name.clone();
+        response.region = self.region_name.clone();
         response.region_code = self.region_code.clone();
-        response.metro_code = self.metro_code.clone();
-        response.zip_code = self.zip_code.clone();
+        response.postal_code = self.zip_code.clone();
         response.city = self.city.clone();
         response.latitude = self.latitude;
         response.longitude = self.longitude;

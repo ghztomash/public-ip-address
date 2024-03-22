@@ -44,11 +44,11 @@ impl IpWhoIsResponse {
     pub fn convert(&self) -> LookupResponse {
         let mut response = LookupResponse::new(self.ip.clone(), LookupProvider::IpWhoIs);
         response.continent = self.continent.clone();
-        response.region_name = self.region.clone();
+        response.region = self.region.clone();
         response.region_code = self.region_code.clone();
         response.country = self.country.clone();
-        response.country_iso = self.country_code.clone();
-        response.zip_code = self.postal.clone();
+        response.country_code = self.country_code.clone();
+        response.postal_code = self.postal.clone();
         response.city = self.city.clone();
         response.latitude = self.latitude.clone();
         response.longitude = self.longitude.clone();

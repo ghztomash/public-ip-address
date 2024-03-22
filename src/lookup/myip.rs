@@ -49,9 +49,9 @@ impl MyIpResponse {
         let mut response = LookupResponse::new(self.ip.clone(), LookupProvider::MyIp);
         if let Some(country) = &self.country {
             response.country = country.name.clone();
-            response.country_iso = country.code.clone();
+            response.country_code = country.code.clone();
         }
-        response.region_name = self.region.clone();
+        response.region = self.region.clone();
         response.city = self.city.clone();
         if let Some(location) = &self.location {
             response.latitude = location.lat;
