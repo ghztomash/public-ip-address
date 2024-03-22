@@ -117,11 +117,15 @@ mod tests {
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("IpApi: {:#?}", result);
+        let response = IpApiResponse::parse(result);
+        assert!(response.is_ok(), "Failed parsing response");
     }
 
     #[test]
     fn test_parse() {
         let response = IpApiResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.query, "1.1.1.1", "IP address not matching");
+        let lookup = response.convert();
+        assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
     }
 }
