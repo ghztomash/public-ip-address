@@ -14,7 +14,7 @@ pub struct IfConfigResponse {
     country_eu: Option<bool>,
     region_name: Option<String>,
     region_code: Option<String>,
-    metro_code: Option<String>,
+    metro_code: Option<i64>,
     zip_code: Option<String>,
     city: Option<String>,
     latitude: Option<f64>,
