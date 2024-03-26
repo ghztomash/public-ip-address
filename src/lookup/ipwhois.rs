@@ -50,8 +50,8 @@ impl IpWhoIsResponse {
         response.country_code = self.country_code.clone();
         response.postal_code = self.postal.clone();
         response.city = self.city.clone();
-        response.latitude = self.latitude.clone();
-        response.longitude = self.longitude.clone();
+        response.latitude = self.latitude;
+        response.longitude = self.longitude;
         if let Some(timezone) = &self.timezone {
             response.time_zone = timezone.id.clone();
         }
