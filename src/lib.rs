@@ -163,8 +163,8 @@ pub fn perform_lookup_with_list(providers: Vec<LookupProvider>) -> Result<Lookup
 
     for provider in providers {
         let response = LookupService::new(provider).make_request();
-        if response.is_ok() {
-            return Ok(response.unwrap());
+        if let Ok(response) = response {
+            return Ok(response);
         }
         error = Some(response.unwrap_err());
     }
