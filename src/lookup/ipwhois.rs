@@ -131,12 +131,12 @@ mod tests {
     fn test_request() {
         let service = Box::new(IpWhoIs);
         let result = service.make_api_request();
-        assert!(result.is_ok(), "Failed getting result");
+        assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("IpWhoIs: {:#?}", result);
         let response = IpWhoIsResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response");
+        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
     }
 
     #[test]

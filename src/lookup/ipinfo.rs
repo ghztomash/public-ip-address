@@ -92,12 +92,12 @@ mod tests {
     fn test_request() {
         let service = Box::new(IpInfo);
         let result = service.make_api_request();
-        assert!(result.is_ok(), "Failed getting result");
+        assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("IpInfo: {:#?}", result);
         let response = IpInfoResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response");
+        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
     }
 
     #[test]
