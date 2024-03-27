@@ -10,6 +10,8 @@ pub enum Error {
     CacheError(#[from] CacheError),
     #[error("Lookup error")]
     LookupError(#[from] LookupError),
+    #[error("Lookup error")]
+    LookupErrorString(String),
     #[error("Time error")]
     TimeError(#[from] std::time::SystemTimeError),
 }
