@@ -28,7 +28,7 @@ jobs:
     - name: Clippy
       run: |
         rustup component add clippy
-        cargo clippy
+        cargo clippy -- -D warning
 
     - name: Build
       run: cargo build --verbose
