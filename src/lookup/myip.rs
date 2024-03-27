@@ -46,21 +46,21 @@ impl MyIpResponse {
         Ok(deserialized)
     }
 
-    pub fn convert(&self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip.clone(), LookupProvider::MyIp);
-        if let Some(country) = &self.country {
-            response.country = country.name.clone();
-            response.country_code = country.code.clone();
+    pub fn into_response(self) -> LookupResponse {
+        let mut response = LookupResponse::new(self.ip, LookupProvider::MyIp);
+        if let Some(country) = self.country {
+            response.country = country.name;
+            response.country_code = country.code;
         }
-        response.region = self.region.clone();
-        response.city = self.city.clone();
-        if let Some(location) = &self.location {
+        response.region = self.region;
+        response.city = self.city;
+        if let Some(location) = self.location {
             response.latitude = location.lat;
             response.longitude = location.lon;
         }
-        response.time_zone = self.time_zone.clone();
-        if let Some(asn) = &self.asn {
-            response.asn_org = asn.name.clone();
+        response.time_zone = self.time_zone;
+        if let Some(asn) = self.asn {
+            response.asn_org = asn.name;
             if let Some(number) = asn.number {
                 response.asn = Some(format!("{number}"));
             }
@@ -78,7 +78,7 @@ impl Provider for MyIp {
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = MyIpResponse::parse(json)?;
-        Ok(response.convert())
+        Ok(response.into_response())
     }
 
     fn get_type(&self) -> LookupProvider {
@@ -130,7 +130,7 @@ mod tests {
     fn test_parse() {
         let response = MyIpResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip, "1.1.1.1", "IP address not matching");
-        let lookup = response.convert();
+        let lookup = response.into_response();
         assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
     }
 }

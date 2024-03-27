@@ -42,25 +42,25 @@ impl IpWhoIsResponse {
         Ok(deserialized)
     }
 
-    pub fn convert(&self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip.clone(), LookupProvider::IpWhoIs);
-        response.continent = self.continent.clone();
-        response.region = self.region.clone();
-        response.region_code = self.region_code.clone();
-        response.country = self.country.clone();
-        response.country_code = self.country_code.clone();
-        response.postal_code = self.postal.clone();
-        response.city = self.city.clone();
+    pub fn into_response(self) -> LookupResponse {
+        let mut response = LookupResponse::new(self.ip, LookupProvider::IpWhoIs);
+        response.continent = self.continent;
+        response.region = self.region;
+        response.region_code = self.region_code;
+        response.country = self.country;
+        response.country_code = self.country_code;
+        response.postal_code = self.postal;
+        response.city = self.city;
         response.latitude = self.latitude;
         response.longitude = self.longitude;
-        if let Some(timezone) = &self.timezone {
-            response.time_zone = timezone.id.clone();
+        if let Some(timezone) = self.timezone {
+            response.time_zone = timezone.id;
         }
-        if let Some(connection) = &self.connection {
+        if let Some(connection) = self.connection {
+            response.asn_org = connection.org;
             if let Some(asn) = connection.asn {
                 response.asn = Some(format!("{asn}"));
             }
-            response.asn_org = connection.org.clone();
         }
         response
     }
@@ -75,7 +75,7 @@ impl Provider for IpWhoIs {
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = IpWhoIsResponse::parse(json)?;
-        Ok(response.convert())
+        Ok(response.into_response())
     }
 
     fn get_type(&self) -> LookupProvider {
@@ -144,7 +144,7 @@ mod tests {
     fn test_parse() {
         let response = IpWhoIsResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip, "1.1.1.1", "IP address not matching");
-        let lookup = response.convert();
+        let lookup = response.into_response();
         assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
     }
 }

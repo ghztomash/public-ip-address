@@ -42,20 +42,20 @@ impl IpApiResponse {
         Ok(deserialized)
     }
 
-    pub fn convert(&self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.query.clone(), LookupProvider::IpApi);
-        response.country = self.country.clone();
-        response.country_code = self.country_code.clone();
-        response.region = self.region_name.clone();
-        response.region_code = self.region.clone();
-        response.postal_code = self.zip.clone();
-        response.city = self.city.clone();
+    pub fn into_response(self) -> LookupResponse {
+        let mut response = LookupResponse::new(self.query, LookupProvider::IpApi);
+        response.country = self.country;
+        response.country_code = self.country_code;
+        response.region = self.region_name;
+        response.region_code = self.region;
+        response.postal_code = self.zip;
+        response.city = self.city;
         response.latitude = self.lat;
         response.longitude = self.lon;
-        response.time_zone = self.timezone.clone();
-        response.asn_org = self.org.clone();
-        response.asn = self.asn.clone();
-        response.hostname = self.reverse.clone();
+        response.time_zone = self.timezone;
+        response.asn_org = self.org;
+        response.asn = self.asn;
+        response.hostname = self.reverse;
         response.proxy = self.proxy;
         response
     }
@@ -70,7 +70,7 @@ impl Provider for IpApi {
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = IpApiResponse::parse(json)?;
-        Ok(response.convert())
+        Ok(response.into_response())
     }
 
     fn get_type(&self) -> LookupProvider {
@@ -127,7 +127,7 @@ mod tests {
     fn test_parse() {
         let response = IpApiResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.query, "1.1.1.1", "IP address not matching");
-        let lookup = response.convert();
+        let lookup = response.into_response();
         assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
     }
 }

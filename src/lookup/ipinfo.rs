@@ -26,12 +26,12 @@ impl IpInfoResponse {
         Ok(deserialized)
     }
 
-    pub fn convert(&self) -> LookupResponse {
+    pub fn into_response(self) -> LookupResponse {
         let mut latitude = None;
         let mut longitude = None;
 
         // convert loc string to float
-        if let Some(loc) = self.loc.clone() {
+        if let Some(loc) = self.loc {
             let coords: Vec<&str> = loc.split(',').collect();
             if coords.len() == 2 {
                 latitude = coords[0].parse().ok();
@@ -39,17 +39,17 @@ impl IpInfoResponse {
             }
         }
 
-        let mut response = LookupResponse::new(self.ip.clone(), LookupProvider::IpInfo);
+        let mut response = LookupResponse::new(self.ip, LookupProvider::IpInfo);
         response.country = self.country.clone();
-        response.country_code = self.country.clone();
-        response.region = self.region.clone();
-        response.postal_code = self.postal.clone();
-        response.city = self.city.clone();
+        response.country_code = self.country;
+        response.region = self.region;
+        response.postal_code = self.postal;
+        response.city = self.city;
         response.latitude = latitude;
         response.longitude = longitude;
-        response.time_zone = self.timezone.clone();
+        response.time_zone = self.timezone;
         response.asn_org = self.org.clone();
-        response.asn = self.org.clone();
+        response.asn = self.org;
         response
     }
 }
@@ -63,7 +63,7 @@ impl Provider for IpInfo {
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = IpInfoResponse::parse(json)?;
-        Ok(response.convert())
+        Ok(response.into_response())
     }
 
     fn get_type(&self) -> LookupProvider {
@@ -105,7 +105,7 @@ mod tests {
     fn test_parse() {
         let response = IpInfoResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip, "1.1.1.1", "IP address not matching");
-        let lookup = response.convert();
+        let lookup = response.into_response();
         assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
     }
 }

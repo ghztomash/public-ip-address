@@ -30,17 +30,17 @@ impl FreeIpApiResponse {
         Ok(deserialized)
     }
 
-    pub fn convert(&self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip_address.clone(), LookupProvider::FreeIpApi);
-        response.country = self.country_name.clone();
-        response.country_code = self.country_code.clone();
-        response.continent = self.continent.clone();
-        response.region = self.region_name.clone();
-        response.postal_code = self.zip_code.clone();
-        response.city = self.city_name.clone();
+    pub fn into_response(self) -> LookupResponse {
+        let mut response = LookupResponse::new(self.ip_address, LookupProvider::FreeIpApi);
+        response.country = self.country_name;
+        response.country_code = self.country_code;
+        response.continent = self.continent;
+        response.region = self.region_name;
+        response.postal_code = self.zip_code;
+        response.city = self.city_name;
         response.latitude = self.latitude;
         response.longitude = self.longitude;
-        response.time_zone = self.time_zone.clone();
+        response.time_zone = self.time_zone;
         response.proxy = self.is_proxy;
         response
     }
@@ -55,7 +55,7 @@ impl Provider for FreeIpApi {
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         let response = FreeIpApiResponse::parse(json)?;
-        Ok(response.convert())
+        Ok(response.into_response())
     }
 
     fn get_type(&self) -> LookupProvider {
@@ -100,7 +100,7 @@ mod tests {
     fn test_parse() {
         let response = FreeIpApiResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip_address, "1.1.1.1", "IP address not matching");
-        let lookup = response.convert();
+        let lookup = response.into_response();
         assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
     }
 }
