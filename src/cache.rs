@@ -23,7 +23,9 @@ impl ResponseCache {
     pub fn save(&self) -> Result<()> {
         let serialized = serde_json::to_string(self)?;
         let encoded = BASE64_STANDARD.encode(serialized);
+        dbg!(get_cache_path());
         let mut file = File::create(get_cache_path())?;
+        dbg!(&file);
         file.write_all(encoded.as_bytes())?;
         Ok(())
     }

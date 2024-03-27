@@ -29,7 +29,8 @@ jobs:
       run: cargo build --verbose
 
     - name: Tests
-      run: cargo test --all --verbose
+      run: cargo test cache --verbose -- --show-output
+      #run: cargo test --all --verbose
 
     - name: Clippy
       run: |
