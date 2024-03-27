@@ -6,6 +6,7 @@ use std::fmt;
 pub mod freeipapi;
 pub mod ifconfig;
 pub mod ipapicom;
+pub mod ipapico;
 pub mod ipinfo;
 pub mod ipwhois;
 pub mod mock;
@@ -32,6 +33,7 @@ pub enum LookupProvider {
     MyIp,
     IpApiCom,
     IpWhoIs,
+    IpApiCo,
     Mock(String),
 }
 
@@ -49,6 +51,7 @@ impl LookupProvider {
             LookupProvider::IpInfo => Box::new(ipinfo::IpInfo),
             LookupProvider::MyIp => Box::new(myip::MyIp),
             LookupProvider::IpApiCom => Box::new(ipapicom::IpApiCom),
+            LookupProvider::IpApiCo => Box::new(ipapico::IpApiCo),
             LookupProvider::IpWhoIs => Box::new(ipwhois::IpWhoIs),
             LookupProvider::Mock(ref ip) => Box::new(mock::Mock { ip: ip.to_string() }),
         }
