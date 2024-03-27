@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 // https://ip-api.com/docs/api:json
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct IpApiResponse {
+pub struct IpApiComResponse {
     query: String,
     status: Option<String>,
     continent: Option<String>,
@@ -36,14 +36,14 @@ pub struct IpApiResponse {
     hosting: Option<bool>,
 }
 
-impl IpApiResponse {
-    pub fn parse(input: String) -> Result<IpApiResponse> {
-        let deserialized: IpApiResponse = serde_json::from_str(&input)?;
+impl IpApiComResponse {
+    pub fn parse(input: String) -> Result<IpApiComResponse> {
+        let deserialized: IpApiComResponse = serde_json::from_str(&input)?;
         Ok(deserialized)
     }
 
     pub fn into_response(self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.query, LookupProvider::IpApi);
+        let mut response = LookupResponse::new(self.query, LookupProvider::IpApiCom);
         response.country = self.country;
         response.country_code = self.country_code;
         response.region = self.region_name;
@@ -61,20 +61,20 @@ impl IpApiResponse {
     }
 }
 
-pub struct IpApi;
-impl Provider for IpApi {
+pub struct IpApiCom;
+impl Provider for IpApiCom {
     fn make_api_request(&self) -> Result<String> {
         let response = reqwest::blocking::get("http://ip-api.com/json?fields=66846719");
         super::handle_response(response)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
-        let response = IpApiResponse::parse(json)?;
+        let response = IpApiComResponse::parse(json)?;
         Ok(response.into_response())
     }
 
     fn get_type(&self) -> LookupProvider {
-        LookupProvider::IpApi
+        LookupProvider::IpApiCom
     }
 }
 
@@ -113,19 +113,19 @@ mod tests {
     #[test]
     #[ignore]
     fn test_request() {
-        let service = Box::new(IpApi);
+        let service = Box::new(IpApiCom);
         let result = service.make_api_request();
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpApi: {:#?}", result);
-        let response = IpApiResponse::parse(result);
+        println!("IpApiCom: {:#?}", result);
+        let response = IpApiComResponse::parse(result);
         assert!(response.is_ok(), "Failed parsing response {:#?}", response);
     }
 
     #[test]
     fn test_parse() {
-        let response = IpApiResponse::parse(TEST_INPUT.to_string()).unwrap();
+        let response = IpApiComResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.query, "1.1.1.1", "IP address not matching");
         let lookup = response.into_response();
         assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
