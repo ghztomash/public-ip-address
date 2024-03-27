@@ -22,6 +22,7 @@ use cache::ResponseCache;
 use error::{Error, Result};
 use lookup::{LookupProvider, LookupService};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 use std::time::{Duration, SystemTime};
 
 pub mod cache;
@@ -76,9 +77,62 @@ impl LookupResponse {
     }
 }
 
-impl std::fmt::Display for LookupResponse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", serde_json::to_string_pretty(self).unwrap())
+impl fmt::Display for LookupResponse {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "IP: {}", self.ip)?;
+        if let Some(continent) = &self.continent {
+            writeln!(f, "Continent: {}", continent)?;
+        }
+        if let Some(country) = &self.country {
+            write!(f, "Country: {}", country)?;
+        }
+        if let Some(country_code) = &self.country_code {
+            writeln!(f, " ({})", country_code)?;
+        } else {
+            writeln!(f, "")?;
+        }
+        if let Some(region) = &self.region {
+            write!(f, "Region: {}", region)?;
+        }
+        if let Some(region_code) = &self.region_code {
+            writeln!(f, " ({})", region_code)?;
+        } else {
+            writeln!(f, "")?;
+        }
+        if let Some(postal_code) = &self.postal_code {
+            writeln!(f, "Postal code: {}", postal_code)?;
+        }
+        if let Some(city) = &self.city {
+            writeln!(f, "City: {}", city)?;
+        }
+        if let Some(latitude) = &self.latitude {
+            write!(f, "Coordinates: {}", latitude)?;
+        }
+        if let Some(longitude) = &self.longitude {
+            writeln!(f, ", {}", longitude)?;
+        } else {
+            writeln!(f, "")?;
+        }
+        if let Some(time_zone) = &self.time_zone {
+            writeln!(f, "Time zone: {}", time_zone)?;
+        }
+        if let Some(asn_org) = &self.asn_org {
+            write!(f, "Organization: {}", asn_org)?;
+        }
+        if let Some(asn) = &self.asn {
+            writeln!(f, " ({})", asn)?;
+        } else {
+            writeln!(f, "")?;
+        }
+        if let Some(hostname) = &self.hostname {
+            writeln!(f, "Hostname: {}", hostname)?;
+        }
+        if let Some(proxy) = &self.proxy {
+            writeln!(f, "Proxy: {}", proxy)?;
+        }
+        writeln!(f, "Provider: {}", self.provider)?;
+
+        Ok(())
     }
 }
 

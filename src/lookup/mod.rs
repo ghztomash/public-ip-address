@@ -1,6 +1,7 @@
 use crate::{error::LookupError, LookupResponse};
 use reqwest::{blocking::Response, StatusCode};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 pub mod freeipapi;
 pub mod ifconfig;
@@ -32,6 +33,12 @@ pub enum LookupProvider {
     IpApi,
     IpWhoIs,
     Mock(String),
+}
+
+impl fmt::Display for LookupProvider {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "{:?}", self)
+    }
 }
 
 impl LookupProvider {
