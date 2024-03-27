@@ -77,6 +77,7 @@ mod tests {
     const TEST_INPUT: &str = "{\n \"ip\": \"1.1.1.1\",\n \"ip_decimal\": 16843009\n}";
 
     #[test]
+    #[ignore]
     fn test_request() {
         let service = Box::new(IfConfig);
         let result = service.make_api_request();

@@ -114,6 +114,7 @@ mod tests {
 "#;
 
     #[test]
+    #[ignore]
     fn test_request() {
         let service = Box::new(MyIp);
         let result = service.make_api_request();
