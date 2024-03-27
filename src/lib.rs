@@ -89,7 +89,7 @@ impl fmt::Display for LookupResponse {
         if let Some(country_code) = &self.country_code {
             writeln!(f, " ({})", country_code)?;
         } else {
-            writeln!(f, "")?;
+            writeln!(f)?;
         }
         if let Some(region) = &self.region {
             write!(f, "Region: {}", region)?;
@@ -97,7 +97,7 @@ impl fmt::Display for LookupResponse {
         if let Some(region_code) = &self.region_code {
             writeln!(f, " ({})", region_code)?;
         } else {
-            writeln!(f, "")?;
+            writeln!(f)?;
         }
         if let Some(postal_code) = &self.postal_code {
             writeln!(f, "Postal code: {}", postal_code)?;
@@ -111,7 +111,7 @@ impl fmt::Display for LookupResponse {
         if let Some(longitude) = &self.longitude {
             writeln!(f, ", {}", longitude)?;
         } else {
-            writeln!(f, "")?;
+            writeln!(f)?;
         }
         if let Some(time_zone) = &self.time_zone {
             writeln!(f, "Time zone: {}", time_zone)?;
@@ -122,7 +122,7 @@ impl fmt::Display for LookupResponse {
         if let Some(asn) = &self.asn {
             writeln!(f, " ({})", asn)?;
         } else {
-            writeln!(f, "")?;
+            writeln!(f)?;
         }
         if let Some(hostname) = &self.hostname {
             writeln!(f, "Hostname: {}", hostname)?;
