@@ -46,12 +46,21 @@ impl ResponseCache {
 }
 
 fn get_cache_path() -> String {
-    if let Some(dirs) = BaseDirs::new() {
-        if let Some(path) = dirs.cache_dir().join("lookup.cache").to_str() {
+    if let Some(base_dirs) = BaseDirs::new() {
+        let mut dir = base_dirs.cache_dir();
+        // Create cache directory if it doesn't exist
+        if !dir.exists() {
+            if fs::create_dir_all(dir).is_err() {
+                // If we can't create the cache directory, fallback to home directory
+                dir = base_dirs.home_dir();
+            }
+        }
+        if let Some(path) = dir.join(".lookupcache").to_str() {
             return path.to_string();
         }
     };
-    "lookup.cache".to_string()
+    // If we can't get the cache directory, fallback to current directory
+    ".lookupcache".to_string()
 }
 
 #[cfg(test)]

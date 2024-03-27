@@ -33,13 +33,6 @@ jobs:
     - name: Build
       run: cargo build --verbose
 
-    - name: Cache folder
-      run: |
-        pwd
-        ls
-        ls /home/runner/
-        mkdir /home/runner/.cache/
-
     - name: Tests
       run: cargo test cache --verbose -- --show-output
       #run: cargo test --all --verbose
