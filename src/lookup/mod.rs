@@ -1,4 +1,4 @@
-use crate::{LookupResponse, Result};
+use crate::{error::LookupError, LookupResponse};
 use reqwest::{blocking::Response, StatusCode};
 use serde::{Deserialize, Serialize};
 
@@ -9,6 +9,9 @@ pub mod ipinfo;
 pub mod ipwhois;
 pub mod mock;
 pub mod myip;
+
+/// Result type for the lookup crate
+pub type Result<T> = std::result::Result<T, LookupError>;
 
 pub trait Provider {
     fn make_api_request(&self) -> Result<String>;
@@ -40,7 +43,7 @@ impl LookupProvider {
             LookupProvider::MyIp => Box::new(myip::MyIp),
             LookupProvider::IpApi => Box::new(ipapi::IpApi),
             LookupProvider::IpWhoIs => Box::new(ipwhois::IpWhoIs),
-            LookupProvider::Mock(ip) => Box::new(mock::Mock { ip: ip.clone() }),
+            LookupProvider::Mock(ref ip) => Box::new(mock::Mock { ip: ip.to_string() }),
         }
     }
 }
@@ -71,12 +74,13 @@ fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
     match response {
         Ok(response) => match response.status() {
             StatusCode::OK => Ok(response.text()?),
-            StatusCode::TOO_MANY_REQUESTS => {
-                Err(format!("Too many requests: {}", response.status()).into())
-            }
-            s => Err(format!("Status: {}", s).into()),
+            StatusCode::TOO_MANY_REQUESTS => Err(LookupError::TooManyRequests(format!(
+                "Too many requests: {}",
+                response.status()
+            ))),
+            s => Err(LookupError::RequestStatus(format!("Status: {}", s))),
         },
-        Err(e) => Err(format!("Error GET request: {}", e).into()),
+        Err(e) => Err(LookupError::ReqwestError(e)),
     }
 }
 

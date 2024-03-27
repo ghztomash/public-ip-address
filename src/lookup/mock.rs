@@ -1,6 +1,7 @@
+use super::Result;
 use crate::{
     lookup::{LookupProvider, Provider},
-    LookupResponse, Result,
+    LookupResponse,
 };
 use std::{thread, time};
 

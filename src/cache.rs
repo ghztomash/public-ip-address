@@ -1,8 +1,10 @@
-use crate::{error::Result, LookupResponse};
+use crate::{error::CacheError, LookupResponse};
 use base64::prelude::*;
 use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
 use std::{fs, fs::File, io::prelude::*, time::SystemTime};
+
+pub type Result<T> = std::result::Result<T, CacheError>;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseCache {

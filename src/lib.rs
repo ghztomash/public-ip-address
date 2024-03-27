@@ -19,7 +19,7 @@
 //! ```
 
 use cache::ResponseCache;
-use error::Result;
+use error::{Error, Result};
 use lookup::{LookupProvider, LookupService};
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, SystemTime};
@@ -53,6 +53,7 @@ pub struct LookupResponse {
 }
 
 impl LookupResponse {
+    /// Create a new lookup response.
     pub fn new(ip: String, provider: LookupProvider) -> Self {
         LookupResponse {
             ip,
@@ -89,7 +90,7 @@ pub fn perform_lookup() -> Result<LookupResponse> {
 
 /// Performs lookup with a specific service provider.
 pub fn perform_lookup_with(provider: LookupProvider) -> Result<LookupResponse> {
-    LookupService::new(provider).make_request()
+    Ok(LookupService::new(provider).make_request()?)
 }
 
 /// Performs lookup with a specific service provider.
@@ -120,7 +121,7 @@ pub fn perform_cached_lookup_with(
             cache.save()?;
             Ok(cache.response)
         }
-        Err(e) => Err(format!("Error getting lookup response: {}", e).into()),
+        Err(e) => Err(Error::LookupError(e)),
     }
 }
 
