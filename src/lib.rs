@@ -159,14 +159,11 @@ pub fn perform_cached_lookup_with(
     let cached = ResponseCache::load();
     if let Ok(cache) = cached {
         let difference = SystemTime::now().duration_since(cache.response_time)?;
-        println!("Difference: {:?}", difference);
         if difference <= Duration::from_secs(cache_time.unwrap_or(DEFAULT_CACHE_TIME)) {
-            println!("Using cache");
             return Ok(cache.response);
         }
     }
 
-    println!("Making new request");
     let service = LookupService::new(provider);
     // no cache or it's too old, make a new request.
     match service.make_request() {
