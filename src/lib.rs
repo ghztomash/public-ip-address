@@ -141,8 +141,9 @@ impl fmt::Display for LookupResponse {
 pub fn perform_lookup() -> Result<LookupResponse> {
     perform_cached_lookup_with_list(
         vec![
-            LookupProvider::IfConfig,
+            LookupProvider::IpInfo,
             LookupProvider::IpWhoIs,
+            LookupProvider::MyIp,
             LookupProvider::FreeIpApi,
         ],
         None,
