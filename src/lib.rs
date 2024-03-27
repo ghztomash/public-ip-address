@@ -248,7 +248,8 @@ mod tests {
 
     #[test]
     fn test_perform_lookup_cached() {
-        let response = perform_cached_lookup_with(LookupProvider::Mock("1.1.1.1".to_string()), None);
+        let response =
+            perform_cached_lookup_with(LookupProvider::Mock("1.1.1.1".to_string()), None);
         assert!(response.is_ok());
         assert_eq!(response.unwrap().ip, "1.1.1.1", "IP address not matching");
     }
@@ -262,7 +263,10 @@ mod tests {
 
     #[test]
     fn test_perform_lookup_list_cached() {
-        let response = perform_cached_lookup_with_list(vec![LookupProvider::Mock("1.1.1.1".to_string())], None);
+        let response = perform_cached_lookup_with_list(
+            vec![LookupProvider::Mock("1.1.1.1".to_string())],
+            None,
+        );
         assert!(response.is_ok());
         assert_eq!(response.unwrap().ip, "1.1.1.1", "IP address not matching");
     }
