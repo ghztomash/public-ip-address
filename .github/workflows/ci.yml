@@ -25,14 +25,23 @@ jobs:
         rustup component add rustfmt
         cargo fmt --check --verbose
 
+    - name: Clippy
+      run: |
+        rustup component add clippy
+        cargo clippy
+
     - name: Build
       run: cargo build --verbose
+
+    - name: Cache folder
+      run: |
+        pwd
+        ls
+        ls /home/runner/
+        mkdir /home/runner/.cache/
 
     - name: Tests
       run: cargo test cache --verbose -- --show-output
       #run: cargo test --all --verbose
 
-    - name: Clippy
-      run: |
-        rustup component add clippy
-        cargo clippy
+
