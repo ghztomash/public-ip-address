@@ -98,7 +98,6 @@ mod tests {
     "asn": "AS36692",
     "org": "OpenDNS, LLC"
 }
-
 "#;
 
     #[test]
