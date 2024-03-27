@@ -106,16 +106,36 @@ mod tests {
 
     #[test]
     fn test_handle_response() {
-        todo!();
+        let response = reqwest::blocking::get("https://httpbin.org/status/200");
+        let body = handle_response(response);
+        assert!(body.is_ok(), "Response is an error {:#?}", body);
     }
 
     #[test]
     fn test_handle_response_error() {
-        todo!();
+        let response = reqwest::blocking::get("https://httpbin.org/status/500");
+        let body = handle_response(response);
+        assert!(body.is_err(), "Response should be an error {:#?}", body);
+        let body = body.unwrap_err();
+        assert_eq!(
+            body.to_string(),
+            "Request status",
+            "Wrong error {:#?}",
+            body
+        );
     }
 
     #[test]
     fn test_handle_response_too_many() {
-        todo!();
+        let response = reqwest::blocking::get("https://httpbin.org/status/429");
+        let body = handle_response(response);
+        assert!(body.is_err(), "Response should be an error {:#?}", body);
+        let body = body.unwrap_err();
+        assert_eq!(
+            body.to_string(),
+            "Too many API requests",
+            "Wrong error {:#?}",
+            body
+        );
     }
 }
