@@ -28,13 +28,13 @@ jobs:
     - name: Clippy
       run: |
         rustup component add clippy
-        cargo clippy -- -D warning
+        cargo clippy -- -D warnings
 
     - name: Build
       run: cargo build --verbose
 
     - name: Tests
-      run: cargo test cache --verbose -- --show-output
+      run: cargo test --verbose -- --show-output
       #run: cargo test --all --verbose
 
 
