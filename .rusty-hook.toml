@@ -1,6 +1,6 @@
 [hooks]
 pre-commit = "cargo test"
-pre-push = ["cargo check", "cargo fmt -- --check"]
+pre-push = "cargo fmt -- --check"
 post-commit = "echo yay"
 
 [logging]
