@@ -8,6 +8,7 @@ pub mod ifconfig;
 pub mod ipapico;
 pub mod ipapicom;
 pub mod ipapiio;
+pub mod ipbase;
 pub mod ipinfo;
 pub mod ipwhois;
 pub mod mock;
@@ -36,6 +37,7 @@ pub enum LookupProvider {
     IpWhoIs,
     IpApiCo,
     IpApiIo,
+    IpBase,
     Mock(String),
 }
 
@@ -56,6 +58,7 @@ impl LookupProvider {
             LookupProvider::IpApiCo => Box::new(ipapico::IpApiCo),
             LookupProvider::IpApiIo => Box::new(ipapiio::IpApiIo),
             LookupProvider::IpWhoIs => Box::new(ipwhois::IpWhoIs),
+            LookupProvider::IpBase => Box::new(ipbase::IpBase),
             LookupProvider::Mock(ref ip) => Box::new(mock::Mock { ip: ip.to_string() }),
         }
     }
