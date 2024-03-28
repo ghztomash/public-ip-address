@@ -100,7 +100,12 @@ impl App {
     }
 
     fn ui(&self, frame: &mut Frame) {
-        frame.render_widget(self.map_canvas(), frame.size());
+        let horizontal =
+            Layout::horizontal([Constraint::Percentage(80), Constraint::Percentage(20)]);
+        let [map, right] = horizontal.areas(frame.size());
+
+        frame.render_widget(self.map_canvas(), map);
+        frame.render_widget(self.data_block(), right);
     }
 
     fn map_canvas(&self) -> impl Widget + '_ {
@@ -132,16 +137,26 @@ impl App {
                     resolution: MapResolution::High,
                 });
 
+                let text = ratatui::prelude::Line::from(vec![
+                    Span::styled("X", Style::new().red().bold()),
+                    Span::styled(format!(" <- {} ({})", ip, location), Style::new().yellow()),
+                ]);
                 // geolocation
-                ctx.print(x, y, "X".red());
-                ctx.print(
-                    x + 4.0 * self.scale,
-                    y,
-                    format!("<- {} ({})", ip, location).yellow(),
-                );
+                ctx.print(x, y, text);
             })
             .x_bounds([self.x - 180.0 * self.scale, self.x + 180.0 * self.scale])
             .y_bounds([self.y - 90.0 * self.scale, self.y + 90.0 * self.scale])
+    }
+
+    fn data_block(&self) -> impl Widget + '_ {
+        let data = match self.geolocation {
+            Some(ref geo) => geo.to_string(),
+            None => "No data available.".to_string(),
+        };
+        Paragraph::new(data)
+            .block(Block::new().title(" Data ").borders(Borders::ALL))
+            .style(Style::new().white())
+            .wrap(Wrap { trim: true })
     }
 }
 
