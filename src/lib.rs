@@ -130,7 +130,7 @@ impl fmt::Display for LookupResponse {
         if let Some(proxy) = &self.proxy {
             writeln!(f, "Proxy: {}", proxy)?;
         }
-        writeln!(f, "Provider: {}", self.provider)?;
+        write!(f, "Provider: {}", self.provider)?;
 
         Ok(())
     }

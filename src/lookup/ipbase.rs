@@ -114,7 +114,7 @@ impl IpBaseResponse {
         if let Some(timezone) = data.timezone {
             response.time_zone = timezone.id;
         }
-    
+
         response
     }
 }
