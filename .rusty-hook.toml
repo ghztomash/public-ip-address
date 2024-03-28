@@ -1,0 +1,5 @@
+[hooks]
+pre-push = ["cargo check", "cargo clippy", "cargo fmt -- --check"]
+
+[logging]
+verbose = true
