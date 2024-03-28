@@ -1,29 +1,17 @@
-use std::{
-    io::{self, stdout, Stdout},
-    time::{Duration, Instant},
-};
-
 use crossterm::{
     event::{self, Event, KeyCode},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
+use public_ip_address::{lookup::LookupProvider, LookupResponse};
 use ratatui::{
     prelude::*,
     widgets::{canvas::*, *},
 };
-
-use public_ip_address::{lookup::LookupProvider, LookupResponse};
-
-use once_cell::sync::Lazy;
-
-static PROVIDERS: Lazy<Vec<LookupProvider>> = Lazy::new(|| {
-    vec![
-        LookupProvider::IpInfo,
-        LookupProvider::IpWhoIs,
-        LookupProvider::IpApiCo,
-    ]
-});
+use std::{
+    io::{self, stdout, Stdout},
+    time::{Duration, Instant},
+};
 
 fn main() -> io::Result<()> {
     App::run()
@@ -87,8 +75,15 @@ impl App {
     }
 
     fn lookup(&mut self) {
-        self.geolocation =
-            public_ip_address::perform_cached_lookup_with_list(PROVIDERS.to_vec(), None).ok();
+        self.geolocation = public_ip_address::perform_cached_lookup_with_list(
+            vec![
+                LookupProvider::IpInfo,
+                LookupProvider::IpWhoIs,
+                LookupProvider::IpApiCo,
+            ],
+            None,
+        )
+        .ok();
         if let Some(ref geo) = self.geolocation {
             self.x = geo.longitude.unwrap_or(0.0).round();
             self.y = geo.latitude.unwrap_or(0.0).round();
