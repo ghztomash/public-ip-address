@@ -1,8 +1,10 @@
-use crate::{error::LookupError, LookupResponse};
+use crate::LookupResponse;
+use error::{LookupError, Result};
 use reqwest::{blocking::Response, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+pub mod error;
 pub mod freeipapi;
 pub mod ifconfig;
 pub mod ipapico;
@@ -13,9 +15,6 @@ pub mod ipinfo;
 pub mod ipwhois;
 pub mod mock;
 pub mod myip;
-
-/// Result type for the lookup crate
-pub type Result<T> = std::result::Result<T, LookupError>;
 
 pub trait Provider {
     fn make_api_request(&self) -> Result<String>;
