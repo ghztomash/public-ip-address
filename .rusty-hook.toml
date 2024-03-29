@@ -1,4 +1,5 @@
 [hooks]
+pre-commit = "typos"
 pre-push = "cargo clippy && cargo fmt -- --check"
 
 [logging]
