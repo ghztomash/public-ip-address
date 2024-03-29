@@ -1,4 +1,4 @@
-//! ip-api.com lookup provider
+//! <https://ip-api.com> lookup provider
 
 use super::Result;
 use crate::{

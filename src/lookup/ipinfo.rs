@@ -1,4 +1,4 @@
-//! ipinfo.io lookup provider
+//! <https://ipinfo.io> lookup provider
 
 use super::Result;
 use crate::{

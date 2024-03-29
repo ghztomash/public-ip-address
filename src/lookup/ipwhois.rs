@@ -1,4 +1,4 @@
-//! ipwhois.io lookup provider
+//! <https://ipwhois.io> lookup provider
 
 use super::Result;
 use crate::{

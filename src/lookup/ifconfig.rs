@@ -1,4 +1,4 @@
-//! ifconfig.co lookup provider
+//! <https://ifconfig.co> lookup provider
 
 use super::Result;
 use crate::{

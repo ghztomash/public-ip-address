@@ -44,23 +44,23 @@ pub trait Provider {
 /// Available lookup service providers
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum LookupProvider {
-    /// FreeIpApi provider (https://freeipapi.com)
+    /// FreeIpApi provider (<https://freeipapi.com>)
     FreeIpApi,
-    /// IfConfig provider (https://ifconfig.co)
+    /// IfConfig provider (<https://ifconfig.co>)
     IfConfig,
-    /// IpInfo provider (https://ipinfo.io)
+    /// IpInfo provider (<https://ipinfo.io>)
     IpInfo,
-    /// MyIp provider (https://myip.com)
+    /// MyIp provider (<https://my-ip.io>)
     MyIp,
-    /// IpApiCom provider (https://ipapi.com)
+    /// IpApiCom provider (<https://ip-api.com>)
     IpApiCom,
-    /// IpWhoIs provider (https://ipwhois.io)
+    /// IpWhoIs provider (<https://ipwhois.io>)
     IpWhoIs,
-    /// IpApiCo provider (https://ipapi.co)
+    /// IpApiCo provider (<https://ipapi.co>)
     IpApiCo,
-    /// IpApiIo provider (https://ipapi.io)
+    /// IpApiIo provider (<https://ip-api.io>)
     IpApiIo,
-    /// IpBase provider (https://ipbase.com)
+    /// IpBase provider (<https://ipbase.com>)
     IpBase,
     /// Mock provider for testing
     Mock(String),

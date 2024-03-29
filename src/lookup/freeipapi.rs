@@ -1,4 +1,4 @@
-//! freeipapi.com lookup provider
+//! <https://freeipapi.com> lookup provider
 
 use super::Result;
 use crate::{

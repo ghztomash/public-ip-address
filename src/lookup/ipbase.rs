@@ -1,4 +1,4 @@
-//! ipbase.com lookup provider
+//! <https://ipbase.com> lookup provider
 
 use super::Result;
 use crate::{

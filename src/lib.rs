@@ -157,7 +157,7 @@ pub fn perform_lookup_with(providers: Vec<LookupProvider>) -> Result<LookupRespo
 ///     // List of providers to use for the lookup
 ///     // LookupProvider::IpWhoIs,
 /// ];
-/// let expire_time = Some(60); // Cache expires after 60 seconds/
+/// let expire_time = Some(60); // Cache expires after 60 seconds
 ///
 /// match public_ip_address::perform_cached_lookup_with(providers, expire_time) {
 ///     Ok(response) => {
