@@ -1,5 +1,7 @@
 # 🔎 Public IP Address Lookup and Geolocation Information
 
+![Demo](./assets/map_example.png)
+
 `public-ip-address` is a simple Rust library for performing public IP lookups from various services.
 
 It provides a unified interface to fetch public IP address and geolocation information from multiple providers.
