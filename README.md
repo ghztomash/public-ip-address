@@ -1,6 +1,13 @@
-![cargo build](https://github.com/ghztomash/public-ip-address/actions/workflows/ci.yml/badge.svg)
-
 # 🔎 Public IP Address Lookup and Geolocation Information
+
+<div align="center">
+  
+  [![Crates.io](https://img.shields.io/crates/v/public-ip-address.svg)](https://crates.io/crates/public-ip-address)
+  [![Documentation](https://docs.rs/public-ip-address/badge.svg)](https://docs.rs/public-ip-address)
+  ![cargo build](https://github.com/ghztomash/public-ip-address/actions/workflows/ci.yml/badge.svg)
+  ![Crates.io License](https://img.shields.io/crates/l/public-ip-address)
+
+</div>
 
 ![Demo](./assets/map_example.png)
 
@@ -8,7 +15,7 @@
 
 It provides a unified interface to fetch public IP address and geolocation information from multiple providers.
 
-The library also includes caching functionality to improve performance for repeated lookups and minimaze rate-limiting.
+The library also includes caching functionality to improve performance for repeated lookups and minimize rate-limiting.
 
 ## Usage
 
