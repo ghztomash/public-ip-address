@@ -1,6 +1,11 @@
 # Changelog
 
-## [0.1.0]
-### Changed
-Initial release
-### Added
+All notable changes to this project will be documented in this file.
+
+## [unreleased]
+
+### 📚 Documentation
+
+- Add git cliff
+
+
