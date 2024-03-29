@@ -1,6 +1,7 @@
 //! # Lookup service provider module
 //!
-//! A simple library for performing public IP lookups from various services.
+//! The `lookup` module provides functionality for performing public IP lookups from various services.
+//! It includes a `LookupService` struct for making requests to a lookup provider, and a `LookupProvider` enum for specifying the provider.
 //!
 //! ## Example
 //! ```rust
@@ -126,32 +127,36 @@ pub struct LookupService {
 }
 
 impl LookupService {
-    /// Create a new LookupService
+    /// Creates a new `LookupService` instance.
     pub fn new(provider: LookupProvider) -> Self {
         LookupService {
             provider: provider.build(),
         }
     }
 
-    /// Change the provider for the LookupService
+    /// Changes the provider for the LookupService
     pub fn set_provider(&mut self, provider: LookupProvider) -> &Self {
         self.provider = provider.build();
         self
     }
 
-    /// Returns the current type of provider
+    /// Returns the type of the current lookup provider.
+    ///
+    /// This function returns the `LookupProvider` enum variant that represents the type of the current lookup provider.
     pub fn get_provider_type(&self) -> LookupProvider {
         self.provider.get_type()
     }
 
-    /// Make a request to the lookup provider
+    /// Makes a request to the lookup provider
+    /// 
+    /// This function makes an API request to the current lookup provider and parses the response into a `LookupResponse` instance.
     pub fn make_request(&self) -> Result<LookupResponse> {
         let response = self.provider.make_api_request()?;
         self.provider.parse_reply(response)
     }
 }
 
-/// Handle the response from reqwest
+/// Handles the response from reqwest
 fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
     match response {
         Ok(response) => match response.status() {
