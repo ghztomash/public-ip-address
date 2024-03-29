@@ -1,4 +1,4 @@
-name: CI 
+name: Continuous Integration
 
 on:
   push:
@@ -29,3 +29,12 @@ jobs:
 
     - name: Docs
       run: cargo doc --verbose
+
+  typos:
+    name: Typos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check typos
+        uses: crate-ci/typos@master
