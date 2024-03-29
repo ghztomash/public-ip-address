@@ -26,3 +26,6 @@ jobs:
 
     - name: Tests
       run: cargo test --verbose -- --show-output
+
+    - name: Docs
+      run: cargo doc --verbose
