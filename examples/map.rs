@@ -3,7 +3,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
-use public_ip_address::{lookup::LookupProvider, LookupResponse};
+use public_ip_address::{lookup::LookupProvider, response::LookupResponse};
 use ratatui::{
     prelude::*,
     widgets::{canvas::*, *},
@@ -75,13 +75,13 @@ impl App {
     }
 
     fn lookup(&mut self) {
-        self.geolocation = public_ip_address::perform_cached_lookup_with_list(
+        self.geolocation = public_ip_address::perform_cached_lookup_with(
             vec![
                 LookupProvider::IpInfo,
                 LookupProvider::IpWhoIs,
                 LookupProvider::IpApiCo,
             ],
-            None,
+            Some(2),
         )
         .ok();
         if let Some(ref geo) = self.geolocation {

@@ -3,7 +3,7 @@ use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let result =
-        public_ip_address::perform_cached_lookup_with_list(vec![LookupProvider::MyIp], None)?;
+        public_ip_address::perform_cached_lookup_with(vec![LookupProvider::MyIp], Some(2))?;
     println!(
         "Hello {} from {}, {}.",
         result.ip,
