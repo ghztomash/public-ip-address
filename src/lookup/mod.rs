@@ -148,7 +148,7 @@ impl LookupService {
     }
 
     /// Makes a request to the lookup provider
-    /// 
+    ///
     /// This function makes an API request to the current lookup provider and parses the response into a `LookupResponse` instance.
     pub fn make_request(&self) -> Result<LookupResponse> {
         let response = self.provider.make_api_request()?;

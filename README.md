@@ -1,6 +1,10 @@
-# Public IP address
+# 🔎 Public IP Address Lookup and Geolocation Information
 
-This package provides a library for performing public IP and geolocation lookups from various services.
+`public-ip-address` is a simple Rust library for performing public IP lookups from various services.
+
+It provides a unified interface to fetch public IP address and geolocation information from multiple providers.
+
+The library also includes caching functionality to improve performance for repeated lookups and minimaze rate-limiting.
 
 ## Usage
 
@@ -22,6 +26,25 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 ```
 
+More examplse can be found in the `examples` directory. And run them with the following command:
+```bash
+cargo run --example <example_name>
+```
+
+## Providers
+
+| Provider | URL |
+| --- | --- |
+| FreeIpApi | [https://freeipapi.com](https://freeipapi.com) |
+| IfConfig | [https://ifconfig.co](https://ifconfig.co) |
+| IpInfo | [https://ipinfo.io](https://ipinfo.io) |
+| MyIp | [https://my-ip.io](https://my-ip.io) |
+| IpApiCom | [https://ip-api.com](https://ip-api.com) |
+| IpWhoIs | [https://ipwhois.io](https://ipwhois.io) |
+| IpApiCo | [https://ipapi.co](https://ipapi.co) |
+| IpApiIo | [https://ip-api.io](https://ip-api.io) |
+| IpBase | [https://ipbase.com](https://ipbase.com) |
+
 ## License
 
 Licensed under either of
@@ -35,6 +58,8 @@ at your option.
 
 ## Contribution
 
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
-dual licensed as above, without any additional terms or conditions.
+Contributions are welcome! Please submit a pull request.
+
+## Support
+
+If you encounter any problems or have any questions, please open an issue in the GitHub repository.
