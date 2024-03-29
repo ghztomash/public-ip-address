@@ -1,7 +1,9 @@
+//! # Crate errors
+
 use crate::lookup::error::LookupError;
 use thiserror::Error;
 
-/// Result type for the crate
+/// Result type wrapper for the crate
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// Error type for the crate
@@ -15,7 +17,7 @@ pub enum Error {
     TimeError(#[from] std::time::SystemTimeError),
 }
 
-/// Error type for the cache
+/// Error type for the cache module
 #[derive(Error, Debug)]
 pub enum CacheError {
     #[error("Serde error")]

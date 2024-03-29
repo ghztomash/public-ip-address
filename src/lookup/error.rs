@@ -1,3 +1,4 @@
+//! Lookup error types
 use thiserror::Error;
 
 /// Result type for the lookup crate

@@ -1,9 +1,10 @@
+//! Service agnostic lookup response.
+
 use crate::lookup::LookupProvider;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-/// Lookup response containing the public IP address.
-/// As well as additional lookup information like country, city, hostname etc.
+/// Lookup response containing information like IP, country, city, hostname etc.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LookupResponse {
     /// Public IP address.

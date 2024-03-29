@@ -1,3 +1,5 @@
+//! ip-api.com lookup provider
+
 use super::Result;
 use crate::{
     lookup::{LookupProvider, Provider},

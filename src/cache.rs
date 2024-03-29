@@ -25,6 +25,7 @@ use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
 use std::{fs, fs::File, io::prelude::*, time::SystemTime};
 
+/// Result type wrapper for the cache
 pub type Result<T> = std::result::Result<T, CacheError>;
 
 /// Holds the response and the time it was saved
@@ -69,7 +70,7 @@ impl ResponseCache {
     }
 }
 
-/// Get the cache file path
+/// Returns the cache file path
 pub fn get_cache_path() -> String {
     if let Some(base_dirs) = BaseDirs::new() {
         let mut dir = base_dirs.cache_dir();
