@@ -1,4 +1,4 @@
-![cargo build](https://github.com/ghztomash/public-ip-address/actions/workflows/ci.yml/badge.svg
+![cargo build](https://github.com/ghztomash/public-ip-address/actions/workflows/ci.yml/badge.svg)
 
 # 🔎 Public IP Address Lookup and Geolocation Information
 
