@@ -7,6 +7,7 @@
 //! ```rust
 //! use std::error::Error;
 //! use public_ip_address::{cache::ResponseCache, response::LookupResponse};
+//! use public_ip_address::lookup::LookupProvider;
 //!
 //! fn main() -> Result<(), Box<dyn Error>> {
 //!     ResponseCache::new(LookupResponse::new(

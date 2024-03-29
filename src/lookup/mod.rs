@@ -41,17 +41,26 @@ pub trait Provider {
     fn get_type(&self) -> LookupProvider;
 }
 
-/// Different lookup service providers
+/// Available lookup service providers
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum LookupProvider {
+    /// FreeIpApi provider (https://freeipapi.com)
     FreeIpApi,
+    /// IfConfig provider (https://ifconfig.co)
     IfConfig,
+    /// IpInfo provider (https://ipinfo.io)
     IpInfo,
+    /// MyIp provider (https://myip.com)
     MyIp,
+    /// IpApiCom provider (https://ipapi.com)
     IpApiCom,
+    /// IpWhoIs provider (https://ipwhois.io)
     IpWhoIs,
+    /// IpApiCo provider (https://ipapi.co)
     IpApiCo,
+    /// IpApiIo provider (https://ipapi.io)
     IpApiIo,
+    /// IpBase provider (https://ipbase.com)
     IpBase,
     /// Mock provider for testing
     Mock(String),

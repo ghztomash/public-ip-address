@@ -1,6 +1,8 @@
-//! # Public IP address
+//! # 🔎 Public IP Address Lookup and Geolocation Information
 //!
-//! A simple library for performing public IP lookups from various services.
+//! `public-ip-address` is a simple, easy-to-use Rust library for performing public IP lookups from various services.
+//! It provides a unified interface to fetch public IP address and geolocation information from multiple providers.
+//! The library also includes caching functionality to improve performance for repeated lookups and minimaze rate-limiting.
 //!
 //! ## Usage
 //! ```toml
@@ -17,6 +19,13 @@
 //!     Ok(())
 //! }
 //! ```
+//!
+//! ## Features
+//! - Unified interface for multiple IP lookup providers
+//! - Caching of lookup results to improve performance
+//! - Customizable cache expiration time
+//!
+//! For more details, please refer to the API documentation.
 
 use cache::ResponseCache;
 use error::{Error, Result};
@@ -29,8 +38,28 @@ pub mod error;
 pub mod lookup;
 pub mod response;
 
-/// Perform a simple lookup.
-/// This calls `perform_cached_lookup_with_list()` with default values.
+/// Performs a lookup using a predefined list of `LookupProvider`s and caches the result.
+///
+/// This function performs a lookup using a predefined list of `LookupProvider`s. The list includes
+/// `IpInfo`, `IpWhoIs`, `MyIp`, and `FreeIpApi`. The result of the lookup is cached locally for 2 seconds.
+/// If a subsequent request is made within 2 seconds, the cached result is returned.
+///
+/// # Example
+///
+/// ```
+/// match public_ip_address::perform_lookup() {
+///     Ok(response) => {
+///         // Handle successful response
+///     }
+///     Err(e) => {
+///         // Handle error
+///     }
+/// }
+/// ```
+///
+/// # Returns
+///
+/// * A `Result` containing either a successful `LookupResponse` or an `Error` if the lookup or caching failed.
 pub fn perform_lookup() -> Result<LookupResponse> {
     perform_cached_lookup_with(
         vec![
@@ -43,10 +72,42 @@ pub fn perform_lookup() -> Result<LookupResponse> {
     )
 }
 
-/// Performs lookup with a list of specific service providers.
+/// Performs a lookup using a list of providers until a successful response is received.
 ///
-/// Providers are called in the order they are given.
-/// The first provider that returns a successful response is returned.
+/// This function iterates over the provided list of `LookupProvider`s, making a request with each one
+/// until a successful `LookupResponse` is received. If a provider fails to return a successful response,
+/// the error is stored and the next provider is tried.
+///
+/// If all providers fail to return a successful response, a `LookupError` is returned containing a list
+/// of all the errors received.
+///
+/// # Arguments
+///
+/// * `providers` - A vector of `LookupProvider`s to use for the lookup.
+///
+/// # Example
+///
+/// ```rust
+/// use public_ip_address::lookup::LookupProvider;
+///
+/// let providers = vec![
+///     // List of providers to use for the lookup
+///     // LookupProvider::IpWhoIs,
+/// ];
+///
+/// match public_ip_address::perform_lookup_with(providers) {
+///     Ok(response) => {
+///         // Handle successful response
+///     }
+///     Err(e) => {
+///         // Handle error
+///     }
+/// }
+/// ```
+///
+/// # Returns
+///
+/// * A `Result` containing either a successful `LookupResponse` or a `LookupError` containing a list of all errors received.
 pub fn perform_lookup_with(providers: Vec<LookupProvider>) -> Result<LookupResponse> {
     let mut errors = Vec::new();
     if providers.is_empty() {
@@ -70,12 +131,47 @@ pub fn perform_lookup_with(providers: Vec<LookupProvider>) -> Result<LookupRespo
     ))))
 }
 
-/// Performs lookup with a list of specific service providers.
+/// Performs a lookup with a list of specific service providers and caches the result.
 ///
-/// The result is cached locally and if subsequent requests are made, the cached result is returned
-/// as long as the previous request was made within `cache_expire_time` seconds.
-/// If `cache_time` is `None` then the cache never expires.
-/// If `cache_expire_time` is `0` then the cache is forced to expire.
+/// This function performs a lookup using the provided list of `LookupProvider`s. The result of the lookup
+/// is cached locally.
+/// If subsequent requests are made, the cached result is returned as long as the previous
+/// request was made within `cache_expire_time` seconds.
+///
+/// If `cache_expire_time` is `None`, then the cache never expires.
+///
+/// If `cache_expire_time` is `0`, then the cache is forced to expire immediately after the request.
+///
+/// # Arguments
+///
+/// * `providers` - A vector of `LookupProvider`s to use for the lookup.
+/// * `cache_expire_time` - An `Option` containing the number of seconds before the cache expires. If `None`,
+///   the cache never expires. If `0`, the cache expires immediately after the request.
+///
+/// # Example
+///
+/// ```rust
+/// use public_ip_address::lookup::LookupProvider;
+///
+/// let providers = vec![
+///     // List of providers to use for the lookup
+///     // LookupProvider::IpWhoIs,
+/// ];
+/// let expire_time = Some(60); // Cache expires after 60 seconds/
+///
+/// match public_ip_address::perform_cached_lookup_with(providers, expire_time) {
+///     Ok(response) => {
+///         // Handle successful response
+///     }
+///     Err(e) => {
+///         // Handle error
+///     }
+/// }
+/// ```
+///
+/// # Returns
+///
+/// * A `Result` containing either a successful `LookupResponse` or an `Error` if the lookup or caching failed.
 pub fn perform_cached_lookup_with(
     providers: Vec<LookupProvider>,
     cache_expire_time: Option<u64>,
