@@ -1,3 +1,4 @@
+use crate::lookup::error::LookupError;
 use thiserror::Error;
 
 /// Result type for the crate
@@ -10,23 +11,8 @@ pub enum Error {
     CacheError(#[from] CacheError),
     #[error("Lookup error")]
     LookupError(#[from] LookupError),
-    #[error("Lookup error")]
-    LookupErrorString(String),
     #[error("Time error")]
     TimeError(#[from] std::time::SystemTimeError),
-}
-
-/// Error type for the lookup process
-#[derive(Error, Debug)]
-pub enum LookupError {
-    #[error("Reqwuest error")]
-    ReqwestError(#[from] reqwest::Error),
-    #[error("Too many API requests")]
-    TooManyRequests(String),
-    #[error("Request status")]
-    RequestStatus(String),
-    #[error("Serde error")]
-    SerdeError(#[from] serde_json::Error),
 }
 
 /// Error type for the cache
