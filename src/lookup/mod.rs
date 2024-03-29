@@ -1,8 +1,26 @@
+//! # Lookup service provider module
+//!
+//! A simple library for performing public IP lookups from various services.
+//!
+//! ## Example
+//! ```rust
+//! use public_ip_address::lookup::{LookupProvider, LookupService};
+//! use std::{error::Error, str::FromStr};
+//!
+//! fn main() -> Result<(), Box<dyn Error>> {
+//!     let provider = LookupProvider::from_str("ipinfo")?;
+//!     let service = LookupService::new(provider);
+//!     let result = service.make_request()?;
+//!     println!("{}", result);
+//!     Ok(())
+//! }
+//! ```
+
 use crate::LookupResponse;
 use error::{LookupError, Result};
 use reqwest::{blocking::Response, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 pub mod error;
 pub mod freeipapi;
@@ -16,16 +34,14 @@ pub mod ipwhois;
 pub mod mock;
 pub mod myip;
 
+/// Provider trait to define the methods that a provider must implement
 pub trait Provider {
     fn make_api_request(&self) -> Result<String>;
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
     fn get_type(&self) -> LookupProvider;
 }
 
-pub struct LookupService {
-    provider: Box<dyn Provider>,
-}
-
+/// Different lookup service providers
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum LookupProvider {
     FreeIpApi,
@@ -37,6 +53,7 @@ pub enum LookupProvider {
     IpApiCo,
     IpApiIo,
     IpBase,
+    /// Mock provider for testing
     Mock(String),
 }
 
@@ -46,7 +63,31 @@ impl fmt::Display for LookupProvider {
     }
 }
 
+impl FromStr for LookupProvider {
+    type Err = LookupError;
+    /// Parse a `&str` into a LookupProvider
+    fn from_str(s: &str) -> Result<Self> {
+        let s = s.trim().to_lowercase();
+        match s.as_str() {
+            "freeipapi" => Ok(LookupProvider::FreeIpApi),
+            "ifconfig" => Ok(LookupProvider::IfConfig),
+            "ipinfo" => Ok(LookupProvider::IpInfo),
+            "myip" => Ok(LookupProvider::MyIp),
+            "ipapicom" => Ok(LookupProvider::IpApiCom),
+            "ipwhois" => Ok(LookupProvider::IpWhoIs),
+            "ipapico" => Ok(LookupProvider::IpApiCo),
+            "ipapiio" => Ok(LookupProvider::IpApiIo),
+            "ipbase" => Ok(LookupProvider::IpBase),
+            _ => Err(LookupError::GenericError(format!(
+                "Provider not found: {}",
+                s
+            ))),
+        }
+    }
+}
+
 impl LookupProvider {
+    /// Builds the concrete lookup service out of a LookupProvider enum
     fn build(&self) -> Box<dyn Provider> {
         match self {
             LookupProvider::FreeIpApi => Box::new(freeipapi::FreeIpApi),
@@ -63,28 +104,45 @@ impl LookupProvider {
     }
 }
 
+/// LookupService instance to handle the lookup process
+///
+/// # Example
+/// ```
+/// use public_ip_address::lookup::{LookupProvider, LookupService};
+///
+/// let service = LookupService::new(LookupProvider::IpApiCom);
+/// ```
+pub struct LookupService {
+    provider: Box<dyn Provider>,
+}
+
 impl LookupService {
+    /// Create a new LookupService
     pub fn new(provider: LookupProvider) -> Self {
         LookupService {
             provider: provider.build(),
         }
     }
 
+    /// Change the provider for the LookupService
     pub fn set_provider(&mut self, provider: LookupProvider) -> &Self {
         self.provider = provider.build();
         self
     }
 
+    /// Returns the current type of provider
     pub fn get_provider_type(&self) -> LookupProvider {
         self.provider.get_type()
     }
 
+    /// Make a request to the lookup provider
     pub fn make_request(&self) -> Result<LookupResponse> {
         let response = self.provider.make_api_request()?;
         self.provider.parse_reply(response)
     }
 }
 
+/// Handle the response from reqwest
 fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
     match response {
         Ok(response) => match response.status() {
@@ -152,5 +210,14 @@ mod tests {
             "Wrong error {:#?}",
             body
         );
+    }
+
+    #[test]
+    fn test_conversions() {
+        let provider = LookupProvider::from_str("freeipapi").unwrap();
+        assert_eq!(provider, LookupProvider::FreeIpApi, "Conversion failed");
+
+        let provider = LookupProvider::from_str("unknown");
+        assert!(provider.is_err(), "Conversion should fail");
     }
 }
