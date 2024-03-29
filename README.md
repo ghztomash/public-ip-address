@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 ```
 
-More examplse can be found in the `examples` directory. And run them with the following command:
+More examples can be found in the `examples` directory. And run them with the following command:
 ```bash
 cargo run --example <example_name>
 ```
