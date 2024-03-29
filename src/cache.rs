@@ -1,3 +1,24 @@
+//! # ResponseCache module
+//!
+//! Holds a single lookup response and the time it was created.
+//! Can be saved and loaded from disk.
+//!
+//! ## Example
+//! ```rust
+//! use std::error::Error;
+//! use public_ip_address::{cache::ResponseCache, response::LookupResponse};
+//!
+//! fn main() -> Result<(), Box<dyn Error>> {
+//!     ResponseCache::new(LookupResponse::new(
+//!         "1.1.1.1".to_string(),
+//!         LookupProvider::IpBase,
+//!     )).save()?;
+//!     let cached = ResponseCache::load()?;
+//!     println!("{:?}", cached);
+//!     Ok(())
+//! }
+//! ```
+
 use crate::{error::CacheError, LookupResponse};
 use base64::prelude::*;
 use directories::BaseDirs;
@@ -6,6 +27,7 @@ use std::{fs, fs::File, io::prelude::*, time::SystemTime};
 
 pub type Result<T> = std::result::Result<T, CacheError>;
 
+/// Holds the response and the time it was saved
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseCache {
     pub response: LookupResponse,
@@ -13,6 +35,7 @@ pub struct ResponseCache {
 }
 
 impl ResponseCache {
+    /// Create a new ResponseCache
     pub fn new(response: LookupResponse) -> ResponseCache {
         ResponseCache {
             response,
@@ -20,6 +43,7 @@ impl ResponseCache {
         }
     }
 
+    /// Save the cache to disk
     pub fn save(&self) -> Result<()> {
         let serialized = serde_json::to_string(self)?;
         let encoded = BASE64_STANDARD.encode(serialized);
@@ -28,6 +52,7 @@ impl ResponseCache {
         Ok(())
     }
 
+    /// Load the cache from disk
     pub fn load() -> Result<ResponseCache> {
         let mut file = File::open(get_cache_path())?;
         let mut contents = String::new();
@@ -37,13 +62,15 @@ impl ResponseCache {
         Ok(deserialized)
     }
 
-    pub fn delete() -> Result<()> {
+    /// Delete the cache from disk
+    pub fn delete(self) -> Result<()> {
         fs::remove_file(get_cache_path())?;
         Ok(())
     }
 }
 
-fn get_cache_path() -> String {
+/// Get the cache file path
+pub fn get_cache_path() -> String {
     if let Some(base_dirs) = BaseDirs::new() {
         let mut dir = base_dirs.cache_dir();
         // Create cache directory if it doesn't exist
@@ -74,5 +101,6 @@ mod tests {
         cache.save().unwrap();
         let cached = ResponseCache::load().unwrap();
         assert_eq!(cached.response.ip, "1.1.1.1", "IP address not matching");
+        cache.delete().unwrap();
     }
 }
