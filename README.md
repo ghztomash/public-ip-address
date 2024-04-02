@@ -44,17 +44,25 @@ cargo run --example <example_name>
 
 ## Providers
 
-| Provider | URL |
-| --- | --- |
-| FreeIpApi | [https://freeipapi.com](https://freeipapi.com) |
-| IfConfig | [https://ifconfig.co](https://ifconfig.co) |
-| IpInfo | [https://ipinfo.io](https://ipinfo.io) |
-| MyIp | [https://my-ip.io](https://my-ip.io) |
-| IpApiCom | [https://ip-api.com](https://ip-api.com) |
-| IpWhoIs | [https://ipwhois.io](https://ipwhois.io) |
-| IpApiCo | [https://ipapi.co](https://ipapi.co) |
-| IpApiIo | [https://ip-api.io](https://ip-api.io) |
-| IpBase | [https://ipbase.com](https://ipbase.com) |
+| Provider | URL | Rate Limit |
+| --- | --- | --- |
+| FreeIpApi | [https://freeipapi.com](https://freeipapi.com) | 60 / minute |
+| IfConfig | [https://ifconfig.co](https://ifconfig.co) | 1 / minute |
+| IpInfo | [https://ipinfo.io](https://ipinfo.io) | 50000 / month |
+| MyIp | [https://my-ip.io](https://my-ip.io) | ? / day |
+| IpApiCom | [https://ip-api.com](https://ip-api.com) | 45 / minute |
+| IpWhoIs | [https://ipwhois.io](https://ipwhois.io) | 10000 / month |
+| IpApiCo | [https://ipapi.co](https://ipapi.co) | 30000 / month |
+| IpApiIo | [https://ip-api.io](https://ip-api.io) | ? / day |
+| IpBase | [https://ipbase.com](https://ipbase.com) | ? / day |
+
+## Roadmap
+
+- [x] Initial release
+- [x] Add more providers
+- [ ] Add support for additional providers with API key
+- [ ] Add reverse lookup feature
+- [ ] Add asynchronous support
 
 ## License
 
