@@ -35,6 +35,7 @@ pub mod ipleak;
 pub mod iplocateio;
 pub mod ipwhois;
 pub mod mock;
+pub mod mullvad;
 pub mod myip;
 
 /// Provider trait to define the methods that a provider must implement
@@ -69,6 +70,8 @@ pub enum LookupProvider {
     IpLocateIo,
     /// IpLeak provider (<https://ipleak.net>)
     IpLeak,
+    /// Mullvad provider (<https://mullvad.net>)
+    Mullvad,
     /// Mock provider for testing
     Mock(String),
 }
@@ -96,6 +99,7 @@ impl FromStr for LookupProvider {
             "ipbase" => Ok(LookupProvider::IpBase),
             "iplocateio" => Ok(LookupProvider::IpLocateIo),
             "ipleak" => Ok(LookupProvider::IpLeak),
+            "mullvad" => Ok(LookupProvider::Mullvad),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
                 s
@@ -119,6 +123,7 @@ impl LookupProvider {
             LookupProvider::IpBase => Box::new(ipbase::IpBase),
             LookupProvider::IpLocateIo => Box::new(iplocateio::IpLocateIo),
             LookupProvider::IpLeak => Box::new(ipleak::IpLeak),
+            LookupProvider::Mullvad => Box::new(mullvad::Mullvad),
             LookupProvider::Mock(ref ip) => Box::new(mock::Mock { ip: ip.to_string() }),
         }
     }

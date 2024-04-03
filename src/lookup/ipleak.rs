@@ -58,9 +58,7 @@ pub struct IpLeak;
 impl Provider for IpLeak {
     fn make_api_request(&self) -> Result<String> {
         let client = reqwest::blocking::Client::new();
-        let response = client
-            .get("https://ipleak.net/json/")
-            .send();
+        let response = client.get("https://ipleak.net/json/").send();
         super::handle_response(response)
     }
 
