@@ -31,6 +31,7 @@ pub mod ipapicom;
 pub mod ipapiio;
 pub mod ipbase;
 pub mod ipinfo;
+pub mod iplocateio;
 pub mod ipwhois;
 pub mod mock;
 pub mod myip;
@@ -63,6 +64,8 @@ pub enum LookupProvider {
     IpApiIo,
     /// IpBase provider (<https://ipbase.com>)
     IpBase,
+    /// IpLocateIo provider (<https://iplocate.io>)
+    IpLocateIo,
     /// Mock provider for testing
     Mock(String),
 }
@@ -88,6 +91,7 @@ impl FromStr for LookupProvider {
             "ipapico" => Ok(LookupProvider::IpApiCo),
             "ipapiio" => Ok(LookupProvider::IpApiIo),
             "ipbase" => Ok(LookupProvider::IpBase),
+            "iplocateio" => Ok(LookupProvider::IpLocateIo),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
                 s
@@ -109,6 +113,7 @@ impl LookupProvider {
             LookupProvider::IpApiIo => Box::new(ipapiio::IpApiIo),
             LookupProvider::IpWhoIs => Box::new(ipwhois::IpWhoIs),
             LookupProvider::IpBase => Box::new(ipbase::IpBase),
+            LookupProvider::IpLocateIo => Box::new(iplocateio::IpLocateIo),
             LookupProvider::Mock(ref ip) => Box::new(mock::Mock { ip: ip.to_string() }),
         }
     }
