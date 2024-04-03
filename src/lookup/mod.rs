@@ -31,6 +31,7 @@ pub mod ipapico;
 pub mod ipapicom;
 pub mod ipapiio;
 pub mod ipbase;
+pub mod ipgeolocation;
 pub mod ipinfo;
 pub mod ipleak;
 pub mod iplocateio;
@@ -75,6 +76,8 @@ pub enum LookupProvider {
     Mullvad,
     /// Abstract provider with API key (<https://abstractapi.com>)
     AbstractApi(Option<String>),
+    /// IpGeolocation provider with API key (<https://ipgeolocation.io>)
+    IpGeolocation(Option<String>),
     /// Mock provider for testing
     Mock(String),
 }
@@ -104,6 +107,7 @@ impl FromStr for LookupProvider {
             "ipleak" => Ok(LookupProvider::IpLeak),
             "mullvad" => Ok(LookupProvider::Mullvad),
             "abstract" => Ok(LookupProvider::AbstractApi(None)),
+            "ipgeolocation" => Ok(LookupProvider::IpGeolocation(None)),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
                 s
@@ -130,6 +134,9 @@ impl LookupProvider {
             LookupProvider::Mullvad => Box::new(mullvad::Mullvad),
             LookupProvider::AbstractApi(key) => {
                 Box::new(abstractapi::AbstractApi::new(key.clone()))
+            }
+            LookupProvider::IpGeolocation(key) => {
+                Box::new(ipgeolocation::IpGeolocation::new(key.clone()))
             }
             LookupProvider::Mock(ref ip) => Box::new(mock::Mock { ip: ip.to_string() }),
         }

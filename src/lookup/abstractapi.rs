@@ -165,7 +165,7 @@ mod tests {
     fn test_request() {
         use std::env;
         let key = env::var("ABSTRACT_APIKEY").ok();
-        assert!(key.is_some(), "Missing ABSTRACT_APIKEY");
+        assert!(key.is_some(), "Missing APIKEY");
 
         let service = Box::new(AbstractApi::new(key));
         let result = service.make_api_request();
