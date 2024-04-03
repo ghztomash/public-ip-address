@@ -24,6 +24,7 @@ struct App {
     tick_count: u64,
     geolocation: Option<LookupResponse>,
     marker: Marker,
+    markers: Vec<Marker>,
 }
 
 impl App {
@@ -35,6 +36,13 @@ impl App {
             tick_count: 0,
             geolocation: None,
             marker: Marker::Braille,
+            markers: vec![
+                Marker::Braille,
+                Marker::Dot,
+                Marker::Block,
+                Marker::HalfBlock,
+                Marker::Bar,
+            ],
         }
     }
 
@@ -61,6 +69,11 @@ impl App {
                         KeyCode::Left | KeyCode::Char('h') => app.x -= 5.0 * app.scale,
                         KeyCode::Char('+') | KeyCode::Char('=') => app.scale *= 2.0,
                         KeyCode::Char('-') | KeyCode::Char('_') => app.scale /= 2.0,
+                        KeyCode::Char('1') => app.marker = app.markers[0],
+                        KeyCode::Char('2') => app.marker = app.markers[1],
+                        KeyCode::Char('3') => app.marker = app.markers[2],
+                        KeyCode::Char('4') => app.marker = app.markers[3],
+                        KeyCode::Char('5') => app.marker = app.markers[4],
                         _ => {}
                     }
                 }
@@ -80,8 +93,9 @@ impl App {
                 LookupProvider::IpInfo,
                 LookupProvider::IpWhoIs,
                 LookupProvider::IpApiCo,
+                LookupProvider::IpLeak,
             ],
-            Some(2),
+            Some(5),
         )
         .ok();
         if let Some(ref geo) = self.geolocation {
@@ -96,7 +110,7 @@ impl App {
 
     fn ui(&self, frame: &mut Frame) {
         let horizontal =
-            Layout::horizontal([Constraint::Percentage(80), Constraint::Percentage(20)]);
+            Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]);
         let [map, right] = horizontal.areas(frame.size());
 
         frame.render_widget(self.map_canvas(), map);
@@ -140,7 +154,7 @@ impl App {
                 ctx.print(x, y, text);
             })
             .x_bounds([self.x - 180.0 * self.scale, self.x + 180.0 * self.scale])
-            .y_bounds([self.y - 90.0 * self.scale, self.y + 90.0 * self.scale])
+            .y_bounds([self.y - 126.0 * self.scale, self.y + 126.0 * self.scale])
     }
 
     fn data_block(&self) -> impl Widget + '_ {
