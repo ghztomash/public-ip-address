@@ -55,6 +55,7 @@ cargo run --example <example_name>
 | IpApiCo | [https://ipapi.co](https://ipapi.co) | 30000 / month |
 | IpApiIo | [https://ip-api.io](https://ip-api.io) | ? / day |
 | IpBase | [https://ipbase.com](https://ipbase.com) | ? / day |
+| IpLocateIo | [https://ipbase.com](https://ipbase.com) | 50 / day |
 
 ## Roadmap
 
