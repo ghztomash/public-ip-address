@@ -23,6 +23,7 @@ use reqwest::{blocking::Response, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 
+pub mod abstractapi;
 pub mod error;
 pub mod freeipapi;
 pub mod ifconfig;
@@ -72,6 +73,8 @@ pub enum LookupProvider {
     IpLeak,
     /// Mullvad provider (<https://mullvad.net>)
     Mullvad,
+    /// Abstract provider with API key (<https://abstractapi.com>)
+    AbstractApi(Option<String>),
     /// Mock provider for testing
     Mock(String),
 }
@@ -100,6 +103,7 @@ impl FromStr for LookupProvider {
             "iplocateio" => Ok(LookupProvider::IpLocateIo),
             "ipleak" => Ok(LookupProvider::IpLeak),
             "mullvad" => Ok(LookupProvider::Mullvad),
+            "abstract" => Ok(LookupProvider::AbstractApi(None)),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
                 s
@@ -124,6 +128,9 @@ impl LookupProvider {
             LookupProvider::IpLocateIo => Box::new(iplocateio::IpLocateIo),
             LookupProvider::IpLeak => Box::new(ipleak::IpLeak),
             LookupProvider::Mullvad => Box::new(mullvad::Mullvad),
+            LookupProvider::AbstractApi(key) => {
+                Box::new(abstractapi::AbstractApi::new(key.clone()))
+            }
             LookupProvider::Mock(ref ip) => Box::new(mock::Mock { ip: ip.to_string() }),
         }
     }

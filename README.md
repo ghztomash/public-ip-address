@@ -58,6 +58,7 @@ cargo run --example <example_name>
 | IpLocateIo | [https://iplocate.io](https://iplocate.io) | 50 / day |
 | IpLeak | [https://ipleak.net](https://ipleak.net) | ? / day |
 | Mullvad | [https://mullvad.net](https://mullvad.net) | ? / day |
+| AbstractApi | [https://abstractapi.com](https://abstractapi.com) | 1000 / day |
 
 ## Roadmap
 
