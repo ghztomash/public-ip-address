@@ -31,6 +31,7 @@ pub mod ipapico;
 pub mod ipapicom;
 pub mod ipapiio;
 pub mod ipbase;
+pub mod ipdata;
 pub mod ipgeolocation;
 pub mod ipinfo;
 pub mod ipleak;
@@ -78,6 +79,8 @@ pub enum LookupProvider {
     AbstractApi(Option<String>),
     /// IpGeolocation provider with API key (<https://ipgeolocation.io>)
     IpGeolocation(Option<String>),
+    /// IpData provider with API key (<https://ipdata.co>)
+    IpData(Option<String>),
     /// Mock provider for testing
     Mock(String),
 }
@@ -108,6 +111,7 @@ impl FromStr for LookupProvider {
             "mullvad" => Ok(LookupProvider::Mullvad),
             "abstract" => Ok(LookupProvider::AbstractApi(None)),
             "ipgeolocation" => Ok(LookupProvider::IpGeolocation(None)),
+            "ipdata" => Ok(LookupProvider::IpData(None)),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
                 s
@@ -118,7 +122,7 @@ impl FromStr for LookupProvider {
 
 impl LookupProvider {
     /// Builds the concrete lookup service out of a LookupProvider enum
-    fn build(&self) -> Box<dyn Provider> {
+    fn build(self) -> Box<dyn Provider> {
         match self {
             LookupProvider::FreeIpApi => Box::new(freeipapi::FreeIpApi),
             LookupProvider::IfConfig => Box::new(ifconfig::IfConfig),
@@ -132,13 +136,10 @@ impl LookupProvider {
             LookupProvider::IpLocateIo => Box::new(iplocateio::IpLocateIo),
             LookupProvider::IpLeak => Box::new(ipleak::IpLeak),
             LookupProvider::Mullvad => Box::new(mullvad::Mullvad),
-            LookupProvider::AbstractApi(key) => {
-                Box::new(abstractapi::AbstractApi::new(key.clone()))
-            }
-            LookupProvider::IpGeolocation(key) => {
-                Box::new(ipgeolocation::IpGeolocation::new(key.clone()))
-            }
-            LookupProvider::Mock(ref ip) => Box::new(mock::Mock { ip: ip.to_string() }),
+            LookupProvider::AbstractApi(key) => Box::new(abstractapi::AbstractApi::new(key)),
+            LookupProvider::IpGeolocation(key) => Box::new(ipgeolocation::IpGeolocation::new(key)),
+            LookupProvider::IpData(key) => Box::new(ipdata::IpData::new(key)),
+            LookupProvider::Mock(ip) => Box::new(mock::Mock { ip }),
         }
     }
 }

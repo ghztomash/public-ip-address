@@ -11,7 +11,7 @@
 
 ![Demo](./assets/map_example.png)
 
-`public-ip-address` is a simple Rust library for performing public IP lookups from various services.
+`public-ip-address` is a simple Rust library for performing public IP lookups from over a dozen of various services.
 
 It provides a unified interface to fetch public IP address and geolocation information from multiple providers.
 
@@ -60,12 +60,13 @@ cargo run --example <example_name>
 | Mullvad | [https://mullvad.net](https://mullvad.net) | ? / day |
 | AbstractApi | [https://abstractapi.com](https://abstractapi.com) | 1000 / day |
 | IpGeolocation | [https://ipgeolocation.io](https://ipgeolocation.io) | 1000 / day |
+| IpData | [https://ipdata.co](https://ipdata.co) | 1500 / day |
 
 ## Roadmap
 
 - [x] Initial release
 - [x] Add more providers
-- [ ] Add support for additional providers with API key
+- [x] Add support for additional providers with API key
 - [ ] Add reverse lookup feature
 - [ ] Add asynchronous support
 

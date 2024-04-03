@@ -157,7 +157,6 @@ mod tests {
         "organization_name": "Service Provider Corporation"
     }
 }
-
 "#;
 
     #[test]
