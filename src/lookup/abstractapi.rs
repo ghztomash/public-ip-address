@@ -6,6 +6,7 @@ use crate::{
     LookupResponse,
 };
 use serde::{Deserialize, Serialize};
+use std::net::{IpAddr, Ipv4Addr};
 
 // https://docs.abstractapi.com/ip-geolocation
 #[derive(Serialize, Deserialize, Debug)]
@@ -52,7 +53,12 @@ impl AbstractApiResponse {
     }
 
     pub fn into_response(self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip_address, LookupProvider::AbstractApi(None));
+        let mut response = LookupResponse::new(
+            self.ip_address
+                .parse()
+                .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
+            LookupProvider::AbstractApi(None),
+        );
         response.country = self.country;
         response.continent = self.continent;
         response.country_code = self.country_code;
@@ -182,6 +188,10 @@ mod tests {
         let response = AbstractApiResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip_address, "1.1.1.1", "IP address not matching");
         let lookup = response.into_response();
-        assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            lookup.ip,
+            "1.1.1.1".parse::<IpAddr>().unwrap(),
+            "IP address not matching"
+        );
     }
 }

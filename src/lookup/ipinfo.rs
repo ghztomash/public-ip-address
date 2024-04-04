@@ -6,6 +6,7 @@ use crate::{
     LookupResponse,
 };
 use serde::{Deserialize, Serialize};
+use std::net::{IpAddr, Ipv4Addr};
 
 // https://ipinfo.io/json
 #[derive(Serialize, Deserialize, Debug)]
@@ -41,7 +42,12 @@ impl IpInfoResponse {
             }
         }
 
-        let mut response = LookupResponse::new(self.ip, LookupProvider::IpInfo);
+        let mut response = LookupResponse::new(
+            self.ip
+                .parse()
+                .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
+            LookupProvider::IpInfo,
+        );
         response.country = self.country.clone();
         response.country_code = self.country;
         response.region = self.region;
@@ -108,6 +114,10 @@ mod tests {
         let response = IpInfoResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip, "1.1.1.1", "IP address not matching");
         let lookup = response.into_response();
-        assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            lookup.ip,
+            "1.1.1.1".parse::<IpAddr>().unwrap(),
+            "IP address not matching"
+        );
     }
 }

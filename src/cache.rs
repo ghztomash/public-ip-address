@@ -11,7 +11,7 @@
 //!
 //! fn main() -> Result<(), Box<dyn Error>> {
 //!     let response_cache = ResponseCache::new(LookupResponse::new(
-//!         "1.1.1.1".to_string(),
+//!         "1.1.1.1".parse::<std::net::IpAddr>()?,
 //!         LookupProvider::IpBase,
 //!     ));
 //!     response_cache.save()?;
@@ -111,13 +111,17 @@ mod tests {
     #[test]
     fn test_cache() {
         let response = LookupResponse::new(
-            "1.1.1.1".to_string(),
+            "1.1.1.1".parse().unwrap(),
             LookupProvider::Mock("1.1.1.1".to_string()),
         );
         let cache = ResponseCache::new(response);
         cache.save().unwrap();
         let cached = ResponseCache::load().unwrap();
-        assert_eq!(cached.response.ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            cached.response.ip,
+            "1.1.1.1".parse::<std::net::IpAddr>().unwrap(),
+            "IP address not matching"
+        );
         cache.delete().unwrap();
     }
 }

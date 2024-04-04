@@ -6,6 +6,7 @@ use crate::{
     LookupResponse,
 };
 use serde::{Deserialize, Serialize};
+use std::net::{IpAddr, Ipv4Addr};
 
 // https://ipleak.net/
 #[derive(Serialize, Deserialize, Debug)]
@@ -34,7 +35,12 @@ impl IpLeakResponse {
     }
 
     pub fn into_response(self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip, LookupProvider::IpLeak);
+        let mut response = LookupResponse::new(
+            self.ip
+                .parse()
+                .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
+            LookupProvider::IpLeak,
+        );
         response.country = self.country_name;
         response.country_code = self.country_code;
         response.region = self.region_name;
@@ -121,6 +127,10 @@ mod tests {
         let response = IpLeakResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip, "8.8.8.8", "IP address not matching");
         let lookup = response.into_response();
-        assert_eq!(lookup.ip, "8.8.8.8", "IP address not matching");
+        assert_eq!(
+            lookup.ip,
+            "8.8.8.8".parse::<IpAddr>().unwrap(),
+            "IP address not matching"
+        );
     }
 }

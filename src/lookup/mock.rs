@@ -19,7 +19,7 @@ impl Provider for Mock {
     }
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
         Ok(LookupResponse::new(
-            json.to_string(),
+            json.parse::<std::net::IpAddr>()?,
             LookupProvider::Mock(json),
         ))
     }

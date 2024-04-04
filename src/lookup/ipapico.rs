@@ -6,6 +6,7 @@ use crate::{
     LookupResponse,
 };
 use serde::{Deserialize, Serialize};
+use std::net::{IpAddr, Ipv4Addr};
 
 // https://ipapi.co/api/
 #[derive(Serialize, Deserialize, Debug)]
@@ -37,7 +38,12 @@ impl IpApiCoResponse {
     }
 
     pub fn into_response(self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip, LookupProvider::IpApiCo);
+        let mut response = LookupResponse::new(
+            self.ip
+                .parse()
+                .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
+            LookupProvider::IpApiCo,
+        );
         response.country = self.country_name;
         response.country_code = self.country_code;
         response.region = self.region;
@@ -120,6 +126,10 @@ mod tests {
         let response = IpApiCoResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip, "1.1.1.1", "IP address not matching");
         let lookup = response.into_response();
-        assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            lookup.ip,
+            "1.1.1.1".parse::<IpAddr>().unwrap(),
+            "IP address not matching"
+        );
     }
 }

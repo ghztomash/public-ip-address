@@ -227,7 +227,7 @@ mod tests {
 
     #[test]
     fn test_make_request() {
-        let address = "1.1.1.1".to_string();
+        let address = "1.1.1.1".parse::<std::net::IpAddr>().unwrap();
         let provider = LookupService::new(LookupProvider::Mock(address.to_string()));
         let response = provider.make_request().unwrap();
         assert_eq!(response.ip, address);

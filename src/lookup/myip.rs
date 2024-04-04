@@ -6,6 +6,7 @@ use crate::{
     LookupResponse,
 };
 use serde::{Deserialize, Serialize};
+use std::net::{IpAddr, Ipv4Addr};
 
 // https://www.my-ip.io/api-usage
 #[derive(Serialize, Deserialize, Debug)]
@@ -49,7 +50,12 @@ impl MyIpResponse {
     }
 
     pub fn into_response(self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip, LookupProvider::MyIp);
+        let mut response = LookupResponse::new(
+            self.ip
+                .parse()
+                .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
+            LookupProvider::MyIp,
+        );
         if let Some(country) = self.country {
             response.country = country.name;
             response.country_code = country.code;
@@ -133,6 +139,10 @@ mod tests {
         let response = MyIpResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip, "1.1.1.1", "IP address not matching");
         let lookup = response.into_response();
-        assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            lookup.ip,
+            "1.1.1.1".parse::<std::net::IpAddr>().unwrap(),
+            "IP address not matching"
+        );
     }
 }

@@ -6,6 +6,7 @@ use crate::{
     LookupResponse,
 };
 use serde::{Deserialize, Serialize};
+use std::net::{IpAddr, Ipv4Addr};
 
 // https://github.com/leafcloudhq/echoip/blob/master/http/http.go
 #[derive(Serialize, Deserialize, Debug)]
@@ -36,7 +37,12 @@ impl IfConfigResponse {
     }
 
     pub fn into_response(self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip, LookupProvider::IfConfig);
+        let mut response = LookupResponse::new(
+            self.ip
+                .parse()
+                .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
+            LookupProvider::IfConfig,
+        );
         response.country = self.country;
         response.country_code = self.country_iso;
         if self.country_eu.unwrap_or(false) {
@@ -96,6 +102,10 @@ mod tests {
         let response = IfConfigResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip, "1.1.1.1", "IP address not matching");
         let lookup = response.into_response();
-        assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            lookup.ip,
+            "1.1.1.1".parse::<IpAddr>().unwrap(),
+            "IP address not matching"
+        );
     }
 }

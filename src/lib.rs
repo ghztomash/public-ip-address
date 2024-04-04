@@ -204,12 +204,17 @@ pub fn perform_cached_lookup_with(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::net::IpAddr;
 
     #[test]
     fn test_perform_lookup() {
         let response = perform_lookup_with(vec![LookupProvider::Mock("1.1.1.1".to_string())]);
         assert!(response.is_ok());
-        assert_eq!(response.unwrap().ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            response.unwrap().ip,
+            "1.1.1.1".parse::<IpAddr>().unwrap(),
+            "IP address not matching"
+        );
     }
 
     #[test]
@@ -217,7 +222,11 @@ mod tests {
         let response =
             perform_cached_lookup_with(vec![LookupProvider::Mock("1.1.1.1".to_string())], Some(0));
         assert!(response.is_ok());
-        assert_eq!(response.unwrap().ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            response.unwrap().ip,
+            "1.1.1.1".parse::<IpAddr>().unwrap(),
+            "IP address not matching"
+        );
     }
 
     #[test]
@@ -225,14 +234,18 @@ mod tests {
         let response =
             perform_cached_lookup_with(vec![LookupProvider::Mock("1.1.1.1".to_string())], Some(0));
         assert!(response.is_ok());
-        assert_eq!(response.unwrap().ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            response.unwrap().ip,
+            "1.1.1.1".parse::<IpAddr>().unwrap(),
+            "IP address not matching"
+        );
         let response =
             perform_cached_lookup_with(vec![LookupProvider::Mock("2.2.2.2".to_string())], Some(1));
         assert!(response.is_ok());
         // the old cache should be returned
         assert_eq!(
             response.unwrap().ip,
-            "1.1.1.1",
+            "1.1.1.1".parse::<IpAddr>().unwrap(),
             "The old cache should be returned"
         );
         let response =
@@ -240,7 +253,7 @@ mod tests {
         assert!(response.is_ok());
         assert_eq!(
             response.unwrap().ip,
-            "2.2.2.2",
+            "2.2.2.2".parse::<IpAddr>().unwrap(),
             "Cached value should expire"
         );
     }

@@ -6,6 +6,7 @@ use crate::{
     LookupResponse,
 };
 use serde::{Deserialize, Serialize};
+use std::net::{IpAddr, Ipv4Addr};
 
 // https://ipbase.com/docs/info
 #[derive(Serialize, Deserialize, Debug)]
@@ -88,7 +89,12 @@ impl IpBaseResponse {
 
     pub fn into_response(self) -> LookupResponse {
         let data = self.data;
-        let mut response = LookupResponse::new(data.ip, LookupProvider::IpBase);
+        let mut response = LookupResponse::new(
+            data.ip
+                .parse()
+                .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
+            LookupProvider::IpBase,
+        );
         response.hostname = data.hostname;
         if let Some(connection) = data.connection {
             response.asn_org = connection.organization;
@@ -307,6 +313,10 @@ mod tests {
         let response = IpBaseResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.data.ip, "1.1.1.1", "IP address not matching");
         let lookup = response.into_response();
-        assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            lookup.ip,
+            "1.1.1.1".parse::<IpAddr>().unwrap(),
+            "IP address not matching"
+        );
     }
 }

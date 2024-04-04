@@ -6,6 +6,7 @@ use crate::{
     LookupResponse,
 };
 use serde::{Deserialize, Serialize};
+use std::net::{IpAddr, Ipv4Addr};
 
 // https://ipwhois.io/documentation
 #[derive(Serialize, Deserialize, Debug)]
@@ -45,7 +46,12 @@ impl IpWhoIsResponse {
     }
 
     pub fn into_response(self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.ip, LookupProvider::IpWhoIs);
+        let mut response = LookupResponse::new(
+            self.ip
+                .parse()
+                .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
+            LookupProvider::IpWhoIs,
+        );
         response.continent = self.continent;
         response.region = self.region;
         response.region_code = self.region_code;
@@ -147,6 +153,10 @@ mod tests {
         let response = IpWhoIsResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip, "1.1.1.1", "IP address not matching");
         let lookup = response.into_response();
-        assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            lookup.ip,
+            "1.1.1.1".parse::<std::net::IpAddr>().unwrap(),
+            "IP address not matching"
+        );
     }
 }

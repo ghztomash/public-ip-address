@@ -2,13 +2,14 @@
 
 use crate::lookup::LookupProvider;
 use serde::{Deserialize, Serialize};
-use std::fmt;
+use std::{fmt, net::IpAddr};
 
 /// Lookup response containing information like IP, country, city, hostname etc.
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[non_exhaustive]
 pub struct LookupResponse {
     /// Public IP address.
-    pub ip: String,
+    pub ip: IpAddr,
     pub continent: Option<String>,
     pub country: Option<String>,
     pub country_code: Option<String>,
@@ -33,7 +34,7 @@ pub struct LookupResponse {
 
 impl LookupResponse {
     /// Create a new lookup response.
-    pub fn new(ip: String, provider: LookupProvider) -> Self {
+    pub fn new(ip: IpAddr, provider: LookupProvider) -> Self {
         LookupResponse {
             ip,
             continent: None,

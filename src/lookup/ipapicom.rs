@@ -6,6 +6,7 @@ use crate::{
     LookupResponse,
 };
 use serde::{Deserialize, Serialize};
+use std::net::{IpAddr, Ipv4Addr};
 
 // https://ip-api.com/docs/api:json
 #[derive(Serialize, Deserialize, Debug)]
@@ -45,7 +46,12 @@ impl IpApiComResponse {
     }
 
     pub fn into_response(self) -> LookupResponse {
-        let mut response = LookupResponse::new(self.query, LookupProvider::IpApiCom);
+        let mut response = LookupResponse::new(
+            self.query
+                .parse()
+                .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
+            LookupProvider::IpApiCom,
+        );
         response.country = self.country;
         response.country_code = self.country_code;
         response.region = self.region_name;
@@ -130,6 +136,10 @@ mod tests {
         let response = IpApiComResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.query, "1.1.1.1", "IP address not matching");
         let lookup = response.into_response();
-        assert_eq!(lookup.ip, "1.1.1.1", "IP address not matching");
+        assert_eq!(
+            lookup.ip,
+            "1.1.1.1".parse::<IpAddr>().unwrap(),
+            "IP address not matching"
+        );
     }
 }
