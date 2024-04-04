@@ -55,7 +55,6 @@ impl IpApiComResponse {
         response.country = self.country;
         response.country_code = self.country_code;
         response.region = self.region_name;
-        response.region_code = self.region;
         response.postal_code = self.zip;
         response.city = self.city;
         response.latitude = self.lat;
@@ -64,7 +63,7 @@ impl IpApiComResponse {
         response.asn_org = self.org;
         response.asn = self.asn;
         response.hostname = self.reverse;
-        response.proxy = self.proxy;
+        response.is_proxy = self.proxy;
         response
     }
 }

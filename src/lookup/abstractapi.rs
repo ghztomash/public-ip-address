@@ -63,7 +63,6 @@ impl AbstractApiResponse {
         response.continent = self.continent;
         response.country_code = self.country_code;
         response.region = self.region;
-        response.region_code = self.region_iso_code;
         response.postal_code = self.postal_code;
         response.city = self.city;
         response.latitude = self.latitude;
@@ -76,7 +75,7 @@ impl AbstractApiResponse {
             response.asn = connection.isp_name;
         }
         if let Some(security) = self.security {
-            response.proxy = security.is_vpn;
+            response.is_proxy = security.is_vpn;
         }
 
         response

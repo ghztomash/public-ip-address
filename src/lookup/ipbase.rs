@@ -115,7 +115,6 @@ impl IpBaseResponse {
             }
             if let Some(region) = location.region {
                 response.region = region.name;
-                response.region_code = region.code;
             }
         }
 

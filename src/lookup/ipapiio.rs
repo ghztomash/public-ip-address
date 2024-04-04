@@ -53,7 +53,6 @@ impl IpApiIoResponse {
         response.country = self.country_name;
         response.country_code = self.country_code;
         response.region = self.region_name;
-        response.region_code = self.region_code;
         response.postal_code = self.zip_code;
         response.city = self.city;
         response.latitude = self.latitude;
@@ -61,7 +60,7 @@ impl IpApiIoResponse {
         response.time_zone = self.time_zone;
         response.asn_org = self.organisation;
         if let Some(suspicious) = self.suspicious_factors {
-            response.proxy = suspicious.is_proxy;
+            response.is_proxy = suspicious.is_proxy;
         }
         if self.is_in_european_union.unwrap_or(false) {
             response.continent = Some("Europe".to_string());

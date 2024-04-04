@@ -49,7 +49,6 @@ impl IfConfigResponse {
             response.continent = Some("Europe".to_string());
         }
         response.region = self.region_name;
-        response.region_code = self.region_code;
         response.postal_code = self.zip_code;
         response.city = self.city;
         response.latitude = self.latitude;

@@ -14,7 +14,6 @@ pub struct LookupResponse {
     pub country: Option<String>,
     pub country_code: Option<String>,
     pub region: Option<String>,
-    pub region_code: Option<String>,
     pub postal_code: Option<String>,
     pub city: Option<String>,
     pub latitude: Option<f64>,
@@ -26,8 +25,8 @@ pub struct LookupResponse {
     pub asn_org: Option<String>,
     /// Hostname of the IP address.
     pub hostname: Option<String>,
-    /// Is the IP a proxy?
-    pub proxy: Option<bool>,
+    /// Is the IP a proxy or vpn?
+    pub is_proxy: Option<bool>,
     /// Provider that was used for the lookup.
     pub provider: LookupProvider,
 }
@@ -41,7 +40,6 @@ impl LookupResponse {
             country: None,
             country_code: None,
             region: None,
-            region_code: None,
             postal_code: None,
             city: None,
             latitude: None,
@@ -50,7 +48,7 @@ impl LookupResponse {
             asn: None,
             asn_org: None,
             hostname: None,
-            proxy: None,
+            is_proxy: None,
             provider,
         }
     }
@@ -71,12 +69,7 @@ impl fmt::Display for LookupResponse {
             writeln!(f)?;
         }
         if let Some(region) = &self.region {
-            write!(f, "Region: {}", region)?;
-        }
-        if let Some(region_code) = &self.region_code {
-            writeln!(f, " ({})", region_code)?;
-        } else {
-            writeln!(f)?;
+            writeln!(f, "Region: {}", region)?;
         }
         if let Some(postal_code) = &self.postal_code {
             writeln!(f, "Postal code: {}", postal_code)?;
@@ -106,7 +99,7 @@ impl fmt::Display for LookupResponse {
         if let Some(hostname) = &self.hostname {
             writeln!(f, "Hostname: {}", hostname)?;
         }
-        if let Some(proxy) = &self.proxy {
+        if let Some(proxy) = &self.is_proxy {
             writeln!(f, "Proxy: {}", proxy)?;
         }
         write!(f, "Provider: {}", self.provider)?;

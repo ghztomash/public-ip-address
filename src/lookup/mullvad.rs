@@ -38,7 +38,7 @@ impl MullvadResponse {
         response.latitude = self.latitude;
         response.longitude = self.longitude;
         response.asn_org = self.organization;
-        response.proxy = self.mullvad_exit_ip;
+        response.is_proxy = self.mullvad_exit_ip;
         response
     }
 }

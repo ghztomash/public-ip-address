@@ -44,7 +44,6 @@ impl IpLeakResponse {
         response.country = self.country_name;
         response.country_code = self.country_code;
         response.region = self.region_name;
-        response.region_code = self.region_code;
         response.postal_code = self.postal_code;
         response.continent = self.continent_name;
         response.city = self.city_name;

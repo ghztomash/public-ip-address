@@ -54,7 +54,6 @@ impl IpWhoIsResponse {
         );
         response.continent = self.continent;
         response.region = self.region;
-        response.region_code = self.region_code;
         response.country = self.country;
         response.country_code = self.country_code;
         response.postal_code = self.postal;

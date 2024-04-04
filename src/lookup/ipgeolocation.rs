@@ -53,7 +53,6 @@ impl IpGeolocationResponse {
         response.country = self.country_name;
         response.country_code = self.country_code2;
         response.region = self.state_prov;
-        response.region_code = self.state_code;
         response.postal_code = self.zipcode;
         response.city = self.city;
         if let Some(lat) = self.latitude {

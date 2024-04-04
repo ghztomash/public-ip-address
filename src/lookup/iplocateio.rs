@@ -57,7 +57,7 @@ impl IpLocateIoResponse {
         response.asn_org = self.org;
         response.asn = self.asn;
         if let Some(threat) = self.threat {
-            response.proxy = threat.is_proxy;
+            response.is_proxy = threat.is_proxy;
         }
         response
     }

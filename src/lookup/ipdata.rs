@@ -92,7 +92,6 @@ impl IpDataResponse {
         response.country = self.country_name;
         response.country_code = self.country_code;
         response.region = self.region;
-        response.region_code = self.region_code;
         response.postal_code = self.postal;
         response.city = self.city;
         response.latitude = self.latitude;
@@ -105,7 +104,7 @@ impl IpDataResponse {
             response.asn = asn.asn;
         }
         if let Some(threat) = self.threat {
-            response.proxy = threat.is_proxy;
+            response.is_proxy = threat.is_proxy;
         }
 
         response

@@ -49,7 +49,7 @@ impl FreeIpApiResponse {
         response.latitude = self.latitude;
         response.longitude = self.longitude;
         response.time_zone = self.time_zone;
-        response.proxy = self.is_proxy;
+        response.is_proxy = self.is_proxy;
         response
     }
 }
