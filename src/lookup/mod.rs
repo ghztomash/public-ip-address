@@ -96,7 +96,19 @@ impl FromStr for LookupProvider {
     /// Parse a `&str` into a LookupProvider
     fn from_str(s: &str) -> Result<Self> {
         let s = s.trim().to_lowercase();
-        match s.as_str() {
+        // split the string into parts
+        let s = s
+            .split_whitespace()
+            .map(str::to_string)
+            .collect::<Vec<String>>();
+        // get the provider
+        let p = s
+            .first()
+            .ok_or(LookupError::GenericError("No provider given".to_string()))?;
+        // get the key if it exists
+        let k = s.get(1).cloned();
+
+        match p.as_str() {
             "freeipapi" => Ok(LookupProvider::FreeIpApi),
             "ifconfig" => Ok(LookupProvider::IfConfig),
             "ipinfo" => Ok(LookupProvider::IpInfo),
@@ -109,12 +121,12 @@ impl FromStr for LookupProvider {
             "iplocateio" => Ok(LookupProvider::IpLocateIo),
             "ipleak" => Ok(LookupProvider::IpLeak),
             "mullvad" => Ok(LookupProvider::Mullvad),
-            "abstract" => Ok(LookupProvider::AbstractApi(None)),
-            "ipgeolocation" => Ok(LookupProvider::IpGeolocation(None)),
-            "ipdata" => Ok(LookupProvider::IpData(None)),
+            "abstract" => Ok(LookupProvider::AbstractApi(k)),
+            "ipgeolocation" => Ok(LookupProvider::IpGeolocation(k)),
+            "ipdata" => Ok(LookupProvider::IpData(k)),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
-                s
+                p
             ))),
         }
     }
@@ -263,5 +275,18 @@ mod tests {
 
         let provider = LookupProvider::from_str("unknown");
         assert!(provider.is_err(), "Conversion should fail");
+    }
+
+    #[test]
+    fn test_conversions_with_key() {
+        let provider = LookupProvider::from_str("ipdata abc").unwrap();
+        assert_eq!(
+            provider,
+            LookupProvider::IpData(Some("abc".to_string())),
+            "Conversion failed"
+        );
+
+        let provider = LookupProvider::from_str("ipdata").unwrap();
+        assert_eq!(provider, LookupProvider::IpData(None), "Conversion failed");
     }
 }
