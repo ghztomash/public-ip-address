@@ -96,6 +96,7 @@ impl App {
                 LookupProvider::IpLeak,
             ],
             Some(5),
+            false,
         )
         .ok();
         if let Some(ref geo) = self.geolocation {
