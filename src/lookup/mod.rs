@@ -1,4 +1,4 @@
-//! # Lookup service provider module
+//! # 🛠️ Lookup service provider module
 //!
 //! The `lookup` module provides functionality for performing public IP lookups from various services.
 //! It includes a `LookupService` struct for making requests to a lookup provider, and a `LookupProvider` enum for specifying the provider.
@@ -50,6 +50,7 @@ pub trait Provider {
 
 /// Available lookup service providers
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[non_exhaustive]
 pub enum LookupProvider {
     /// FreeIpApi provider (<https://freeipapi.com>)
     FreeIpApi,
