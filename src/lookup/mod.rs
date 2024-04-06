@@ -165,6 +165,7 @@ impl LookupProvider {
 ///
 /// let service = LookupService::new(LookupProvider::IpApiCom);
 /// ```
+#[non_exhaustive]
 pub struct LookupService {
     provider: Box<dyn Provider>,
 }

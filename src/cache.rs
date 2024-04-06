@@ -40,17 +40,21 @@ use std::{
 /// Result type wrapper for the cache
 pub type Result<T> = std::result::Result<T, CacheError>;
 
-/// `ResponseCache` is a struct that holds the current IP address lookup response and provides methods for managing the cache.
+/// Holds the current IP address lookup response
 ///
 /// The cache can be saved to disk, loaded from disk, and deleted from disk. It also provides methods to clear the cache,
 /// update the cache with a new response, check if the cache has expired, and retrieve the IP address or the entire response from the cache.
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[non_exhaustive]
 pub struct ResponseCache {
     pub current_address: Option<ResponseRecord>,
 }
 
-/// Represents an entry of the cached response and the time it was saved and the TTL
+/// Represents an entry of the cached response
+///
+/// It contains the `LookupResponse`, the time when the response was cached, and the time-to-live (TTL) of the cache.
 #[derive(Serialize, Deserialize, Debug)]
+#[non_exhaustive]
 pub struct ResponseRecord {
     pub response: LookupResponse,
     response_time: SystemTime,
