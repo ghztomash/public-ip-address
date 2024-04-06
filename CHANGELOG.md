@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### 🚀 Features
+
+- Extract provider key in from_str conversion
+- Force flush the cache
+
+### 🚜 Refactor
+
+- Represent IP as IpAddr instead of String
+- Refactor response struct
+- Refactore handling cache
+- Ipdate the cache module logic
+
+### 📚 Documentation
+
+- Update examples to new api
+- Update comments
+
+### ⚙️ Miscellaneous Tasks
+
+- Add serial test dependency
+- Update gitignore
+- Adds non_exhaustive to LookupProvider
+
 ## [0.1.1] - 2024-04-03
 
 ### 🚀 Features
