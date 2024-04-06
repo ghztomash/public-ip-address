@@ -1,4 +1,4 @@
-//! Lookup response.
+//! ✉️ Lookup response.
 
 use crate::lookup::LookupProvider;
 use serde::{Deserialize, Serialize};

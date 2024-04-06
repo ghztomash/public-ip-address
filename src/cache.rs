@@ -1,7 +1,8 @@
-//! # ResponseCache Module
+//! # 🗄️ Response cache Module
 //!
-//! It holds a single lookup response and the time it was created. The cached response can be saved and loaded from disk.
-//! It also provides a method to delete the cache from disk.
+//! This module provides a `ResponseCache` struct that holds the current IP address lookup response and the time it was created, and when it should expire.
+//! The `ResponseCache` can be saved to disk, loaded from disk, and deleted from disk. It also provides methods to clear the cache,
+//! update the cache with a new response, check if the cache has expired, and retrieve the IP address or the entire response from the cache.
 //!
 //! ## Example
 //! ```rust
@@ -10,10 +11,13 @@
 //! use public_ip_address::lookup::LookupProvider;
 //!
 //! fn main() -> Result<(), Box<dyn Error>> {
-//!     let response_cache = ResponseCache::new(LookupResponse::new(
-//!         "1.1.1.1".parse::<std::net::IpAddr>()?,
-//!         LookupProvider::IpBase,
-//!     ));
+//!     let response_cache = ResponseCache::new(
+//!         &LookupResponse::new(
+//!             "1.1.1.1".parse::<std::net::IpAddr>()?,
+//!             LookupProvider::IpBase,
+//!         ),
+//!         None
+//!     );
 //!     response_cache.save()?;
 //!     let cached = ResponseCache::load()?;
 //!     println!("{:?}", cached);
@@ -26,29 +30,146 @@ use crate::{error::CacheError, LookupResponse};
 use base64::prelude::*;
 use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
-use std::{fs, fs::File, io::prelude::*, time::SystemTime};
+use std::{
+    fs,
+    fs::File,
+    io::prelude::*,
+    time::{Duration, SystemTime},
+};
 
 /// Result type wrapper for the cache
 pub type Result<T> = std::result::Result<T, CacheError>;
 
-/// Holds the response and the time it was saved
-#[derive(Serialize, Deserialize, Debug)]
+/// Holds the current IP address lookup response
+///
+/// The cache can be saved to disk, loaded from disk, and deleted from disk. It also provides methods to clear the cache,
+/// update the cache with a new response, check if the cache has expired, and retrieve the IP address or the entire response from the cache.
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[non_exhaustive]
 pub struct ResponseCache {
+    pub current_address: Option<ResponseRecord>,
+}
+
+/// Represents an entry of the cached response
+///
+/// It contains the `LookupResponse`, the time when the response was cached, and the time-to-live (TTL) of the cache.
+#[derive(Serialize, Deserialize, Debug)]
+#[non_exhaustive]
+pub struct ResponseRecord {
     pub response: LookupResponse,
-    pub response_time: SystemTime,
+    response_time: SystemTime,
+    ttl: Option<u64>,
+}
+
+impl ResponseRecord {
+    /// Creates a new `ResponseRecord` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `response` - A `LookupResponse` to be cached.
+    /// * `ttl` - An optional `u64` value representing after how many seconds the cached value expires.
+    /// None means the cache never expires.
+    pub fn new(response: LookupResponse, ttl: Option<u64>) -> ResponseRecord {
+        ResponseRecord {
+            response,
+            response_time: SystemTime::now(),
+            ttl,
+        }
+    }
+
+    /// Determines if the cached response has expired.
+    ///
+    /// If the TTL is not set, the function assumes that the cache never expires and returns false.
+    pub fn is_expired(&self) -> bool {
+        if let Some(ttl) = self.ttl {
+            let difference = SystemTime::now()
+                .duration_since(self.response_time)
+                .unwrap_or_default();
+            difference >= Duration::from_secs(ttl)
+        } else {
+            // No TTL, cache never expires
+            false
+        }
+    }
+
+    /// Returns the IP address of the cached response.
+    pub fn ip(&self) -> std::net::IpAddr {
+        self.response.ip
+    }
 }
 
 impl ResponseCache {
     /// Creates a new `ResponseCache` instance.
     ///
+    /// The `ResponseRecord` is stored as the `current_address` in the `ResponseCache`.
+    ///
     /// # Arguments
     ///
-    /// * `response` - A `LookupResponse` to be cached.
-    pub fn new(response: LookupResponse) -> ResponseCache {
+    /// * `current_response` - A `LookupResponse` instance representing the current address to be cached.
+    /// * `ttl` - An `Option<u64>` representing the time-to-live (TTL) in seconds for the cached response. If `None`, the cache never expires.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use public_ip_address::cache::ResponseCache;
+    /// # use public_ip_address::lookup::LookupProvider;
+    /// # use public_ip_address::response::LookupResponse;
+    /// let response = LookupResponse::new(
+    ///             "1.1.1.1".parse::<std::net::IpAddr>().unwrap(),
+    ///             LookupProvider::IpBase);
+    /// let cache = ResponseCache::new(&response, Some(60));
+    /// ```
+    pub fn new(current_response: &LookupResponse, ttl: Option<u64>) -> ResponseCache {
+        println!("Creating new cache");
         ResponseCache {
-            response,
-            response_time: SystemTime::now(),
+            current_address: Some(ResponseRecord::new(current_response.to_owned(), ttl)),
         }
+    }
+
+    /// Clears the `current_address` cache.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use public_ip_address::cache::ResponseCache;
+    /// let mut cache = ResponseCache::default();
+    /// cache.clear();
+    /// assert!(cache.current_response().is_none());
+    /// ```
+    pub fn clear(&mut self) {
+        self.current_address = None;
+    }
+
+    /// Updates the current cache entry with a new response.
+    ///
+    /// # Arguments
+    ///
+    /// * `response` - A `LookupResponse` instance representing the new address to be cached.
+    /// * `ttl` - An `Option<u64>` representing the time-to-live (TTL) in seconds for the new cached response. If `None`, the cache never expires.
+    ///
+    pub fn update_current(&mut self, response: &LookupResponse, ttl: Option<u64>) {
+        println!("Updating current cache");
+        self.current_address = Some(ResponseRecord::new(response.to_owned(), ttl));
+    }
+
+    /// Checks if the `current_address` cache entry has expired.
+    pub fn current_is_expired(&self) -> bool {
+        match self.current_address {
+            Some(ref current) => current.is_expired(),
+            None => true,
+        }
+    }
+
+    /// Returns the IP address of the current cache entry.
+    pub fn current_ip(&self) -> Option<std::net::IpAddr> {
+        self.current_address.as_ref().map(|current| current.ip())
+    }
+
+    /// Returns the `current_address` cache entry.
+    pub fn current_response(&self) -> Option<LookupResponse> {
+        self.current_address
+            .as_ref()
+            .map(|current| current.response.to_owned())
     }
 
     /// Saves the `ResponseCache` instance to disk.
@@ -109,19 +230,51 @@ mod tests {
     use crate::lookup::LookupProvider;
 
     #[test]
-    fn test_cache() {
+    fn test_cache_file() {
         let response = LookupResponse::new(
             "1.1.1.1".parse().unwrap(),
             LookupProvider::Mock("1.1.1.1".to_string()),
         );
-        let cache = ResponseCache::new(response);
+        let cache = ResponseCache::new(&response, None);
         cache.save().unwrap();
         let cached = ResponseCache::load().unwrap();
         assert_eq!(
-            cached.response.ip,
+            cached.current_ip().unwrap(),
             "1.1.1.1".parse::<std::net::IpAddr>().unwrap(),
             "IP address not matching"
         );
         cache.delete().unwrap();
+    }
+
+    #[test]
+    fn test_expired() {
+        let response = LookupResponse::new(
+            "1.1.1.1".parse().unwrap(),
+            LookupProvider::Mock("1.1.1.1".to_string()),
+        );
+        let mut cache = ResponseCache::default();
+        assert!(cache.current_is_expired(), "Empty cache should be expired");
+        cache.update_current(&response, None);
+        assert_eq!(
+            cache.current_ip().unwrap(),
+            "1.1.1.1".parse::<std::net::IpAddr>().unwrap(),
+            "IP address not matching"
+        );
+        assert!(
+            !cache.current_is_expired(),
+            "Cache with no TTL should not be expired"
+        );
+        cache.update_current(&response, Some(1));
+        assert!(
+            !cache.current_is_expired(),
+            "Fresh cache should not be expired {:#?}",
+            cache
+        );
+        // Wait for cache to expire
+        std::thread::sleep(Duration::from_secs(1));
+        assert!(
+            cache.current_is_expired(),
+            "Expired cache should be expired"
+        );
     }
 }

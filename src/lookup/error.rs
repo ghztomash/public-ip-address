@@ -6,6 +6,7 @@ pub type Result<T> = std::result::Result<T, LookupError>;
 
 /// Error type for the lookup process
 #[derive(Error, Debug)]
+#[non_exhaustive]
 pub enum LookupError {
     #[error("Reqwuest error")]
     ReqwestError(#[from] reqwest::Error),
