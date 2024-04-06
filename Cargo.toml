@@ -21,3 +21,4 @@ thiserror = "1.0"
 crossterm = { version = "0.27" }
 ratatui = { version = "0.26" }
 rusty-hook = { version = "0.11" }
+serial_test = { version = "3.0" }
