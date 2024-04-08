@@ -172,10 +172,7 @@ pub struct Parameters {
 
 impl Parameters {
     pub fn new(api_key: Option<String>) -> Option<Self> {
-        match api_key {
-            Some(api_key) => Some(Parameters { api_key }),
-            None => None,
-        }
+        api_key.map(|api_key| Parameters { api_key })
     }
 }
 

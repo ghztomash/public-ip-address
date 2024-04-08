@@ -120,7 +120,7 @@ impl Provider for IpData {
             None => "".to_string(),
         };
         let target = match target.map(|t| t.to_string()) {
-            Some(t) => format!("{}", t),
+            Some(t) => t.to_string(),
             None => "".to_string(),
         };
         let endpoint = format!("https://api.ipdata.co/{}{}", target, key);
