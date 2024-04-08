@@ -27,6 +27,7 @@ pub mod abstractapi;
 pub mod error;
 pub mod freeipapi;
 pub mod ifconfig;
+pub mod ip2location;
 pub mod ipapico;
 pub mod ipapicom;
 pub mod ipapiio;
@@ -40,7 +41,6 @@ pub mod ipwhois;
 pub mod mock;
 pub mod mullvad;
 pub mod myip;
-pub mod ip2location;
 
 /// Provider trait to define the methods that a provider must implement
 pub trait Provider {

@@ -16,15 +16,14 @@ pub struct Ip2LocationResponse {
     country_name: Option<String>,
     region_name: Option<String>,
     city_name: Option<String>,
-    latitude: Option<String>,
-    longitude: Option<String>,
+    latitude: Option<f64>,
+    longitude: Option<f64>,
     zip_code: Option<String>,
     time_zone: Option<String>,
-    is_eu: Option<bool>,
     asn: Option<String>,
     #[serde(rename = "as")]
     as_name: Option<String>,
-    is_proxy: Option<String>,
+    is_proxy: Option<bool>,
 }
 
 impl Ip2LocationResponse {
@@ -40,24 +39,17 @@ impl Ip2LocationResponse {
                 .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
             LookupProvider::Ip2Location(None),
         );
-        response.continent = self.continent_name;
         response.country = self.country_name;
-        response.country_code = self.country_code2;
-        response.region = self.state_prov;
-        response.postal_code = self.zipcode;
-        response.city = self.city;
-        if let Some(lat) = self.latitude {
-            response.latitude = lat.parse().ok();
-        }
-        if let Some(lon) = self.longitude {
-            response.longitude = lon.parse().ok();
-        }
-        if let Some(timezone) = self.time_zone {
-            response.time_zone = timezone.name;
-        }
-        response.hostname = self.hostname;
-        response.asn_org = self.organization;
-        response.asn = self.isp;
+        response.country_code = self.country_code;
+        response.region = self.region_name;
+        response.postal_code = self.zip_code;
+        response.city = self.city_name;
+        response.latitude = self.latitude;
+        response.longitude = self.longitude;
+        response.time_zone = self.time_zone;
+        response.asn_org = self.as_name;
+        response.asn = self.asn;
+        response.is_proxy = self.is_proxy;
 
         response
     }
