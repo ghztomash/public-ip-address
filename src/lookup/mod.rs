@@ -21,7 +21,7 @@ use crate::LookupResponse;
 use error::{LookupError, Result};
 use reqwest::{blocking::Response, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::{fmt, str::FromStr};
+use std::{fmt, net::IpAddr, str::FromStr};
 
 pub mod abstractapi;
 pub mod error;
@@ -44,7 +44,7 @@ pub mod myip;
 
 /// Provider trait to define the methods that a provider must implement
 pub trait Provider {
-    fn make_api_request(&self) -> Result<String>;
+    fn make_api_request(&self, target: Option<IpAddr>) -> Result<String>;
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
     fn get_type(&self) -> LookupProvider;
 }
@@ -200,7 +200,7 @@ impl LookupService {
     ///
     /// This function makes an API request to the current lookup provider and parses the response into a `LookupResponse` instance.
     pub fn make_request(&self) -> Result<LookupResponse> {
-        let response = self.provider.make_api_request()?;
+        let response = self.provider.make_api_request(None)?;
         self.provider.parse_reply(response)
     }
 }

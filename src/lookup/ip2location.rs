@@ -67,8 +67,8 @@ impl Ip2Location {
 }
 
 impl Provider for Ip2Location {
-    fn make_api_request(&self) -> Result<String> {
-        let key = match self.key.as_ref() {
+    fn make_api_request(&self, target: Option<IpAddr>) -> Result<String> {
+        let key = match self.key {
             Some(k) => format!("/?key={}", k),
             None => "".to_string(),
         };
@@ -111,7 +111,7 @@ mod tests {
     #[ignore]
     fn test_request() {
         let service = Box::new(Ip2Location::new(None));
-        let result = service.make_api_request();
+        let result = service.make_api_request(None);
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
@@ -129,7 +129,7 @@ mod tests {
         assert!(key.is_some(), "Missing APIKEY");
 
         let service = Box::new(Ip2Location::new(key));
-        let result = service.make_api_request();
+        let result = service.make_api_request(None);
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
