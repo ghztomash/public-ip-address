@@ -37,7 +37,7 @@ impl Ip2LocationResponse {
             self.ip
                 .parse()
                 .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
-            LookupProvider::Ip2Location(None),
+            LookupProvider::Ip2Location,
         );
         response.country = self.country_name;
         response.country_code = self.country_code;
@@ -60,10 +60,14 @@ pub struct Ip2Location;
 impl Provider for Ip2Location {
     fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
         let key = match key {
-            Some(k) => format!("/?key={}", k),
+            Some(k) => format!("?key={}", k),
             None => "".to_string(),
         };
-        let endpoint = format!("https://api.ip2location.io{}", key);
+        let target = match target.map(|t| t.to_string()) {
+            Some(t) => format!("&ip={}", t),
+            None => "".to_string(),
+        };
+        let endpoint = format!("https://api.ip2location.io/{}{}", key, target);
         let response = reqwest::blocking::get(endpoint);
         super::handle_response(response)
     }
@@ -74,7 +78,7 @@ impl Provider for Ip2Location {
     }
 
     fn get_type(&self) -> LookupProvider {
-        LookupProvider::Ip2Location(None)
+        LookupProvider::Ip2Location
     }
 }
 
@@ -128,6 +132,27 @@ mod tests {
 
         let response = Ip2LocationResponse::parse(result);
         assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+    }
+
+    #[test]
+    #[ignore]
+    fn test_request_with_key_for_target() {
+        use std::env;
+        let key = env::var("IP2LOCATION_APIKEY").ok();
+        assert!(key.is_some(), "Missing APIKEY");
+
+        let target = "8.8.8.8".parse::<IpAddr>().ok();
+        let service = Box::new(Ip2Location);
+        let result = service.make_api_request(key, target);
+        assert!(result.is_ok(), "Failed getting result {:#?}", result);
+        let result = result.unwrap();
+        assert!(!result.is_empty(), "Result is empty");
+        println!("Ip2Location: {:#?}", result);
+
+        let response = Ip2LocationResponse::parse(result).unwrap();
+        assert_eq!(response.ip, "8.8.8.8", "IP address not matching");
+        let lookup = response.into_response();
+        assert_eq!(lookup.ip, target.unwrap(), "IP address not matching");
     }
 
     #[test]
