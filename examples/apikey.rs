@@ -6,7 +6,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let key = env::var("ABSTRACT_APIKEY").ok();
     let provider = LookupProvider::AbstractApi(key);
     let service = LookupService::new(provider);
-    let result = service.make_request()?;
+    let result = service.lookup(None)?;
     println!("{}", result);
     Ok(())
 }

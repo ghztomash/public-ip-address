@@ -117,7 +117,7 @@ pub fn perform_lookup_with(providers: Vec<LookupProvider>) -> Result<LookupRespo
     }
 
     for provider in providers {
-        let response = LookupService::new(provider).make_request();
+        let response = LookupService::new(provider).lookup(None);
         if let Ok(response) = response {
             return Ok(response);
         }

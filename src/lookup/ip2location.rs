@@ -55,20 +55,11 @@ impl Ip2LocationResponse {
     }
 }
 
-pub struct Ip2Location {
-    key: Option<String>,
-}
-
-impl Ip2Location {
-    /// Create a new Ip2Location instance with an API key
-    pub fn new(key: Option<String>) -> Ip2Location {
-        Ip2Location { key }
-    }
-}
+pub struct Ip2Location;
 
 impl Provider for Ip2Location {
-    fn make_api_request(&self, target: Option<IpAddr>) -> Result<String> {
-        let key = match self.key {
+    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+        let key = match key {
             Some(k) => format!("/?key={}", k),
             None => "".to_string(),
         };
@@ -110,8 +101,8 @@ mod tests {
     #[test]
     #[ignore]
     fn test_request() {
-        let service = Box::new(Ip2Location::new(None));
-        let result = service.make_api_request(None);
+        let service = Box::new(Ip2Location);
+        let result = service.make_api_request(None, None);
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
@@ -128,8 +119,8 @@ mod tests {
         let key = env::var("IP2LOCATION_APIKEY").ok();
         assert!(key.is_some(), "Missing APIKEY");
 
-        let service = Box::new(Ip2Location::new(key));
-        let result = service.make_api_request(None);
+        let service = Box::new(Ip2Location);
+        let result = service.make_api_request(key, None);
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

@@ -56,7 +56,7 @@ impl FreeIpApiResponse {
 
 pub struct FreeIpApi;
 impl Provider for FreeIpApi {
-    fn make_api_request(&self) -> Result<String> {
+    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
         let response = reqwest::blocking::get("https://freeipapi.com/api/json");
         super::handle_response(response)
     }
@@ -95,7 +95,7 @@ mod tests {
     #[ignore]
     fn test_request() {
         let service = Box::new(FreeIpApi);
-        let result = service.make_api_request();
+        let result = service.make_api_request(None, None);
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

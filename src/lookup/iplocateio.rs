@@ -65,7 +65,7 @@ impl IpLocateIoResponse {
 
 pub struct IpLocateIo;
 impl Provider for IpLocateIo {
-    fn make_api_request(&self) -> Result<String> {
+    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
         let client = reqwest::blocking::Client::new();
         let response = client.get("https://www.iplocate.io/api/lookup/").send();
         super::handle_response(response)
@@ -105,7 +105,7 @@ mod tests {
     #[ignore]
     fn test_request() {
         let service = Box::new(IpLocateIo);
-        let result = service.make_api_request();
+        let result = service.make_api_request(None, None);
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

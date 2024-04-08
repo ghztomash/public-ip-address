@@ -94,7 +94,7 @@ impl AbstractApi {
 }
 
 impl Provider for AbstractApi {
-    fn make_api_request(&self) -> Result<String> {
+    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
         let endpoint = format!(
             "https://ipgeolocation.abstractapi.com/v1/?api_key={}",
             self.key.as_ref().unwrap_or(&"".to_string())
@@ -172,7 +172,7 @@ mod tests {
         assert!(key.is_some(), "Missing APIKEY");
 
         let service = Box::new(AbstractApi::new(key));
-        let result = service.make_api_request();
+        let result = service.make_api_request(None, None);
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
