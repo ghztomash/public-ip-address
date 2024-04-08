@@ -40,6 +40,7 @@ pub mod ipwhois;
 pub mod mock;
 pub mod mullvad;
 pub mod myip;
+pub mod ip2location;
 
 /// Provider trait to define the methods that a provider must implement
 pub trait Provider {
@@ -82,6 +83,8 @@ pub enum LookupProvider {
     IpGeolocation(Option<String>),
     /// IpData provider with API key (<https://ipdata.co>)
     IpData(Option<String>),
+    /// Ip2Location provider with API key (<https://https://www.ip2location.io>)
+    Ip2Location(Option<String>),
     /// Mock provider for testing
     Mock(String),
 }
@@ -125,6 +128,7 @@ impl FromStr for LookupProvider {
             "abstract" => Ok(LookupProvider::AbstractApi(k)),
             "ipgeolocation" => Ok(LookupProvider::IpGeolocation(k)),
             "ipdata" => Ok(LookupProvider::IpData(k)),
+            "ip2location" => Ok(LookupProvider::Ip2Location(k)),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
                 p
@@ -152,6 +156,7 @@ impl LookupProvider {
             LookupProvider::AbstractApi(key) => Box::new(abstractapi::AbstractApi::new(key)),
             LookupProvider::IpGeolocation(key) => Box::new(ipgeolocation::IpGeolocation::new(key)),
             LookupProvider::IpData(key) => Box::new(ipdata::IpData::new(key)),
+            LookupProvider::Ip2Location(key) => Box::new(ip2location::Ip2Location::new(key)),
             LookupProvider::Mock(ip) => Box::new(mock::Mock { ip }),
         }
     }
