@@ -61,6 +61,7 @@ cargo run --example <example_name>
 | AbstractApi | [https://abstractapi.com](https://abstractapi.com) | 1000 / day |
 | IpGeolocation | [https://ipgeolocation.io](https://ipgeolocation.io) | 1000 / day |
 | IpData | [https://ipdata.co](https://ipdata.co) | 1500 / day |
+| Ip2Location | [https://ip2location.io](https://ip2location.io) | 500 / day (with key 30000 / month) |
 
 ## Roadmap
 
