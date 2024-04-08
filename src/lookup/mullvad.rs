@@ -45,7 +45,7 @@ impl MullvadResponse {
 
 pub struct Mullvad;
 impl Provider for Mullvad {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
         let client = reqwest::blocking::Client::new();
         let response = client.get("https://am.i.mullvad.net/json").send();
         super::handle_response(response)

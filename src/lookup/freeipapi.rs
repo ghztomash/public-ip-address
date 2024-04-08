@@ -56,7 +56,7 @@ impl FreeIpApiResponse {
 
 pub struct FreeIpApi;
 impl Provider for FreeIpApi {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
         let response = reqwest::blocking::get("https://freeipapi.com/api/json");
         super::handle_response(response)
     }

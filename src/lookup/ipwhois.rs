@@ -75,7 +75,7 @@ impl IpWhoIsResponse {
 
 pub struct IpWhoIs;
 impl Provider for IpWhoIs {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
         let response = reqwest::blocking::get("https://ipwho.is/");
         super::handle_response(response)
     }

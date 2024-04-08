@@ -61,7 +61,7 @@ impl IpApiCoResponse {
 
 pub struct IpApiCo;
 impl Provider for IpApiCo {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
         let client = reqwest::blocking::Client::new();
         let response = client
             .get("https://ipapi.co/json")

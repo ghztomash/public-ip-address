@@ -63,7 +63,7 @@ impl IfConfigResponse {
 
 pub struct IfConfig;
 impl Provider for IfConfig {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
         let response = reqwest::blocking::get("http://ifconfig.co/json");
         super::handle_response(response)
     }
