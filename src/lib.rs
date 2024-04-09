@@ -14,7 +14,7 @@
 //! use std::error::Error;
 //!
 //! fn main() -> Result<(), Box<dyn Error>> {
-//!     let result = public_ip_address::perform_lookup()?;
+//!     let result = public_ip_address::perform_lookup(None)?;
 //!     println!("{}", result);
 //!     Ok(())
 //! }
@@ -27,9 +27,11 @@
 //!
 //! For more details, please refer to the API documentation.
 
+use std::net::IpAddr;
+
 use cache::ResponseCache;
 use error::{Error, Result};
-use lookup::{error::LookupError, LookupProvider, LookupService};
+use lookup::{error::LookupError, LookupProvider, LookupService, Parameters};
 use response::LookupResponse;
 
 pub mod cache;
@@ -46,7 +48,7 @@ pub mod response;
 /// # Example
 ///
 /// ```
-/// match public_ip_address::perform_lookup() {
+/// match public_ip_address::perform_lookup(None) {
 ///     Ok(response) => {
 ///         // Handle successful response
 ///     }
@@ -59,14 +61,15 @@ pub mod response;
 /// # Returns
 ///
 /// * A `Result` containing either a successful `LookupResponse` or an `Error` if the lookup or caching failed.
-pub fn perform_lookup() -> Result<LookupResponse> {
+pub fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
     perform_cached_lookup_with(
         vec![
-            LookupProvider::IpInfo,
-            LookupProvider::IpWhoIs,
-            LookupProvider::MyIp,
-            LookupProvider::FreeIpApi,
+            (LookupProvider::IpInfo, None),
+            (LookupProvider::IpWhoIs, None),
+            (LookupProvider::MyIp, None),
+            (LookupProvider::FreeIpApi, None),
         ],
+        target,
         Some(5),
         false,
     )
@@ -83,7 +86,8 @@ pub fn perform_lookup() -> Result<LookupResponse> {
 ///
 /// # Arguments
 ///
-/// * `providers` - A vector of `LookupProvider`s to use for the lookup.
+/// * `providers` - A vector of `LookupProvider`s and their `Parameters` to use for the lookup.
+/// * `target` - Target address for the lookup, `None` will look up the current public address.
 ///
 /// # Example
 ///
@@ -95,7 +99,7 @@ pub fn perform_lookup() -> Result<LookupResponse> {
 ///     // LookupProvider::IpWhoIs,
 /// ];
 ///
-/// match public_ip_address::perform_lookup_with(providers) {
+/// match public_ip_address::perform_lookup_with(providers, None) {
 ///     Ok(response) => {
 ///         // Handle successful response
 ///     }
@@ -108,7 +112,10 @@ pub fn perform_lookup() -> Result<LookupResponse> {
 /// # Returns
 ///
 /// * A `Result` containing either a successful `LookupResponse` or a `LookupError` containing a list of all errors received.
-pub fn perform_lookup_with(providers: Vec<LookupProvider>) -> Result<LookupResponse> {
+pub fn perform_lookup_with(
+    providers: Vec<(LookupProvider, Option<Parameters>)>,
+    target: Option<IpAddr>,
+) -> Result<LookupResponse> {
     let mut errors = Vec::new();
     if providers.is_empty() {
         return Err(Error::LookupError(LookupError::GenericError(
@@ -116,8 +123,8 @@ pub fn perform_lookup_with(providers: Vec<LookupProvider>) -> Result<LookupRespo
         )));
     }
 
-    for provider in providers {
-        let response = LookupService::new(provider).make_request();
+    for (provider, param) in providers {
+        let response = LookupService::new(provider, param).lookup(target);
         if let Ok(response) = response {
             return Ok(response);
         }
@@ -144,7 +151,8 @@ pub fn perform_lookup_with(providers: Vec<LookupProvider>) -> Result<LookupRespo
 ///
 /// # Arguments
 ///
-/// * `providers` - A vector of `LookupProvider`s to use for the lookup.
+/// * `providers` - A vector of `LookupProvider`s and their `Parameters` to use for the lookup.
+/// * `target` - Target address for the lookup, `None` will look up the current public address.
 /// * `cache_expire_time` - An `Option` containing the number of seconds before the cache expires. If `None`,
 ///   the cache never expires. If `0`, the cache expires immediately after the request.
 /// * `flush` - A `bool` indicating whether to force the cache to flush and make a new request.
@@ -161,7 +169,7 @@ pub fn perform_lookup_with(providers: Vec<LookupProvider>) -> Result<LookupRespo
 /// let expire_time = Some(60); // Cache expires after 60 seconds
 /// let flush = false; // Do not force cache flush
 ///
-/// match public_ip_address::perform_cached_lookup_with(providers, expire_time, flush) {
+/// match public_ip_address::perform_cached_lookup_with(providers, None, expire_time, flush) {
 ///     Ok(response) => {
 ///         // Handle successful response
 ///     }
@@ -175,7 +183,8 @@ pub fn perform_lookup_with(providers: Vec<LookupProvider>) -> Result<LookupRespo
 ///
 /// * A `Result` containing either a successful `LookupResponse` or an `Error` if the lookup or caching failed.
 pub fn perform_cached_lookup_with(
-    providers: Vec<LookupProvider>,
+    providers: Vec<(LookupProvider, Option<Parameters>)>,
+    target: Option<IpAddr>,
     ttl: Option<u64>,
     flush: bool,
 ) -> Result<LookupResponse> {
@@ -193,7 +202,7 @@ pub fn perform_cached_lookup_with(
     };
 
     // no cache or it's too old, make a new request.
-    match perform_lookup_with(providers) {
+    match perform_lookup_with(providers, target) {
         Ok(result) => {
             cache.update_current(&result, ttl);
             cache.save()?;
@@ -210,9 +219,11 @@ mod tests {
     use std::net::IpAddr;
 
     #[test]
-    #[serial]
     fn test_perform_lookup() {
-        let response = perform_lookup_with(vec![LookupProvider::Mock("1.1.1.1".to_string())]);
+        let response = perform_lookup_with(
+            vec![(LookupProvider::Mock("1.1.1.1".to_string()), None)],
+            None,
+        );
         assert!(response.is_ok());
         assert_eq!(
             response.unwrap().ip,
@@ -222,11 +233,26 @@ mod tests {
     }
 
     #[test]
+    fn test_perform_lookup_target() {
+        let response = perform_lookup_with(
+            vec![(LookupProvider::Mock("1.1.1.1".to_string()), None)],
+            "8.8.8.8".parse::<IpAddr>().ok(),
+        );
+        assert!(response.is_ok());
+        assert_eq!(
+            response.unwrap().ip,
+            "8.8.8.8".parse::<IpAddr>().unwrap(),
+            "IP address not matching"
+        );
+    }
+
+    #[test]
     #[serial]
     fn test_perform_lookup_cached() {
         _ = ResponseCache::default().delete();
         let response = perform_cached_lookup_with(
-            vec![LookupProvider::Mock("11.1.1.1".to_string())],
+            vec![(LookupProvider::Mock("11.1.1.1".to_string()), None)],
+            None,
             Some(1),
             false,
         );
@@ -242,7 +268,8 @@ mod tests {
     fn test_perform_lookup_cached_force_expire() {
         _ = ResponseCache::default().delete();
         let response = perform_cached_lookup_with(
-            vec![LookupProvider::Mock("21.1.1.1".to_string())],
+            vec![(LookupProvider::Mock("21.1.1.1".to_string()), None)],
+            None,
             None,
             false,
         );
@@ -252,7 +279,8 @@ mod tests {
             "IP address not matching"
         );
         let response = perform_cached_lookup_with(
-            vec![LookupProvider::Mock("22.2.2.2".to_string())],
+            vec![(LookupProvider::Mock("22.2.2.2".to_string()), None)],
+            None,
             Some(1),
             false,
         );
@@ -262,7 +290,8 @@ mod tests {
             "Non expiring cache should be used"
         );
         let response = perform_cached_lookup_with(
-            vec![LookupProvider::Mock("23.3.3.3".to_string())],
+            vec![(LookupProvider::Mock("23.3.3.3".to_string()), None)],
+            None,
             Some(1),
             true,
         );
@@ -279,7 +308,8 @@ mod tests {
     fn test_perform_lookup_cached_expired() {
         _ = ResponseCache::default().delete();
         let response = perform_cached_lookup_with(
-            vec![LookupProvider::Mock("1.1.1.1".to_string())],
+            vec![(LookupProvider::Mock("1.1.1.1".to_string()), None)],
+            None,
             Some(1),
             false,
         );
@@ -289,7 +319,8 @@ mod tests {
             "IP address not matching"
         );
         let response = perform_cached_lookup_with(
-            vec![LookupProvider::Mock("2.2.2.2".to_string())],
+            vec![(LookupProvider::Mock("2.2.2.2".to_string()), None)],
+            None,
             Some(2),
             false,
         );
@@ -301,7 +332,8 @@ mod tests {
         );
         std::thread::sleep(std::time::Duration::from_secs(1));
         let response = perform_cached_lookup_with(
-            vec![LookupProvider::Mock("3.3.3.3".to_string())],
+            vec![(LookupProvider::Mock("3.3.3.3".to_string()), None)],
+            None,
             Some(0),
             false,
         );
@@ -312,7 +344,8 @@ mod tests {
         );
 
         let response = perform_cached_lookup_with(
-            vec![LookupProvider::Mock("4.4.4.4".to_string())],
+            vec![(LookupProvider::Mock("4.4.4.4".to_string()), None)],
+            None,
             Some(1),
             false,
         );
@@ -322,7 +355,8 @@ mod tests {
             "Cached value should expire"
         );
         let response = perform_cached_lookup_with(
-            vec![LookupProvider::Mock("5.5.5.5".to_string())],
+            vec![(LookupProvider::Mock("5.5.5.5".to_string()), None)],
+            None,
             Some(1),
             false,
         );

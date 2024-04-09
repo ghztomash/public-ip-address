@@ -47,7 +47,7 @@ impl IpGeolocationResponse {
             self.ip
                 .parse()
                 .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
-            LookupProvider::IpGeolocation(None),
+            LookupProvider::IpGeolocation,
         );
         response.continent = self.continent_name;
         response.country = self.country_name;
@@ -72,23 +72,19 @@ impl IpGeolocationResponse {
     }
 }
 
-pub struct IpGeolocation {
-    key: Option<String>,
-}
-
-impl IpGeolocation {
-    /// Create a new IpGeolocation instance with an API key
-    pub fn new(key: Option<String>) -> IpGeolocation {
-        IpGeolocation { key }
-    }
-}
+pub struct IpGeolocation;
 
 impl Provider for IpGeolocation {
-    fn make_api_request(&self) -> Result<String> {
-        let endpoint = format!(
-            "https://api.ipgeolocation.io/ipgeo?apiKey={}",
-            self.key.as_ref().unwrap_or(&"".to_string())
-        );
+    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+        let key = match key {
+            Some(k) => format!("?apiKey={}", k),
+            None => "".to_string(),
+        };
+        let target = match target.map(|t| t.to_string()) {
+            Some(t) => format!("&ip={}", t),
+            None => "".to_string(),
+        };
+        let endpoint = format!("https://api.ipgeolocation.io/ipgeo{}{}", key, target);
         let response = reqwest::blocking::get(endpoint);
         super::handle_response(response)
     }
@@ -99,7 +95,7 @@ impl Provider for IpGeolocation {
     }
 
     fn get_type(&self) -> LookupProvider {
-        LookupProvider::IpGeolocation(None)
+        LookupProvider::IpGeolocation
     }
 }
 
@@ -155,8 +151,27 @@ mod tests {
         let key = env::var("IPGEOLOCATION_APIKEY").ok();
         assert!(key.is_some(), "Missing APIKEY");
 
-        let service = Box::new(IpGeolocation::new(key));
-        let result = service.make_api_request();
+        let service = Box::new(IpGeolocation);
+        let result = service.make_api_request(key, None);
+        assert!(result.is_ok(), "Failed getting result {:#?}", result);
+        let result = result.unwrap();
+        assert!(!result.is_empty(), "Result is empty");
+        println!("IpGeolocation: {:#?}", result);
+
+        let response = IpGeolocationResponse::parse(result);
+        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+    }
+
+    #[test]
+    #[ignore]
+    fn test_request_target() {
+        use std::env;
+        let key = env::var("IPGEOLOCATION_APIKEY").ok();
+        assert!(key.is_some(), "Missing APIKEY");
+
+        let target = "8.8.8.8".parse().ok();
+        let service = Box::new(IpGeolocation);
+        let result = service.make_api_request(key, target);
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

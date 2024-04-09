@@ -57,7 +57,7 @@ impl AbstractApiResponse {
             self.ip_address
                 .parse()
                 .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
-            LookupProvider::AbstractApi(None),
+            LookupProvider::AbstractApi,
         );
         response.country = self.country;
         response.continent = self.continent;
@@ -82,23 +82,19 @@ impl AbstractApiResponse {
     }
 }
 
-pub struct AbstractApi {
-    key: Option<String>,
-}
-
-impl AbstractApi {
-    /// Create a new AbstractApi instance with an API key
-    pub fn new(key: Option<String>) -> AbstractApi {
-        AbstractApi { key }
-    }
-}
+pub struct AbstractApi;
 
 impl Provider for AbstractApi {
-    fn make_api_request(&self) -> Result<String> {
-        let endpoint = format!(
-            "https://ipgeolocation.abstractapi.com/v1/?api_key={}",
-            self.key.as_ref().unwrap_or(&"".to_string())
-        );
+    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+        let key = match key {
+            Some(k) => format!("?api_key={}", k),
+            None => "".to_string(),
+        };
+        let target = match target.map(|t| t.to_string()) {
+            Some(t) => format!("&ip_address={}", t),
+            None => "".to_string(),
+        };
+        let endpoint = format!("https://ipgeolocation.abstractapi.com/v1/{}{}", key, target);
         let response = reqwest::blocking::get(endpoint);
         super::handle_response(response)
     }
@@ -109,7 +105,7 @@ impl Provider for AbstractApi {
     }
 
     fn get_type(&self) -> LookupProvider {
-        LookupProvider::AbstractApi(None)
+        LookupProvider::AbstractApi
     }
 }
 
@@ -166,13 +162,14 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn test_request() {
+    fn test_request_target() {
         use std::env;
         let key = env::var("ABSTRACT_APIKEY").ok();
         assert!(key.is_some(), "Missing APIKEY");
 
-        let service = Box::new(AbstractApi::new(key));
-        let result = service.make_api_request();
+        let service = Box::new(AbstractApi);
+        let target = "8.8.8.8".parse().ok();
+        let result = service.make_api_request(key, target);
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

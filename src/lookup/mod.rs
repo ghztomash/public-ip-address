@@ -6,12 +6,13 @@
 //! ## Example
 //! ```rust
 //! use public_ip_address::lookup::{LookupProvider, LookupService};
-//! use std::{error::Error, str::FromStr};
+//! use std::{error::Error, str::FromStr, net::IpAddr};
 //!
 //! fn main() -> Result<(), Box<dyn Error>> {
 //!     let provider = LookupProvider::from_str("ipinfo")?;
-//!     let service = LookupService::new(provider);
-//!     let result = service.make_request()?;
+//!     let service = LookupService::new(provider, None);
+//!     let target = "8.8.8.8".parse::<IpAddr>().ok();
+//!     let result = service.lookup(target)?;
 //!     println!("{}", result);
 //!     Ok(())
 //! }
@@ -21,7 +22,7 @@ use crate::LookupResponse;
 use error::{LookupError, Result};
 use reqwest::{blocking::Response, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::{fmt, str::FromStr};
+use std::{fmt, net::IpAddr, str::FromStr};
 
 pub mod abstractapi;
 pub mod error;
@@ -44,7 +45,7 @@ pub mod myip;
 
 /// Provider trait to define the methods that a provider must implement
 pub trait Provider {
-    fn make_api_request(&self) -> Result<String>;
+    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String>;
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
     fn get_type(&self) -> LookupProvider;
 }
@@ -77,14 +78,14 @@ pub enum LookupProvider {
     IpLeak,
     /// Mullvad provider (<https://mullvad.net>)
     Mullvad,
-    /// Abstract provider with API key (<https://abstractapi.com>)
-    AbstractApi(Option<String>),
-    /// IpGeolocation provider with API key (<https://ipgeolocation.io>)
-    IpGeolocation(Option<String>),
-    /// IpData provider with API key (<https://ipdata.co>)
-    IpData(Option<String>),
-    /// Ip2Location provider with API key (<https://https://www.ip2location.io>)
-    Ip2Location(Option<String>),
+    /// Abstract provider (<https://abstractapi.com>)
+    AbstractApi,
+    /// IpGeolocation provider (<https://ipgeolocation.io>)
+    IpGeolocation,
+    /// IpData provider (<https://ipdata.co>)
+    IpData,
+    /// Ip2Location provider (<https://https://www.ip2location.io>)
+    Ip2Location,
     /// Mock provider for testing
     Mock(String),
 }
@@ -109,8 +110,6 @@ impl FromStr for LookupProvider {
         let p = s
             .first()
             .ok_or(LookupError::GenericError("No provider given".to_string()))?;
-        // get the key if it exists
-        let k = s.get(1).cloned();
 
         match p.as_str() {
             "freeipapi" => Ok(LookupProvider::FreeIpApi),
@@ -125,10 +124,10 @@ impl FromStr for LookupProvider {
             "iplocateio" => Ok(LookupProvider::IpLocateIo),
             "ipleak" => Ok(LookupProvider::IpLeak),
             "mullvad" => Ok(LookupProvider::Mullvad),
-            "abstract" => Ok(LookupProvider::AbstractApi(k)),
-            "ipgeolocation" => Ok(LookupProvider::IpGeolocation(k)),
-            "ipdata" => Ok(LookupProvider::IpData(k)),
-            "ip2location" => Ok(LookupProvider::Ip2Location(k)),
+            "abstract" => Ok(LookupProvider::AbstractApi),
+            "ipgeolocation" => Ok(LookupProvider::IpGeolocation),
+            "ipdata" => Ok(LookupProvider::IpData),
+            "ip2location" => Ok(LookupProvider::Ip2Location),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
                 p
@@ -139,7 +138,7 @@ impl FromStr for LookupProvider {
 
 impl LookupProvider {
     /// Builds the concrete lookup service out of a LookupProvider enum
-    fn build(self) -> Box<dyn Provider> {
+    pub fn build(self) -> Box<dyn Provider> {
         match self {
             LookupProvider::FreeIpApi => Box::new(freeipapi::FreeIpApi),
             LookupProvider::IfConfig => Box::new(ifconfig::IfConfig),
@@ -153,12 +152,46 @@ impl LookupProvider {
             LookupProvider::IpLocateIo => Box::new(iplocateio::IpLocateIo),
             LookupProvider::IpLeak => Box::new(ipleak::IpLeak),
             LookupProvider::Mullvad => Box::new(mullvad::Mullvad),
-            LookupProvider::AbstractApi(key) => Box::new(abstractapi::AbstractApi::new(key)),
-            LookupProvider::IpGeolocation(key) => Box::new(ipgeolocation::IpGeolocation::new(key)),
-            LookupProvider::IpData(key) => Box::new(ipdata::IpData::new(key)),
-            LookupProvider::Ip2Location(key) => Box::new(ip2location::Ip2Location::new(key)),
+            LookupProvider::AbstractApi => Box::new(abstractapi::AbstractApi),
+            LookupProvider::IpGeolocation => Box::new(ipgeolocation::IpGeolocation),
+            LookupProvider::IpData => Box::new(ipdata::IpData),
+            LookupProvider::Ip2Location => Box::new(ip2location::Ip2Location),
             LookupProvider::Mock(ip) => Box::new(mock::Mock { ip }),
         }
+    }
+
+    /// Parse a `&str` into a LookupProvider with parameters
+    ///
+    /// This function parses a `&str` into a LookupProvider enum variant and extracts the API key as parameter if it exists.
+    /// The `&str` should be formatted as `<provider> <api_key>`.
+    pub fn from_str_with_params(s: &str) -> Result<(LookupProvider, Option<Parameters>)> {
+        let s = s.trim().to_lowercase();
+        // split the string into parts
+        let s = s
+            .split_whitespace()
+            .map(str::to_string)
+            .collect::<Vec<String>>();
+        // get the provider
+        let p = s
+            .first()
+            .ok_or(LookupError::GenericError("No provider given".to_string()))?;
+        let provider = p.parse::<LookupProvider>()?;
+        // get the key if it exists
+        let key = Parameters::new(s.get(1).cloned());
+        Ok((provider, key))
+    }
+}
+
+/// Parameters hold the API key for lookup providers
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[non_exhaustive]
+pub struct Parameters {
+    pub api_key: String,
+}
+
+impl Parameters {
+    pub fn new(api_key: Option<String>) -> Option<Self> {
+        api_key.map(|api_key| Parameters { api_key })
     }
 }
 
@@ -168,24 +201,32 @@ impl LookupProvider {
 /// ```
 /// use public_ip_address::lookup::{LookupProvider, LookupService};
 ///
-/// let service = LookupService::new(LookupProvider::IpApiCom);
+/// let service = LookupService::new(LookupProvider::IpApiCom, None);
 /// ```
 #[non_exhaustive]
 pub struct LookupService {
     provider: Box<dyn Provider>,
+    parameters: Option<Parameters>,
 }
 
 impl LookupService {
-    /// Creates a new `LookupService` instance.
-    pub fn new(provider: LookupProvider) -> Self {
+    /// Creates a new `LookupService` instance with parameters.
+    pub fn new(provider: LookupProvider, parameters: Option<Parameters>) -> Self {
         LookupService {
             provider: provider.build(),
+            parameters,
         }
     }
 
     /// Changes the provider for the LookupService
     pub fn set_provider(&mut self, provider: LookupProvider) -> &Self {
         self.provider = provider.build();
+        self
+    }
+
+    /// Sets the parameters for the LookupService
+    pub fn set_parameters(&mut self, parameters: Parameters) -> &Self {
+        self.parameters = Some(parameters);
         self
     }
 
@@ -199,8 +240,9 @@ impl LookupService {
     /// Makes a request to the lookup provider
     ///
     /// This function makes an API request to the current lookup provider and parses the response into a `LookupResponse` instance.
-    pub fn make_request(&self) -> Result<LookupResponse> {
-        let response = self.provider.make_api_request()?;
+    pub fn lookup(&self, target: Option<IpAddr>) -> Result<LookupResponse> {
+        let key = self.parameters.as_ref().map(|p| p.api_key.clone());
+        let response = self.provider.make_api_request(key, target)?;
         self.provider.parse_reply(response)
     }
 }
@@ -226,7 +268,7 @@ mod tests {
 
     #[test]
     fn test_set_provider() {
-        let mut provider = LookupService::new(LookupProvider::IpApiCom);
+        let mut provider = LookupService::new(LookupProvider::IpApiCom, None);
         assert_eq!(provider.get_provider_type(), LookupProvider::IpApiCom);
         provider.set_provider(LookupProvider::IpInfo);
         assert_eq!(provider.get_provider_type(), LookupProvider::IpInfo);
@@ -235,8 +277,8 @@ mod tests {
     #[test]
     fn test_make_request() {
         let address = "1.1.1.1".parse::<std::net::IpAddr>().unwrap();
-        let provider = LookupService::new(LookupProvider::Mock(address.to_string()));
-        let response = provider.make_request().unwrap();
+        let provider = LookupService::new(LookupProvider::Mock(address.to_string()), None);
+        let response = provider.lookup(None).unwrap();
         assert_eq!(response.ip, address);
     }
 
@@ -286,14 +328,18 @@ mod tests {
 
     #[test]
     fn test_conversions_with_key() {
-        let provider = LookupProvider::from_str("ipdata abc").unwrap();
+        let (provider, parameters) = LookupProvider::from_str_with_params("ipdata abc").unwrap();
+        assert_eq!(provider, LookupProvider::IpData, "Conversion failed");
         assert_eq!(
-            provider,
-            LookupProvider::IpData(Some("abc".to_string())),
-            "Conversion failed"
+            parameters,
+            Some(Parameters {
+                api_key: "abc".to_string()
+            }),
+            "Parameter conversion failed"
         );
 
-        let provider = LookupProvider::from_str("ipdata").unwrap();
-        assert_eq!(provider, LookupProvider::IpData(None), "Conversion failed");
+        let (provider, parameters) = LookupProvider::from_str_with_params("ipdata").unwrap();
+        assert_eq!(provider, LookupProvider::IpData, "Conversion failed");
+        assert_eq!(parameters, None, "Parameter conversion failed");
     }
 }

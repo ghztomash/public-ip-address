@@ -8,7 +8,7 @@ use std::error::Error;
 /// and get access to the provider specific response.
 fn main() -> Result<(), Box<dyn Error>> {
     let provider = IpWhoIs;
-    let response = provider.make_api_request()?;
+    let response = provider.make_api_request(None, None)?;
     let result = IpWhoIsResponse::parse(response)?;
     println!("{:#?}", result);
     Ok(())

@@ -64,8 +64,17 @@ impl IpInfoResponse {
 
 pub struct IpInfo;
 impl Provider for IpInfo {
-    fn make_api_request(&self) -> Result<String> {
-        let response = reqwest::blocking::get("https://ipinfo.io/json");
+    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+        let key = match key {
+            Some(k) => format!("?token={}", k),
+            None => "".to_string(),
+        };
+        let target = match target.map(|t| t.to_string()) {
+            Some(t) => format!("{}/", t),
+            None => "".to_string(),
+        };
+        let endpoint = format!("https://ipinfo.io/{}json{}", target, key);
+        let response = reqwest::blocking::get(endpoint);
         super::handle_response(response)
     }
 
@@ -100,7 +109,7 @@ mod tests {
     #[ignore]
     fn test_request() {
         let service = Box::new(IpInfo);
-        let result = service.make_api_request();
+        let result = service.make_api_request(None, None);
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

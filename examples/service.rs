@@ -1,10 +1,10 @@
 use public_ip_address::lookup::{LookupProvider, LookupService};
-use std::{error::Error, str::FromStr};
+use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let provider = LookupProvider::from_str("ipinfo")?;
-    let service = LookupService::new(provider);
-    let result = service.make_request()?;
+    let (provider, parameters) = LookupProvider::from_str_with_params("ipinfo")?;
+    let service = LookupService::new(provider, parameters);
+    let result = service.lookup(None)?;
     println!("{}", result);
     Ok(())
 }
