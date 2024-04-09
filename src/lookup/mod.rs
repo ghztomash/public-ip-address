@@ -10,7 +10,7 @@
 //!
 //! fn main() -> Result<(), Box<dyn Error>> {
 //!     let provider = LookupProvider::from_str("ipinfo")?;
-//!     let service = LookupService::new(provider);
+//!     let service = LookupService::new(provider, None);
 //!     let target = "8.8.8.8".parse::<IpAddr>().ok();
 //!     let result = service.lookup(target)?;
 //!     println!("{}", result);
@@ -110,8 +110,6 @@ impl FromStr for LookupProvider {
         let p = s
             .first()
             .ok_or(LookupError::GenericError("No provider given".to_string()))?;
-        // get the key if it exists
-        let key = s.get(1).cloned();
 
         match p.as_str() {
             "freeipapi" => Ok(LookupProvider::FreeIpApi),
@@ -140,7 +138,7 @@ impl FromStr for LookupProvider {
 
 impl LookupProvider {
     /// Builds the concrete lookup service out of a LookupProvider enum
-    fn build(self) -> Box<dyn Provider> {
+    pub fn build(self) -> Box<dyn Provider> {
         match self {
             LookupProvider::FreeIpApi => Box::new(freeipapi::FreeIpApi),
             LookupProvider::IfConfig => Box::new(ifconfig::IfConfig),
@@ -160,6 +158,27 @@ impl LookupProvider {
             LookupProvider::Ip2Location => Box::new(ip2location::Ip2Location),
             LookupProvider::Mock(ip) => Box::new(mock::Mock { ip }),
         }
+    }
+
+    /// Parse a `&str` into a LookupProvider with parameters
+    ///
+    /// This function parses a `&str` into a LookupProvider enum variant and extracts the API key as parameter if it exists.
+    /// The `&str` should be formatted as `<provider> <api_key>`.
+    pub fn from_str_with_params(s: &str) -> Result<(LookupProvider, Option<Parameters>)> {
+        let s = s.trim().to_lowercase();
+        // split the string into parts
+        let s = s
+            .split_whitespace()
+            .map(str::to_string)
+            .collect::<Vec<String>>();
+        // get the provider
+        let p = s
+            .first()
+            .ok_or(LookupError::GenericError("No provider given".to_string()))?;
+        let provider = p.parse::<LookupProvider>()?;
+        // get the key if it exists
+        let key = Parameters::new(s.get(1).cloned());
+        Ok((provider, key))
     }
 }
 
@@ -182,7 +201,7 @@ impl Parameters {
 /// ```
 /// use public_ip_address::lookup::{LookupProvider, LookupService};
 ///
-/// let service = LookupService::new(LookupProvider::IpApiCom);
+/// let service = LookupService::new(LookupProvider::IpApiCom, None);
 /// ```
 #[non_exhaustive]
 pub struct LookupService {
@@ -309,11 +328,18 @@ mod tests {
 
     #[test]
     fn test_conversions_with_key() {
-        let provider = LookupProvider::from_str("ipdata abc").unwrap();
+        let (provider, parameters) = LookupProvider::from_str_with_params("ipdata abc").unwrap();
         assert_eq!(provider, LookupProvider::IpData, "Conversion failed");
-        todo!("Check the key");
+        assert_eq!(
+            parameters,
+            Some(Parameters {
+                api_key: "abc".to_string()
+            }),
+            "Parameter conversion failed"
+        );
 
-        let provider = LookupProvider::from_str("ipdata").unwrap();
+        let (provider, parameters) = LookupProvider::from_str_with_params("ipdata").unwrap();
         assert_eq!(provider, LookupProvider::IpData, "Conversion failed");
+        assert_eq!(parameters, None, "Parameter conversion failed");
     }
 }
