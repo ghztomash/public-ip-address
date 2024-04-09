@@ -115,8 +115,8 @@ mod tests {
   "timeZone": "Europe/Berlin",
   "asn": {
     "number": 24940,
-    "name": "Hetzner Online GmbH",
-    "network": "23.88.0.0/17"
+    "name": "ABCD",
+    "network": "12.88.0.0/17"
   }
 }
 "#;

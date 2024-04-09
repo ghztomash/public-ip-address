@@ -42,6 +42,7 @@ pub mod ipwhois;
 pub mod mock;
 pub mod mullvad;
 pub mod myip;
+pub mod myipcom;
 
 /// Provider trait to define the methods that a provider must implement
 pub trait Provider {
@@ -84,8 +85,10 @@ pub enum LookupProvider {
     IpGeolocation,
     /// IpData provider (<https://ipdata.co>)
     IpData,
-    /// Ip2Location provider (<https://https://www.ip2location.io>)
+    /// Ip2Location provider (<https://www.ip2location.io>)
     Ip2Location,
+    /// MyIpCom provider (<https://www.myip.com>)
+    MyIpCom,
     /// Mock provider for testing
     Mock(String),
 }
@@ -128,6 +131,7 @@ impl FromStr for LookupProvider {
             "ipgeolocation" => Ok(LookupProvider::IpGeolocation),
             "ipdata" => Ok(LookupProvider::IpData),
             "ip2location" => Ok(LookupProvider::Ip2Location),
+            "myipcom" => Ok(LookupProvider::MyIpCom),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
                 p
@@ -156,6 +160,7 @@ impl LookupProvider {
             LookupProvider::IpGeolocation => Box::new(ipgeolocation::IpGeolocation),
             LookupProvider::IpData => Box::new(ipdata::IpData),
             LookupProvider::Ip2Location => Box::new(ip2location::Ip2Location),
+            LookupProvider::MyIpCom => Box::new(myipcom::MyIpCom),
             LookupProvider::Mock(ip) => Box::new(mock::Mock { ip }),
         }
     }
@@ -163,7 +168,7 @@ impl LookupProvider {
     /// Parse a `&str` into a LookupProvider with parameters
     ///
     /// This function parses a `&str` into a LookupProvider enum variant and extracts the API key as parameter if it exists.
-    /// The `&str` should be formatted as `<provider> <api_key>`.
+    /// The `&str` should be formatted as `<provider> <api_key>` or `<provider>`.
     pub fn from_str_with_params(s: &str) -> Result<(LookupProvider, Option<Parameters>)> {
         let s = s.trim().to_lowercase();
         // split the string into parts
