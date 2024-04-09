@@ -54,7 +54,7 @@ cargo run --example <example_name>
 | IpWhoIs | [https://ipwhois.io](https://ipwhois.io) | 10000 / month |
 | IpApiCo | [https://ipapi.co](https://ipapi.co) | 30000 / month |
 | IpApiIo | [https://ip-api.io](https://ip-api.io) | ? / day |
-| IpBase | [https://ipbase.com](https://ipbase.com) | ? / day |
+| IpBase | [https://ipbase.com](https://ipbase.com) | 10 / hour |
 | IpLocateIo | [https://iplocate.io](https://iplocate.io) | 50 / day |
 | IpLeak | [https://ipleak.net](https://ipleak.net) | ? / day |
 | Mullvad | [https://mullvad.net](https://mullvad.net) | ? / day |
@@ -68,7 +68,7 @@ cargo run --example <example_name>
 - [x] Initial release
 - [x] Add more providers
 - [x] Add support for additional providers with API key
-- [ ] Add reverse lookup feature
+- [x] Add reverse lookup feature
 - [ ] Add asynchronous support
 
 ## License

@@ -13,10 +13,11 @@ pub struct Mock {
 }
 
 impl Provider for Mock {
-    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
+    fn make_api_request(&self, _key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+        let target = target.map(|t| t.to_string());
         // simulate blocking api call
         thread::sleep(time::Duration::from_millis(100));
-        Ok(self.ip.to_owned())
+        Ok(target.unwrap_or(self.ip.to_owned()))
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

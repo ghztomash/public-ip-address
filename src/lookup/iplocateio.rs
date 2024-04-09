@@ -65,9 +65,17 @@ impl IpLocateIoResponse {
 
 pub struct IpLocateIo;
 impl Provider for IpLocateIo {
-    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
-        let client = reqwest::blocking::Client::new();
-        let response = client.get("https://www.iplocate.io/api/lookup/").send();
+    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+        let key = match key {
+            Some(k) => format!("?apikey={}", k),
+            None => "".to_string(),
+        };
+        let target = match target.map(|t| t.to_string()) {
+            Some(t) => format!("{}/", t),
+            None => "".to_string(),
+        };
+        let endpoint = format!("https://www.iplocate.io/api/lookup{}/json{}", target, key);
+        let response = reqwest::blocking::get(endpoint);
         super::handle_response(response)
     }
 

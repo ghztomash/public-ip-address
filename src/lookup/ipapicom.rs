@@ -70,8 +70,13 @@ impl IpApiComResponse {
 
 pub struct IpApiCom;
 impl Provider for IpApiCom {
-    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
-        let response = reqwest::blocking::get("http://ip-api.com/json?fields=66846719");
+    fn make_api_request(&self, _key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+        let target = match target.map(|t| t.to_string()) {
+            Some(t) => t,
+            None => "".to_string(),
+        };
+        let endpoint = format!("http://ip-api.com/json/{}?fields=66846719", target);
+        let response = reqwest::blocking::get(endpoint);
         super::handle_response(response)
     }
 

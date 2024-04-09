@@ -61,9 +61,13 @@ impl IpLeakResponse {
 
 pub struct IpLeak;
 impl Provider for IpLeak {
-    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
-        let client = reqwest::blocking::Client::new();
-        let response = client.get("https://ipleak.net/json/").send();
+    fn make_api_request(&self, _key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+        let target = match target.map(|t| t.to_string()) {
+            Some(t) => t,
+            None => "".to_string(),
+        };
+        let endpoint = format!("https://ipleak.net/json/{}", target);
+        let response = reqwest::blocking::get(endpoint);
         super::handle_response(response)
     }
 
