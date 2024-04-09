@@ -35,6 +35,7 @@ pub mod ipapiio;
 pub mod ipbase;
 pub mod ipdata;
 pub mod ipgeolocation;
+pub mod ipify;
 pub mod ipinfo;
 pub mod ipleak;
 pub mod iplocateio;
@@ -89,6 +90,8 @@ pub enum LookupProvider {
     Ip2Location,
     /// MyIpCom provider (<https://www.myip.com>)
     MyIpCom,
+    /// Ipify provider (<https://www.ipify.org>)
+    Ipify,
     /// Mock provider for testing
     Mock(String),
 }
@@ -132,6 +135,7 @@ impl FromStr for LookupProvider {
             "ipdata" => Ok(LookupProvider::IpData),
             "ip2location" => Ok(LookupProvider::Ip2Location),
             "myipcom" => Ok(LookupProvider::MyIpCom),
+            "ipify" => Ok(LookupProvider::Ipify),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
                 p
@@ -161,6 +165,7 @@ impl LookupProvider {
             LookupProvider::IpData => Box::new(ipdata::IpData),
             LookupProvider::Ip2Location => Box::new(ip2location::Ip2Location),
             LookupProvider::MyIpCom => Box::new(myipcom::MyIpCom),
+            LookupProvider::Ipify => Box::new(ipify::Ipify),
             LookupProvider::Mock(ip) => Box::new(mock::Mock { ip }),
         }
     }

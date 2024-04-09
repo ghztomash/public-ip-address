@@ -63,6 +63,7 @@ cargo run --example <example_name>
 | IpData | [https://ipdata.co](https://ipdata.co) | 1500 / day | ✔️ | ✔️ |
 | Ip2Location | [https://ip2location.io](https://ip2location.io) | 500 / day (with key 30000 / month) | ✔️ | ✔️ |
 | MyIpCom | [https://myip.com](https://myip.com) | unlimited | ️ | ️ |
+| Ipify | [https://www.ipify.org](https://www.ipify.org) | unlimited | ️ | ️ |
 
 ## Roadmap
 
@@ -72,6 +73,7 @@ cargo run --example <example_name>
 - [x] Add reverse lookup feature
 - [ ] Add asynchronous support
 - [ ] Bulk lookup
+- [ ] Offline reverse lookup
 
 ## License
 

@@ -1,4 +1,4 @@
-//! <https://myip.com> lookup provider
+//! <https://ipify.org> lookup provider
 
 use super::Result;
 use crate::{
@@ -8,48 +8,42 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://www.myip.com/api-docs
+// https://www.ipify.org
 #[derive(Serialize, Deserialize, Debug)]
-pub struct MyIpComResponse {
+pub struct IpifyResponse {
     ip: String,
-    country: Option<String>,
-    cc: Option<String>,
 }
 
-impl MyIpComResponse {
-    pub fn parse(input: String) -> Result<MyIpComResponse> {
-        let deserialized: MyIpComResponse = serde_json::from_str(&input)?;
+impl IpifyResponse {
+    pub fn parse(input: String) -> Result<IpifyResponse> {
+        let deserialized: IpifyResponse = serde_json::from_str(&input)?;
         Ok(deserialized)
     }
 
     pub fn into_response(self) -> LookupResponse {
-        let mut response = LookupResponse::new(
+        LookupResponse::new(
             self.ip
                 .parse()
                 .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
-            LookupProvider::MyIpCom,
-        );
-        response.country = self.country;
-        response.country_code = self.cc;
-
-        response
+            LookupProvider::Ipify,
+        )
     }
 }
 
-pub struct MyIpCom;
-impl Provider for MyIpCom {
+pub struct Ipify;
+impl Provider for Ipify {
     fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
-        let response = reqwest::blocking::get("https://api.myip.com");
+        let response = reqwest::blocking::get("https://api64.ipify.org/?format=json");
         super::handle_response(response)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
-        let response = MyIpComResponse::parse(json)?;
+        let response = IpifyResponse::parse(json)?;
         Ok(response.into_response())
     }
 
     fn get_type(&self) -> LookupProvider {
-        LookupProvider::MyIpCom
+        LookupProvider::Ipify
     }
 }
 
@@ -58,27 +52,25 @@ mod tests {
     use super::*;
     const TEST_INPUT: &str = r#"
 {
-  "ip": "1.1.1.1",
-  "cc": "DE",
-  "country": "Germany"
+  "ip": "1.1.1.1"
 }
 "#;
 
     #[test]
     fn test_request() {
-        let service = Box::new(MyIpCom);
+        let service = Box::new(Ipify);
         let result = service.make_api_request(None, None);
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("MyIpCom: {:#?}", result);
-        let response = MyIpComResponse::parse(result);
+        println!("Ipify: {:#?}", result);
+        let response = IpifyResponse::parse(result);
         assert!(response.is_ok(), "Failed parsing response {:#?}", response);
     }
 
     #[test]
     fn test_parse() {
-        let response = MyIpComResponse::parse(TEST_INPUT.to_string()).unwrap();
+        let response = IpifyResponse::parse(TEST_INPUT.to_string()).unwrap();
         assert_eq!(response.ip, "1.1.1.1", "IP address not matching");
         let lookup = response.into_response();
         assert_eq!(
