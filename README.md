@@ -31,7 +31,8 @@ The simplest way to use this library is to call the `perform_lookup()` function,
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let result = public_ip_address::perform_lookup()?;
+    // Perform my public IP address lookup
+    let result = public_ip_address::perform_lookup(None)?;
     println!("{}", result);
     Ok(())
 }
@@ -63,6 +64,7 @@ cargo run --example <example_name>
 | IpData | [https://ipdata.co](https://ipdata.co) | 1500 / day | ✔️ | ✔️ |
 | Ip2Location | [https://ip2location.io](https://ip2location.io) | 500 / day (with key 30000 / month) | ✔️ | ✔️ |
 | MyIpCom | [https://myip.com](https://myip.com) | unlimited | ️ | ️ |
+| GetJsonIp | [https://getjsonip.com](https://getjsonip.com) | unlimited | ️ | ️ |
 | Ipify | [https://www.ipify.org](https://www.ipify.org) | unlimited | ️ | ️ |
 
 ## Roadmap

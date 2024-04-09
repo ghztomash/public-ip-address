@@ -27,6 +27,7 @@ use std::{fmt, net::IpAddr, str::FromStr};
 pub mod abstractapi;
 pub mod error;
 pub mod freeipapi;
+pub mod getjsonip;
 pub mod ifconfig;
 pub mod ip2location;
 pub mod ipapico;
@@ -92,6 +93,8 @@ pub enum LookupProvider {
     MyIpCom,
     /// Ipify provider (<https://www.ipify.org>)
     Ipify,
+    /// GetJsonIp provider (<https://getjsonip.com>)
+    GetJsonIp,
     /// Mock provider for testing
     Mock(String),
 }
@@ -136,6 +139,7 @@ impl FromStr for LookupProvider {
             "ip2location" => Ok(LookupProvider::Ip2Location),
             "myipcom" => Ok(LookupProvider::MyIpCom),
             "ipify" => Ok(LookupProvider::Ipify),
+            "getjsonip" => Ok(LookupProvider::GetJsonIp),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
                 p
@@ -166,6 +170,7 @@ impl LookupProvider {
             LookupProvider::Ip2Location => Box::new(ip2location::Ip2Location),
             LookupProvider::MyIpCom => Box::new(myipcom::MyIpCom),
             LookupProvider::Ipify => Box::new(ipify::Ipify),
+            LookupProvider::GetJsonIp => Box::new(getjsonip::GetJsonIp),
             LookupProvider::Mock(ip) => Box::new(mock::Mock { ip }),
         }
     }
