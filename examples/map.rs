@@ -90,11 +90,12 @@ impl App {
     fn lookup(&mut self) {
         self.geolocation = public_ip_address::perform_cached_lookup_with(
             vec![
-                LookupProvider::IpInfo,
-                LookupProvider::IpWhoIs,
-                LookupProvider::IpApiCo,
-                LookupProvider::IpLeak,
+                (LookupProvider::IpInfo, None),
+                (LookupProvider::IpWhoIs, None),
+                (LookupProvider::IpApiCo, None),
+                (LookupProvider::IpLeak, None),
             ],
+            None,
             Some(5),
             false,
         )
