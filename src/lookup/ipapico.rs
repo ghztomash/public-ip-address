@@ -61,12 +61,16 @@ impl IpApiCoResponse {
 
 pub struct IpApiCo;
 impl Provider for IpApiCo {
-    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
+    fn make_api_request(&self, _key: Option<String>, target: Option<IpAddr>) -> Result<String> {
         let client = reqwest::blocking::Client::new();
+        let target = match target.map(|t| t.to_string()) {
+            Some(t) => format!("{}/", t),
+            None => "".to_string(),
+        };
         let response = client
-            .get("https://ipapi.co/json")
+            .get(format!("https://ipapi.co/{}json", target))
             // add header otherwise the service will return an error
-            .header("User-Agent", "(╯°□°)╯︵")
+            .header("User-Agent", "nil")
             .send();
         super::handle_response(response)
     }
