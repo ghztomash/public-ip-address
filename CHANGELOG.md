@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2024-04-10
+
+### 🚜 Refactor
+
+- Parameter constructor
+
+### 📚 Documentation
+
+- Update documentation
+
 ## [0.2.0] - 2024-04-10
 
 ### 🚀 Features

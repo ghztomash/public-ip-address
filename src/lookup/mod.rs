@@ -192,10 +192,7 @@ impl LookupProvider {
             .ok_or(LookupError::GenericError("No provider given".to_string()))?;
         let provider = p.parse::<LookupProvider>()?;
         // get the key if it exists
-        let key = match s.get(1) {
-            Some(key) => Some(Parameters::new(key.to_owned())),
-            None => None,
-        };
+        let key = s.get(1).map(|key| Parameters::new(key.to_owned()));
         Ok((provider, key))
     }
 }
