@@ -175,7 +175,7 @@ impl LookupProvider {
         }
     }
 
-    /// Parse a `&str` into a LookupProvider with parameters
+    /// Parse a `&str` into a LookupProvider with Parameters
     ///
     /// This function parses a `&str` into a LookupProvider enum variant and extracts the API key as parameter if it exists.
     /// The `&str` should be formatted as `<provider> <api_key>` or `<provider>`.

@@ -7,7 +7,7 @@
 //! ## Usage
 //! ```toml
 //! [dependencies]
-//! public-ip-address = { version = "0.1" }
+//! public-ip-address = { version = "0.2" }
 //! ```
 //! ## Example
 //! ```rust
@@ -44,6 +44,10 @@ pub mod response;
 /// This function performs a lookup using a predefined list of `LookupProvider`s. The list includes
 /// `IpInfo`, `IpWhoIs`, `MyIp`, and `FreeIpApi`. The result of the lookup is cached locally for 5 seconds.
 /// If a subsequent request is made within 2 seconds, the cached result is returned.
+///
+/// # Arguments
+///
+/// * `target` - Target address for the lookup, `None` will look up the current public address.
 ///
 /// # Example
 ///
@@ -96,7 +100,7 @@ pub fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
 ///
 /// let providers = vec![
 ///     // List of providers to use for the lookup
-///     // LookupProvider::IpWhoIs,
+///     // (LookupProvider::IpWhoIs, Parameters::new(apikey))
 /// ];
 ///
 /// match public_ip_address::perform_lookup_with(providers, None) {
@@ -164,7 +168,7 @@ pub fn perform_lookup_with(
 ///
 /// let providers = vec![
 ///     // List of providers to use for the lookup
-///     // LookupProvider::IpWhoIs,
+///     // (LookupProvider::IpWhoIs, Parameters::new(apikey))
 /// ];
 /// let expire_time = Some(60); // Cache expires after 60 seconds
 /// let flush = false; // Do not force cache flush
