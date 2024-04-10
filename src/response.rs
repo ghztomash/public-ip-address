@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::{fmt, net::IpAddr};
 
 /// Lookup response containing information like IP, country, city, hostname etc.
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct LookupResponse {
     /// Public IP address.
