@@ -2,30 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [0.2.0] - 2024-04-10
 
 ### 🚀 Features
 
 - Extract provider key in from_str conversion
-- Force flush the cache
+- Support IP2Location.io API closes #5 (#7)
+- Freeipapi target and key auth
+- Adds reverse lookup
+- Add  myipcom provider
+- Add ipify provider
+- Add getjsonip provider
+- Cache target lookups as binary tree map (#9)
 
 ### 🚜 Refactor
 
 - Represent IP as IpAddr instead of String
 - Refactor response struct
-- Refactore handling cache
-- Ipdate the cache module logic
-
-### 📚 Documentation
-
-- Update examples to new api
-- Update comments
-
-### ⚙️ Miscellaneous Tasks
-
-- Add serial test dependency
-- Update gitignore
-- Adds non_exhaustive to LookupProvider
+- Cache module (#6)
+- Pass key and target to API request
+- Pass key and target to provider
+- Clippy
+- Updates api to lookup target
 
 ## [0.1.1] - 2024-04-03
 

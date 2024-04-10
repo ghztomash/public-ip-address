@@ -22,7 +22,7 @@ The library also includes caching functionality to improve performance for repea
 Add the following to your `Cargo.toml` file:
 ```toml
 [dependencies]
-public-ip-address = { version = "0.1" }
+public-ip-address = { version = "0.2" }
 ```
 ## Example
 
