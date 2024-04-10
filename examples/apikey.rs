@@ -3,10 +3,13 @@ use std::{env, error::Error};
 
 fn main() -> Result<(), Box<dyn Error>> {
     // read the API key from the environment variables
-    let key = env::var("ABSTRACT_APIKEY").ok();
+    let key = env::var("ABSTRACT_APIKEY")?;
     let provider = LookupProvider::AbstractApi;
-    let parameters = Parameters::new(key);
+    // set the API key as a parameter
+    let parameters = Some(Parameters::new(key));
+    // create a lookup service
     let service = LookupService::new(provider, parameters);
+    // lookup own public IP address
     let result = service.lookup(None)?;
     println!("{}", result);
     Ok(())

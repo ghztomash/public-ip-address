@@ -100,7 +100,7 @@ pub fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
 ///
 /// let providers = vec![
 ///     // List of providers to use for the lookup
-///     // (LookupProvider::IpWhoIs, Parameters::new(apikey))
+///     // (LookupProvider::IpWhoIs, Some(Parameters::new(apikey)))
 /// ];
 ///
 /// match public_ip_address::perform_lookup_with(providers, None) {
@@ -168,7 +168,7 @@ pub fn perform_lookup_with(
 ///
 /// let providers = vec![
 ///     // List of providers to use for the lookup
-///     // (LookupProvider::IpWhoIs, Parameters::new(apikey))
+///     // (LookupProvider::IpWhoIs, Some(Parameters::new(apikey)))
 /// ];
 /// let expire_time = Some(60); // Cache expires after 60 seconds
 /// let flush = false; // Do not force cache flush

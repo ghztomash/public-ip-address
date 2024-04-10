@@ -192,7 +192,10 @@ impl LookupProvider {
             .ok_or(LookupError::GenericError("No provider given".to_string()))?;
         let provider = p.parse::<LookupProvider>()?;
         // get the key if it exists
-        let key = Parameters::new(s.get(1).cloned());
+        let key = match s.get(1) {
+            Some(key) => Some(Parameters::new(key.to_owned())),
+            None => None,
+        };
         Ok((provider, key))
     }
 }
@@ -205,8 +208,8 @@ pub struct Parameters {
 }
 
 impl Parameters {
-    pub fn new(api_key: Option<String>) -> Option<Self> {
-        api_key.map(|api_key| Parameters { api_key })
+    pub fn new(api_key: String) -> Self {
+        Self { api_key }
     }
 }
 
