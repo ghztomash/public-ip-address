@@ -31,9 +31,11 @@ use base64::prelude::*;
 use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::BTreeMap,
     fs,
     fs::File,
     io::prelude::*,
+    net::IpAddr,
     time::{Duration, SystemTime},
 };
 
@@ -44,16 +46,17 @@ pub type Result<T> = std::result::Result<T, CacheError>;
 ///
 /// The cache can be saved to disk, loaded from disk, and deleted from disk. It also provides methods to clear the cache,
 /// update the cache with a new response, check if the cache has expired, and retrieve the IP address or the entire response from the cache.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[non_exhaustive]
 pub struct ResponseCache {
     pub current_address: Option<ResponseRecord>,
+    pub lookup_address: BTreeMap<IpAddr, ResponseRecord>,
 }
 
 /// Represents an entry of the cached response
 ///
 /// It contains the `LookupResponse`, the time when the response was cached, and the time-to-live (TTL) of the cache.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[non_exhaustive]
 pub struct ResponseRecord {
     pub response: LookupResponse,
@@ -120,9 +123,9 @@ impl ResponseCache {
     /// let cache = ResponseCache::new(&response, Some(60));
     /// ```
     pub fn new(current_response: &LookupResponse, ttl: Option<u64>) -> ResponseCache {
-        println!("Creating new cache");
         ResponseCache {
             current_address: Some(ResponseRecord::new(current_response.to_owned(), ttl)),
+            lookup_address: BTreeMap::new(),
         }
     }
 
@@ -138,6 +141,7 @@ impl ResponseCache {
     /// ```
     pub fn clear(&mut self) {
         self.current_address = None;
+        self.lookup_address.clear();
     }
 
     /// Updates the current cache entry with a new response.
@@ -148,7 +152,6 @@ impl ResponseCache {
     /// * `ttl` - An `Option<u64>` representing the time-to-live (TTL) in seconds for the new cached response. If `None`, the cache never expires.
     ///
     pub fn update_current(&mut self, response: &LookupResponse, ttl: Option<u64>) {
-        println!("Updating current cache");
         self.current_address = Some(ResponseRecord::new(response.to_owned(), ttl));
     }
 
@@ -170,6 +173,27 @@ impl ResponseCache {
         self.current_address
             .as_ref()
             .map(|current| current.response.to_owned())
+    }
+
+    /// Updates the lookup cache with a new response.
+    pub fn update_target(&mut self, ip: IpAddr, response: &LookupResponse, ttl: Option<u64>) {
+        self.lookup_address
+            .insert(ip, ResponseRecord::new(response.to_owned(), ttl));
+    }
+
+    /// Checks if the lookup cache entry for the given IP address has expired.
+    pub fn target_is_expired(&self, ip: &IpAddr) -> bool {
+        match self.lookup_address.get(ip) {
+            Some(lookup) => lookup.is_expired(),
+            None => true,
+        }
+    }
+
+    /// Returns lookup cached entry for the given IP address.
+    pub fn target_response(&self, ip: &IpAddr) -> Option<LookupResponse> {
+        self.lookup_address
+            .get(ip)
+            .map(|lookup| lookup.response.to_owned())
     }
 
     /// Saves the `ResponseCache` instance to disk.
@@ -228,13 +252,16 @@ pub fn get_cache_path() -> String {
 mod tests {
     use super::*;
     use crate::lookup::LookupProvider;
+    use serial_test::serial;
 
     #[test]
+    #[serial]
     fn test_cache_file() {
         let response = LookupResponse::new(
             "1.1.1.1".parse().unwrap(),
             LookupProvider::Mock("1.1.1.1".to_string()),
         );
+        println!("{}", get_cache_path());
         let cache = ResponseCache::new(&response, None);
         cache.save().unwrap();
         let cached = ResponseCache::load().unwrap();
@@ -275,6 +302,48 @@ mod tests {
         assert!(
             cache.current_is_expired(),
             "Expired cache should be expired"
+        );
+    }
+
+    #[test]
+    fn test_cache_tree() {
+        let addresses = [
+            "1.1.1.1".parse().unwrap(),
+            "2.1.1.1".parse().unwrap(),
+            "3.1.1.1".parse().unwrap(),
+        ];
+        let mut cache = ResponseCache::default();
+        for address in &addresses {
+            let response = LookupResponse::new(*address, LookupProvider::Ipify);
+            cache.update_target(*address, &response, None);
+        }
+
+        for address in &addresses {
+            assert_eq!(
+                cache.target_response(address).unwrap().ip,
+                *address,
+                "IP address not matching: {:#?}",
+                cache
+            );
+        }
+    }
+
+    #[test]
+    fn test_cache_clear() {
+        let response = LookupResponse::new(
+            "1.1.1.1".parse().unwrap(),
+            LookupProvider::Mock("1.1.1.1".to_string()),
+        );
+        let mut cache = ResponseCache::new(&response, None);
+        let response = LookupResponse::new("2.2.2.2".parse().unwrap(), LookupProvider::Ipify);
+        cache.update_target(response.ip, &response, None);
+        cache.clear();
+        let cache = ResponseCache::default();
+        assert_eq!(
+            cache,
+            ResponseCache::default(),
+            "Cache not cleared properly: {:#?}",
+            cache
         );
     }
 }
