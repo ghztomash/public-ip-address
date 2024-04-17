@@ -26,8 +26,8 @@ pub enum CacheError {
     SerdeError(#[from] serde_json::Error),
     #[error("IO error")]
     IOError(#[from] std::io::Error),
-    #[error("Base64 error")]
-    Base64Error(#[from] base64::DecodeError),
     #[error("Utf8 error")]
     Utf8Error(#[from] std::string::FromUtf8Error),
+    #[error("Encryption error")]
+    EncryptionError(String),
 }

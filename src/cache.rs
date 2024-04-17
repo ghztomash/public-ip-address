@@ -27,7 +27,6 @@
 //! ```
 
 use crate::{error::CacheError, LookupResponse};
-use base64::prelude::*;
 use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -38,6 +37,9 @@ use std::{
     net::IpAddr,
     time::{Duration, SystemTime},
 };
+
+#[cfg(feature = "encryption")]
+use cocoon::Cocoon;
 
 /// Result type wrapper for the cache
 pub type Result<T> = std::result::Result<T, CacheError>;
@@ -198,22 +200,29 @@ impl ResponseCache {
 
     /// Saves the `ResponseCache` instance to disk.
     ///
-    /// This function serializes the `ResponseCache` instance to a JSON string, encodes it using Base64, and then writes it to a file on disk.
+    /// This function serializes the `ResponseCache` instance to a JSON string, if feature `encryption` is enabled it's encrypted using AEAD, and then writes it to a file on disk.
     /// The file is located at the path returned by the `get_cache_path` function.
     pub fn save(&self) -> Result<()> {
-        let serialized = serde_json::to_string(self)?;
-        let encoded = BASE64_STANDARD.encode(serialized);
+        let data = serde_json::to_string(self)?.into_bytes();
+
+        #[cfg(feature = "encryption")]
+        let data = encrypt(data)?;
+
         let mut file = File::create(get_cache_path())?;
-        file.write_all(encoded.as_bytes())?;
+        file.write_all(&data)?;
         Ok(())
     }
 
     /// Loads the `ResponseCache` instance from disk.
     pub fn load() -> Result<ResponseCache> {
         let mut file = File::open(get_cache_path())?;
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
-        let decoded = String::from_utf8(BASE64_STANDARD.decode(contents)?)?;
+        let mut data = Vec::new();
+        file.read_to_end(&mut data)?;
+
+        #[cfg(feature = "encryption")]
+        let data = decrypt(data)?;
+
+        let decoded = String::from_utf8(data).unwrap_or_default();
         let deserialized: ResponseCache = serde_json::from_str(&decoded)?;
         Ok(deserialized)
     }
@@ -233,19 +242,59 @@ impl ResponseCache {
 /// If it can't get the home directory, it falls back to the current directory.
 /// The cache file is named ".lookupcache".
 pub fn get_cache_path() -> String {
+    let file_name = "lookup.cache";
+
     if let Some(base_dirs) = BaseDirs::new() {
         let mut dir = base_dirs.cache_dir();
         // Create cache directory if it doesn't exist
         if !dir.exists() && fs::create_dir_all(dir).is_err() {
-            // If we can't create the cache directory, fallback to home directory
-            dir = base_dirs.home_dir();
+            // If we can't create the cache directory, fallback to data directory
+            dir = base_dirs.data_dir();
+            if !dir.exists() && fs::create_dir_all(dir).is_err() {
+                // If we can't create the data directory, fallback to home directory
+                dir = base_dirs.home_dir();
+            }
         }
-        if let Some(path) = dir.join(".lookupcache").to_str() {
+        if let Some(path) = dir.join(file_name).to_str() {
             return path.to_string();
         }
     };
-    // If we can't get the cache directory, fallback to current directory
-    ".lookupcache".to_string()
+    // As last resort, fallback to current directory
+    file_name.to_string()
+}
+
+#[cfg(feature = "encryption")]
+fn decrypt(data: Vec<u8>) -> Result<Vec<u8>> {
+    let password = mid::get(env!("CARGO_PKG_NAME")).unwrap_or("network_state".to_string());
+    let cocoon = if cfg!(debug_assertions) {
+        Cocoon::new(password.as_bytes()).with_weak_kdf()
+    } else {
+        Cocoon::new(password.as_bytes())
+    };
+    match cocoon.unwrap(&data) {
+        Ok(data) => Ok(data),
+        Err(e) => Err(CacheError::EncryptionError(format!(
+            "Error decrypting: {:?}",
+            e
+        ))),
+    }
+}
+
+#[cfg(feature = "encryption")]
+fn encrypt(data: Vec<u8>) -> Result<Vec<u8>> {
+    let password = mid::get(env!("CARGO_PKG_NAME")).unwrap_or("network_state".to_string());
+    let mut cocoon = if cfg!(debug_assertions) {
+        Cocoon::new(password.as_bytes()).with_weak_kdf()
+    } else {
+        Cocoon::new(password.as_bytes())
+    };
+    match cocoon.wrap(&data) {
+        Ok(data) => Ok(data),
+        Err(e) => Err(CacheError::EncryptionError(format!(
+            "Error encrypting: {:?}",
+            e
+        ))),
+    }
 }
 
 #[cfg(test)]
@@ -345,5 +394,14 @@ mod tests {
             "Cache not cleared properly: {:#?}",
             cache
         );
+    }
+
+    #[test]
+    #[cfg(feature = "encryption")]
+    fn test_encrypt_decrypt() {
+        let data = b"hello world".to_vec();
+        let encrypted = encrypt(data.clone()).unwrap();
+        let decrypted = decrypt(encrypted).unwrap();
+        assert_eq!(data, decrypted);
     }
 }
