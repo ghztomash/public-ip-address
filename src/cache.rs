@@ -28,6 +28,7 @@
 
 use crate::{error::CacheError, LookupResponse};
 use directories::BaseDirs;
+use log::{debug, trace};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
@@ -125,6 +126,7 @@ impl ResponseCache {
     /// let cache = ResponseCache::new(&response, Some(60));
     /// ```
     pub fn new(current_response: &LookupResponse, ttl: Option<u64>) -> ResponseCache {
+        trace!("Creating new cache structure");
         ResponseCache {
             current_address: Some(ResponseRecord::new(current_response.to_owned(), ttl)),
             lookup_address: BTreeMap::new(),
@@ -142,6 +144,7 @@ impl ResponseCache {
     /// assert!(cache.current_response().is_none());
     /// ```
     pub fn clear(&mut self) {
+        trace!("Clearing cache");
         self.current_address = None;
         self.lookup_address.clear();
     }
@@ -203,6 +206,7 @@ impl ResponseCache {
     /// This function serializes the `ResponseCache` instance to a JSON string, if feature `encryption` is enabled it's encrypted using AEAD, and then writes it to a file on disk.
     /// The file is located at the path returned by the `get_cache_path` function.
     pub fn save(&self) -> Result<()> {
+        debug!("Saving cache to {}", get_cache_path());
         let data = serde_json::to_string(self)?.into_bytes();
 
         #[cfg(feature = "encryption")]
@@ -215,6 +219,7 @@ impl ResponseCache {
 
     /// Loads the `ResponseCache` instance from disk.
     pub fn load() -> Result<ResponseCache> {
+        debug!("Loading cache from {}", get_cache_path());
         let mut file = File::open(get_cache_path())?;
         let mut data = Vec::new();
         file.read_to_end(&mut data)?;
@@ -229,6 +234,7 @@ impl ResponseCache {
 
     /// Deletes the `ResponseCache` instance from disk.
     pub fn delete(self) -> Result<()> {
+        trace!("Deleting cache file {}", get_cache_path());
         fs::remove_file(get_cache_path())?;
         Ok(())
     }
@@ -265,6 +271,7 @@ pub fn get_cache_path() -> String {
 
 #[cfg(feature = "encryption")]
 fn decrypt(data: Vec<u8>) -> Result<Vec<u8>> {
+    trace!("Decrypting data");
     let password = mid::get(env!("CARGO_PKG_NAME")).unwrap_or("network_state".to_string());
     let cocoon = if cfg!(debug_assertions) {
         Cocoon::new(password.as_bytes()).with_weak_kdf()
@@ -282,6 +289,7 @@ fn decrypt(data: Vec<u8>) -> Result<Vec<u8>> {
 
 #[cfg(feature = "encryption")]
 fn encrypt(data: Vec<u8>) -> Result<Vec<u8>> {
+    trace!("Encrypting data");
     let password = mid::get(env!("CARGO_PKG_NAME")).unwrap_or("network_state".to_string());
     let mut cocoon = if cfg!(debug_assertions) {
         Cocoon::new(password.as_bytes()).with_weak_kdf()

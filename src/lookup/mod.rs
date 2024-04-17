@@ -101,7 +101,7 @@ pub enum LookupProvider {
 
 impl fmt::Display for LookupProvider {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "{:?}", self)
+        write!(f, "{:?}", self)
     }
 }
 

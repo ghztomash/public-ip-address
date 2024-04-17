@@ -27,6 +27,7 @@
 //!
 //! For more details, please refer to the API documentation.
 
+use log::{debug, trace, warn};
 use std::net::IpAddr;
 
 use cache::ResponseCache;
@@ -128,14 +129,18 @@ pub fn perform_lookup_with(
     }
 
     for (provider, param) in providers {
+        debug!("Performing lookup with provider {}", &provider);
         let response = LookupService::new(provider, param).lookup(target);
         if let Ok(response) = response {
+            trace!("Successful response from provider");
             return Ok(response);
         }
+        warn!("Provider failed to perform lookup");
         errors.push(response.unwrap_err());
     }
 
     // if we reach here no responses were found
+    warn!("No responses from providers");
     Err(Error::LookupError(LookupError::GenericError(format!(
         "No responses from providers: {:?}",
         errors
@@ -200,11 +205,13 @@ pub fn perform_cached_lookup_with(
             if let Some(target) = target {
                 if !cache.target_is_expired(&target) && !flush {
                     if let Some(target) = cache.lookup_address.get(&target) {
+                        trace!("Using cached value");
                         return Ok(target.response.to_owned());
                     }
                 }
             } else if !cache.current_is_expired() && !flush {
                 if let Some(current) = cache.current_address {
+                    trace!("Using cached value");
                     return Ok(current.response);
                 }
             }
@@ -214,6 +221,7 @@ pub fn perform_cached_lookup_with(
         Err(_) => ResponseCache::default(),
     };
 
+    trace!("Performing new lookup");
     // no cache or it's too old, make a new request.
     match perform_lookup_with(providers, target) {
         Ok(result) => {
