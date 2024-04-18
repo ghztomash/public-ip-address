@@ -13,16 +13,16 @@
 
 `public-ip-address` is a simple Rust library for performing public IP lookups from over a dozen of various services.
 
-It provides a unified interface to fetch public IP address and geolocation information from multiple providers. Arbitrary IP addresses and access API keys supported for certain  providers.
+It provides a unified interface to fetch public IP address and geolocation information from multiple providers. Arbitrary IP address lookup and access API keys are supported for certain providers.
 
-The library also includes caching functionality to improve performance for repeated lookups and minimize rate-limiting.
+The library also includes caching functionality to improve performance for repeated lookups and minimize reaching rate-limiting thresholds. The cache file can be encrypted when enabled through a feature flag for additional privacy.
 
 ## Usage
 
 Add the following to your `Cargo.toml` file:
 ```toml
 [dependencies]
-public-ip-address = { version = "0.2" }
+public-ip-address = { version = "0.2", features = ["encryption"] }
 ```
 ## Example
 

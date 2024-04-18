@@ -4,6 +4,9 @@
 //! The `ResponseCache` can be saved to disk, loaded from disk, and deleted from disk. It also provides methods to clear the cache,
 //! update the cache with a new response, check if the cache has expired, and retrieve the IP address or the entire response from the cache.
 //!
+//! The cache is stored in a JSON format by default in the system cache directory.
+//! If the `encryption` feature is enabled, the cache is encrypted using AEAD.
+//!
 //! ## Example
 //! ```rust
 //! use std::error::Error;
@@ -244,9 +247,10 @@ impl ResponseCache {
 ///
 /// This function attempts to get the system's cache directory using the `BaseDirs` struct.
 /// If the cache directory doesn't exist, it attempts to create it.
-/// If it can't create the cache directory, it falls back to the home directory.
+/// If it can't create the cache directory, it falls back to the data directory.
+/// If it can't get the data directory, it falls back to the home directory.
 /// If it can't get the home directory, it falls back to the current directory.
-/// The cache file is named ".lookupcache".
+/// The cache file is named "lookup.cache".
 pub fn get_cache_path() -> String {
     let file_name = "lookup.cache";
 
@@ -269,10 +273,22 @@ pub fn get_cache_path() -> String {
     file_name.to_string()
 }
 
+/// Decrypts the given data using AEAD.
+///
+/// In debug mode, it uses a weaker key derivation function for faster speed.
+///
+/// # Arguments
+///
+/// * `data` - The data to be decrypted, as a vector of bytes.
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - The decrypted data, as a vector of bytes.
+/// * `Err(CacheError::EncryptionError)` - If there was an error during decryption.
 #[cfg(feature = "encryption")]
 fn decrypt(data: Vec<u8>) -> Result<Vec<u8>> {
     trace!("Decrypting data");
-    let password = mid::get(env!("CARGO_PKG_NAME")).unwrap_or("network_state".to_string());
+    let password = mid::get(env!("CARGO_PKG_NAME")).unwrap_or("lookup".to_string());
     let cocoon = if cfg!(debug_assertions) {
         Cocoon::new(password.as_bytes()).with_weak_kdf()
     } else {
@@ -287,10 +303,22 @@ fn decrypt(data: Vec<u8>) -> Result<Vec<u8>> {
     }
 }
 
+/// Encrypts the given data using AEAD.
+///
+/// In debug mode, it uses a weaker key derivation function for faster speed.
+///
+/// # Arguments
+///
+/// * `data` - The data to be encrypted, as a vector of bytes.
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - The encrypted data, as a vector of bytes.
+/// * `Err(CacheError::EncryptionError)` - If there was an error during encryption.
 #[cfg(feature = "encryption")]
 fn encrypt(data: Vec<u8>) -> Result<Vec<u8>> {
     trace!("Encrypting data");
-    let password = mid::get(env!("CARGO_PKG_NAME")).unwrap_or("network_state".to_string());
+    let password = mid::get(env!("CARGO_PKG_NAME")).unwrap_or("lookup".to_string());
     let mut cocoon = if cfg!(debug_assertions) {
         Cocoon::new(password.as_bytes()).with_weak_kdf()
     } else {
