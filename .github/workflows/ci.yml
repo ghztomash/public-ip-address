@@ -25,7 +25,7 @@ jobs:
       run: cargo build --verbose
 
     - name: Tests
-      run: cargo test --verbose -- --show-output
+      run: cargo test --features=encryption --verbose -- --show-output
 
     - name: Docs
       run: cargo doc --verbose
