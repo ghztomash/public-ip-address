@@ -133,7 +133,7 @@ pub async fn perform_lookup_with(
 
     for (provider, param) in providers {
         debug!("Performing lookup with provider {}", &provider);
-        let response = LookupService::new(provider, param).lookup(target);
+        let response = LookupService::new(provider, param).lookup(target).await;
         if let Ok(response) = response {
             trace!("Successful response from provider");
             return Ok(response);

@@ -255,7 +255,7 @@ impl LookupService {
     /// Makes a request to the lookup provider
     ///
     /// This function makes an API request to the current lookup provider and parses the response into a `LookupResponse` instance.
-    pub fn lookup(&self, target: Option<IpAddr>) -> Result<LookupResponse> {
+    pub async fn lookup(&self, target: Option<IpAddr>) -> Result<LookupResponse> {
         let key = self.parameters.as_ref().map(|p| p.api_key.clone());
         let response = self.provider.make_api_request(key, target)?;
         self.provider.parse_reply(response)
@@ -289,11 +289,11 @@ mod tests {
         assert_eq!(provider.get_provider_type(), LookupProvider::IpInfo);
     }
 
-    #[test]
-    fn test_make_request() {
+    #[tokio::test]
+    async fn test_make_request() {
         let address = "1.1.1.1".parse::<std::net::IpAddr>().unwrap();
         let provider = LookupService::new(LookupProvider::Mock(address.to_string()), None);
-        let response = provider.lookup(None).unwrap();
+        let response = provider.lookup(None).await.unwrap();
         assert_eq!(response.ip, address);
     }
 
