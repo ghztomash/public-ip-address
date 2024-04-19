@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2024-04-19
+
+### 🚀 Features
+
+- Encryption feature flag
+- Inject logging
+
+### 📚 Documentation
+
+- Update documentation for cache encryption
+
+### ⚙️ Miscellaneous Tasks
+
+- Add publish and changelog workflows
+
 ## [0.2.1] - 2024-04-10
 
 ### 🚜 Refactor
