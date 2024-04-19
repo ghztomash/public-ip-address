@@ -13,8 +13,9 @@ use std::{
     time::{Duration, Instant},
 };
 
-fn main() -> io::Result<()> {
-    App::run()
+#[tokio::main]
+async fn main() -> io::Result<()> {
+    App::run().await
 }
 
 struct App {
@@ -46,12 +47,12 @@ impl App {
         }
     }
 
-    pub fn run() -> io::Result<()> {
+    pub async fn run() -> io::Result<()> {
         let mut terminal = init_terminal()?;
         let mut app = App::new();
 
         // Lookup the geolocation of the public IP address
-        app.lookup();
+        app.lookup().await;
 
         let mut last_tick = Instant::now();
         let tick_rate = Duration::from_millis(16);
@@ -62,7 +63,7 @@ impl App {
                 if let Event::Key(key) = event::read()? {
                     match key.code {
                         KeyCode::Char('q') => break,
-                        KeyCode::Enter => app.lookup(),
+                        KeyCode::Enter => app.lookup().await,
                         KeyCode::Down | KeyCode::Char('j') => app.y -= 5.0 * app.scale,
                         KeyCode::Up | KeyCode::Char('k') => app.y += 5.0 * app.scale,
                         KeyCode::Right | KeyCode::Char('l') => app.x += 5.0 * app.scale,
@@ -87,7 +88,7 @@ impl App {
         restore_terminal()
     }
 
-    fn lookup(&mut self) {
+    async fn lookup(&mut self) {
         self.geolocation = public_ip_address::perform_cached_lookup_with(
             vec![
                 (LookupProvider::IpInfo, None),
@@ -99,6 +100,7 @@ impl App {
             Some(5),
             false,
         )
+        .await
         .ok();
         if let Some(ref geo) = self.geolocation {
             self.x = geo.longitude.unwrap_or(0.0).round();
