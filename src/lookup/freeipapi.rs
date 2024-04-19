@@ -1,10 +1,11 @@
 //! <https://freeipapi.com> lookup provider
 
-use super::Result;
+use super::{AsyncProvider, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
 };
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
@@ -57,7 +58,7 @@ impl FreeIpApiResponse {
 pub struct FreeIpApi;
 impl Provider for FreeIpApi {
     fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
-        let client = reqwest::blocking::Client::new();
+        let client = super::make_client();
         let target = match target.map(|t| t.to_string()) {
             Some(t) => t,
             None => "".to_string(),
@@ -66,8 +67,7 @@ impl Provider for FreeIpApi {
         if let Some(key) = key {
             request = request.bearer_auth(key)
         }
-        let response = request.send();
-        super::handle_response(response)
+        super::handle_response(super::send_request(request))
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -77,6 +77,27 @@ impl Provider for FreeIpApi {
 
     fn get_type(&self) -> LookupProvider {
         LookupProvider::FreeIpApi
+    }
+}
+
+#[async_trait]
+impl AsyncProvider for FreeIpApi {
+    async fn make_api_request_async(
+        &self,
+        key: Option<String>,
+        target: Option<IpAddr>,
+    ) -> Result<String> {
+        let client = super::make_client_async();
+        let target = match target.map(|t| t.to_string()) {
+            Some(t) => t,
+            None => "".to_string(),
+        };
+        let mut request = client.get(format!("https://freeipapi.com/api/json/{}", target));
+        if let Some(key) = key {
+            request = request.bearer_auth(key)
+        }
+        let response = super::send_request_async(request).await;
+        super::handle_response_async(response).await
     }
 }
 

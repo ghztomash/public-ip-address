@@ -1,10 +1,11 @@
 //! <https://ipwhois.io> lookup provider
 
-use super::Result;
+use super::{AsyncProvider, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
 };
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
@@ -89,6 +90,20 @@ impl Provider for IpWhoIs {
 
     fn get_type(&self) -> LookupProvider {
         LookupProvider::IpWhoIs
+    }
+}
+
+#[async_trait]
+impl AsyncProvider for IpWhoIs {
+    async fn make_api_request_async(
+        &self,
+        _key: Option<String>,
+        target: Option<IpAddr>,
+    ) -> Result<String> {
+        let target = target.map(|t| t.to_string()).unwrap_or_default();
+        let endpoint = format!("https://ipwho.is/{}", target);
+        let response = reqwest::blocking::get(endpoint);
+        super::handle_response(response)
     }
 }
 

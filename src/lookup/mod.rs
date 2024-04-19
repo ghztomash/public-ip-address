@@ -19,6 +19,7 @@
 //! ```
 
 use crate::LookupResponse;
+use async_trait::async_trait;
 use error::{LookupError, Result};
 use reqwest::{blocking::Response, StatusCode};
 use serde::{Deserialize, Serialize};
@@ -51,6 +52,15 @@ pub trait Provider {
     fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String>;
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
     fn get_type(&self) -> LookupProvider;
+}
+
+#[async_trait]
+pub trait AsyncProvider {
+    async fn make_api_request_async(
+        &self,
+        key: Option<String>,
+        target: Option<IpAddr>,
+    ) -> Result<String>;
 }
 
 /// Available lookup service providers
@@ -262,11 +272,45 @@ impl LookupService {
     }
 }
 
+fn make_client() -> reqwest::blocking::Client {
+    reqwest::blocking::Client::new()
+}
+
+///
+fn make_client_async() -> reqwest::Client {
+    reqwest::Client::new()
+}
+
+fn send_request(request: reqwest::blocking::RequestBuilder) -> reqwest::Result<Response> {
+    request.send()
+}
+
+async fn send_request_async(
+    request: reqwest::RequestBuilder,
+) -> reqwest::Result<reqwest::Response> {
+    request.send().await
+}
+
 /// Handles the response from reqwest
 fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
     match response {
         Ok(response) => match response.status() {
             StatusCode::OK => Ok(response.text()?),
+            StatusCode::TOO_MANY_REQUESTS => Err(LookupError::TooManyRequests(format!(
+                "Too many requests: {}",
+                response.status()
+            ))),
+            s => Err(LookupError::RequestStatus(format!("Status: {}", s))),
+        },
+        Err(e) => Err(LookupError::ReqwestError(e)),
+    }
+}
+
+/// Handles the response from reqwest
+async fn handle_response_async(response: reqwest::Result<reqwest::Response>) -> Result<String> {
+    match response {
+        Ok(response) => match response.status() {
+            StatusCode::OK => Ok(response.text().await?),
             StatusCode::TOO_MANY_REQUESTS => Err(LookupError::TooManyRequests(format!(
                 "Too many requests: {}",
                 response.status()
