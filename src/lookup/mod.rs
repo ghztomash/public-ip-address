@@ -8,11 +8,12 @@
 //! use public_ip_address::lookup::{LookupProvider, LookupService};
 //! use std::{error::Error, str::FromStr, net::IpAddr};
 //!
-//! fn main() -> Result<(), Box<dyn Error>> {
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn Error>> {
 //!     let provider = LookupProvider::from_str("ipinfo")?;
 //!     let service = LookupService::new(provider, None);
 //!     let target = "8.8.8.8".parse::<IpAddr>().ok();
-//!     let result = service.lookup(target)?;
+//!     let result = service.lookup(target).await?;
 //!     println!("{}", result);
 //!     Ok(())
 //! }
@@ -20,7 +21,7 @@
 
 use crate::LookupResponse;
 use error::{LookupError, Result};
-use reqwest::{blocking::Response, StatusCode};
+use reqwest::{Response, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::{fmt, net::IpAddr, str::FromStr};
 
@@ -47,8 +48,10 @@ pub mod myip;
 pub mod myipcom;
 
 /// Provider trait to define the methods that a provider must implement
+#[async_trait::async_trait]
 pub trait Provider {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String>;
+    async fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>)
+        -> Result<String>;
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
     fn get_type(&self) -> LookupProvider;
 }
@@ -257,16 +260,16 @@ impl LookupService {
     /// This function makes an API request to the current lookup provider and parses the response into a `LookupResponse` instance.
     pub async fn lookup(&self, target: Option<IpAddr>) -> Result<LookupResponse> {
         let key = self.parameters.as_ref().map(|p| p.api_key.clone());
-        let response = self.provider.make_api_request(key, target)?;
+        let response = self.provider.make_api_request(key, target).await?;
         self.provider.parse_reply(response)
     }
 }
 
 /// Handles the response from reqwest
-fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
+async fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
     match response {
         Ok(response) => match response.status() {
-            StatusCode::OK => Ok(response.text()?),
+            StatusCode::OK => Ok(response.text().await?),
             StatusCode::TOO_MANY_REQUESTS => Err(LookupError::TooManyRequests(format!(
                 "Too many requests: {}",
                 response.status()
@@ -297,17 +300,17 @@ mod tests {
         assert_eq!(response.ip, address);
     }
 
-    #[test]
-    fn test_handle_response() {
-        let response = reqwest::blocking::get("https://httpbin.org/status/200");
-        let body = handle_response(response);
+    #[tokio::test]
+    async fn test_handle_response() {
+        let response = reqwest::get("https://httpbin.org/status/200").await;
+        let body = handle_response(response).await;
         assert!(body.is_ok(), "Response is an error {:#?}", body);
     }
 
-    #[test]
-    fn test_handle_response_error() {
-        let response = reqwest::blocking::get("https://httpbin.org/status/500");
-        let body = handle_response(response);
+    #[tokio::test]
+    async fn test_handle_response_error() {
+        let response = reqwest::get("https://httpbin.org/status/500").await;
+        let body = handle_response(response).await;
         assert!(body.is_err(), "Response should be an error {:#?}", body);
         let body = body.unwrap_err();
         assert_eq!(
@@ -318,10 +321,10 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_handle_response_too_many() {
-        let response = reqwest::blocking::get("https://httpbin.org/status/429");
-        let body = handle_response(response);
+    #[tokio::test]
+    async fn test_handle_response_too_many() {
+        let response = reqwest::get("https://httpbin.org/status/429").await;
+        let body = handle_response(response).await;
         assert!(body.is_err(), "Response should be an error {:#?}", body);
         let body = body.unwrap_err();
         assert_eq!(

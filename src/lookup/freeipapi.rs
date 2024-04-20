@@ -55,9 +55,15 @@ impl FreeIpApiResponse {
 }
 
 pub struct FreeIpApi;
+
+#[async_trait::async_trait]
 impl Provider for FreeIpApi {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
-        let client = reqwest::blocking::Client::new();
+    async fn make_api_request(
+        &self,
+        key: Option<String>,
+        target: Option<IpAddr>,
+    ) -> Result<String> {
+        let client = reqwest::Client::new();
         let target = match target.map(|t| t.to_string()) {
             Some(t) => t,
             None => "".to_string(),
@@ -66,8 +72,8 @@ impl Provider for FreeIpApi {
         if let Some(key) = key {
             request = request.bearer_auth(key)
         }
-        let response = request.send();
-        super::handle_response(response)
+        let response = request.send().await;
+        super::handle_response(response).await
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -100,11 +106,11 @@ mod tests {
 }
 "#;
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request() {
+    async fn test_request() {
         let service = Box::new(FreeIpApi);
-        let result = service.make_api_request(None, None);
+        let result = service.make_api_request(None, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

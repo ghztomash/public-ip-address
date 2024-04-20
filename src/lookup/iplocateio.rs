@@ -64,8 +64,14 @@ impl IpLocateIoResponse {
 }
 
 pub struct IpLocateIo;
+
+#[async_trait::async_trait]
 impl Provider for IpLocateIo {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    async fn make_api_request(
+        &self,
+        key: Option<String>,
+        target: Option<IpAddr>,
+    ) -> Result<String> {
         let key = match key {
             Some(k) => format!("?apikey={}", k),
             None => "".to_string(),
@@ -75,8 +81,8 @@ impl Provider for IpLocateIo {
             None => "".to_string(),
         };
         let endpoint = format!("https://www.iplocate.io/api/lookup{}/json{}", target, key);
-        let response = reqwest::blocking::get(endpoint);
-        super::handle_response(response)
+        let response = reqwest::get(endpoint).await;
+        super::handle_response(response).await
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -109,11 +115,11 @@ mod tests {
 }
 "#;
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request() {
+    async fn test_request() {
         let service = Box::new(IpLocateIo);
-        let result = service.make_api_request(None, None);
+        let result = service.make_api_request(None, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

@@ -113,8 +113,13 @@ impl IpDataResponse {
 
 pub struct IpData;
 
+#[async_trait::async_trait]
 impl Provider for IpData {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    async fn make_api_request(
+        &self,
+        key: Option<String>,
+        target: Option<IpAddr>,
+    ) -> Result<String> {
         let key = match key {
             Some(k) => format!("?api-key={}", k),
             None => "".to_string(),
@@ -124,8 +129,8 @@ impl Provider for IpData {
             None => "".to_string(),
         };
         let endpoint = format!("https://api.ipdata.co/{}{}", target, key);
-        let response = reqwest::blocking::get(endpoint);
-        super::handle_response(response)
+        let response = reqwest::get(endpoint).await;
+        super::handle_response(response).await
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -209,15 +214,15 @@ mod tests {
 }
 "#;
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request() {
+    async fn test_request() {
         use std::env;
         let key = env::var("IPDATA_APIKEY").ok();
         assert!(key.is_some(), "Missing APIKEY");
 
         let service = Box::new(IpData);
-        let result = service.make_api_request(key, None);
+        let result = service.make_api_request(key, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
@@ -227,16 +232,16 @@ mod tests {
         assert!(response.is_ok(), "Failed parsing response {:#?}", response);
     }
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request_target() {
+    async fn test_request_target() {
         use std::env;
         let key = env::var("IPDATA_APIKEY").ok();
         assert!(key.is_some(), "Missing APIKEY");
 
         let service = Box::new(IpData);
         let target = "8.8.8.8".parse().ok();
-        let result = service.make_api_request(key, target);
+        let result = service.make_api_request(key, target).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

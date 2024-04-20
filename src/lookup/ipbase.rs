@@ -126,19 +126,25 @@ impl IpBaseResponse {
 }
 
 pub struct IpBase;
+
+#[async_trait::async_trait]
 impl Provider for IpBase {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    async fn make_api_request(
+        &self,
+        key: Option<String>,
+        target: Option<IpAddr>,
+    ) -> Result<String> {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => format!("?ip={}", t),
             None => "".to_string(),
         };
-        let client = reqwest::blocking::Client::new();
+        let client = reqwest::Client::new();
         let mut request = client.get(format!("https://api.ipbase.com/v2/info{}", target));
         if let Some(key) = key {
             request = request.header("apikey", key)
         }
-        let response = request.send();
-        super::handle_response(response)
+        let response = request.send().await;
+        super::handle_response(response).await
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -302,11 +308,13 @@ mod tests {
 }
 "#;
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request() {
+    async fn test_request() {
         let service = Box::new(IpBase);
-        let result = service.make_api_request(None, "8.8.8.8".parse::<IpAddr>().ok());
+        let result = service
+            .make_api_request(None, "8.8.8.8".parse::<IpAddr>().ok())
+            .await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

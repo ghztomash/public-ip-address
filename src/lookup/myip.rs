@@ -78,10 +78,16 @@ impl MyIpResponse {
 }
 
 pub struct MyIp;
+
+#[async_trait::async_trait]
 impl Provider for MyIp {
-    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
-        let response = reqwest::blocking::get("https://api.my-ip.io/v2/ip.json");
-        super::handle_response(response)
+    async fn make_api_request(
+        &self,
+        _key: Option<String>,
+        _target: Option<IpAddr>,
+    ) -> Result<String> {
+        let response = reqwest::get("https://api.my-ip.io/v2/ip.json").await;
+        super::handle_response(response).await
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -121,11 +127,11 @@ mod tests {
 }
 "#;
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request() {
+    async fn test_request() {
         let service = Box::new(MyIp);
-        let result = service.make_api_request(None, None);
+        let result = service.make_api_request(None, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

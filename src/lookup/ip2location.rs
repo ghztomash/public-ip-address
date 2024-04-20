@@ -57,8 +57,13 @@ impl Ip2LocationResponse {
 
 pub struct Ip2Location;
 
+#[async_trait::async_trait]
 impl Provider for Ip2Location {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    async fn make_api_request(
+        &self,
+        key: Option<String>,
+        target: Option<IpAddr>,
+    ) -> Result<String> {
         let key = match key {
             Some(k) => format!("?key={}", k),
             None => "".to_string(),
@@ -68,8 +73,8 @@ impl Provider for Ip2Location {
             None => "".to_string(),
         };
         let endpoint = format!("https://api.ip2location.io/{}{}", key, target);
-        let response = reqwest::blocking::get(endpoint);
-        super::handle_response(response)
+        let response = reqwest::get(endpoint).await;
+        super::handle_response(response).await
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -102,11 +107,11 @@ mod tests {
 }
 "#;
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request() {
+    async fn test_request() {
         let service = Box::new(Ip2Location);
-        let result = service.make_api_request(None, None);
+        let result = service.make_api_request(None, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
@@ -116,15 +121,15 @@ mod tests {
         assert!(response.is_ok(), "Failed parsing response {:#?}", response);
     }
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request_with_key() {
+    async fn test_request_with_key() {
         use std::env;
         let key = env::var("IP2LOCATION_APIKEY").ok();
         assert!(key.is_some(), "Missing APIKEY");
 
         let service = Box::new(Ip2Location);
-        let result = service.make_api_request(key, None);
+        let result = service.make_api_request(key, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
@@ -134,16 +139,16 @@ mod tests {
         assert!(response.is_ok(), "Failed parsing response {:#?}", response);
     }
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request_with_key_for_target() {
+    async fn test_request_with_key_for_target() {
         use std::env;
         let key = env::var("IP2LOCATION_APIKEY").ok();
         assert!(key.is_some(), "Missing APIKEY");
 
         let target = "8.8.8.8".parse::<IpAddr>().ok();
         let service = Box::new(Ip2Location);
-        let result = service.make_api_request(key, target);
+        let result = service.make_api_request(key, target).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

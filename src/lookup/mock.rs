@@ -12,8 +12,13 @@ pub struct Mock {
     pub ip: String,
 }
 
+#[async_trait::async_trait]
 impl Provider for Mock {
-    fn make_api_request(&self, _key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    async fn make_api_request(
+        &self,
+        _key: Option<String>,
+        target: Option<IpAddr>,
+    ) -> Result<String> {
         let target = target.map(|t| t.to_string());
         // simulate blocking api call
         thread::sleep(time::Duration::from_millis(100));

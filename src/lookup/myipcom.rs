@@ -37,10 +37,16 @@ impl MyIpComResponse {
 }
 
 pub struct MyIpCom;
+
+#[async_trait::async_trait]
 impl Provider for MyIpCom {
-    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
-        let response = reqwest::blocking::get("https://api.myip.com");
-        super::handle_response(response)
+    async fn make_api_request(
+        &self,
+        _key: Option<String>,
+        _target: Option<IpAddr>,
+    ) -> Result<String> {
+        let response = reqwest::get("https://api.myip.com").await;
+        super::handle_response(response).await
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -64,10 +70,10 @@ mod tests {
 }
 "#;
 
-    #[test]
-    fn test_request() {
+    #[tokio::test]
+    async fn test_request() {
         let service = Box::new(MyIpCom);
-        let result = service.make_api_request(None, None);
+        let result = service.make_api_request(None, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
