@@ -1,6 +1,6 @@
 //! <https://ipbase.com> lookup provider
 
-use super::Result;
+use super::{client::RequestBuilder, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -129,22 +129,21 @@ pub struct IpBase;
 
 #[async_trait::async_trait]
 impl Provider for IpBase {
-    async fn make_api_request(
-        &self,
-        key: Option<String>,
-        target: Option<IpAddr>,
-    ) -> Result<String> {
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => format!("?ip={}", t),
             None => "".to_string(),
         };
-        let client = reqwest::Client::new();
-        let mut request = client.get(format!("https://api.ipbase.com/v2/info{}", target));
+        format!("https://api.ipbase.com/v2/info{}", target)
+    }
+
+    #[inline]
+    fn add_auth(&self, request: RequestBuilder, key: &Option<String>) -> RequestBuilder {
         if let Some(key) = key {
-            request = request.header("apikey", key)
+            return request.header("apikey", key);
         }
-        let response = request.send().await;
-        super::handle_response(response).await
+        request
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

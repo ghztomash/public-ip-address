@@ -77,15 +77,10 @@ pub struct IpWhoIs;
 
 #[async_trait::async_trait]
 impl Provider for IpWhoIs {
-    async fn make_api_request(
-        &self,
-        _key: Option<String>,
-        target: Option<IpAddr>,
-    ) -> Result<String> {
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = target.map(|t| t.to_string()).unwrap_or_default();
-        let endpoint = format!("https://ipwho.is/{}", target);
-        let response = reqwest::get(endpoint).await;
-        super::handle_response(response).await
+        format!("https://ipwho.is/{}", target)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

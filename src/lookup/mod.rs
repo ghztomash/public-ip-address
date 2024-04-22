@@ -63,10 +63,7 @@ pub trait Provider {
         handle_response(response).await
     }
 
-    // TODO: remove default implementation
-    fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
-        "http://localhost".to_string()
-    }
+    fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String;
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
     fn get_type(&self) -> LookupProvider;
 

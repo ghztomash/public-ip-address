@@ -36,7 +36,7 @@ pub struct GetJsonIp;
 impl Provider for GetJsonIp {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
-        format!("https://ipv4.jsonip.com")
+        "https://ipv4.jsonip.com".to_string()
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

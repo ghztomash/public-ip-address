@@ -63,18 +63,13 @@ pub struct IpLeak;
 
 #[async_trait::async_trait]
 impl Provider for IpLeak {
-    async fn make_api_request(
-        &self,
-        _key: Option<String>,
-        target: Option<IpAddr>,
-    ) -> Result<String> {
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => t,
             None => "".to_string(),
         };
-        let endpoint = format!("https://ipleak.net/json/{}", target);
-        let response = reqwest::get(endpoint).await;
-        super::handle_response(response).await
+        format!("https://ipleak.net/json/{}", target)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

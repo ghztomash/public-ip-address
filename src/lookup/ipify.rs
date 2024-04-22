@@ -34,13 +34,9 @@ pub struct Ipify;
 
 #[async_trait::async_trait]
 impl Provider for Ipify {
-    async fn make_api_request(
-        &self,
-        _key: Option<String>,
-        _target: Option<IpAddr>,
-    ) -> Result<String> {
-        let response = reqwest::get("https://api64.ipify.org/?format=json").await;
-        super::handle_response(response).await
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
+        "https://api64.ipify.org/?format=json".to_string()
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

@@ -47,14 +47,9 @@ pub struct Mullvad;
 
 #[async_trait::async_trait]
 impl Provider for Mullvad {
-    async fn make_api_request(
-        &self,
-        _key: Option<String>,
-        _target: Option<IpAddr>,
-    ) -> Result<String> {
-        let client = reqwest::Client::new();
-        let response = client.get("https://am.i.mullvad.net/json").send().await;
-        super::handle_response(response).await
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
+        "https://am.i.mullvad.net/json".to_string()
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

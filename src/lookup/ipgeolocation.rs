@@ -76,11 +76,8 @@ pub struct IpGeolocation;
 
 #[async_trait::async_trait]
 impl Provider for IpGeolocation {
-    async fn make_api_request(
-        &self,
-        key: Option<String>,
-        target: Option<IpAddr>,
-    ) -> Result<String> {
+    #[inline]
+    fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?apiKey={}", k),
             None => "".to_string(),
@@ -89,9 +86,7 @@ impl Provider for IpGeolocation {
             Some(t) => format!("&ip={}", t),
             None => "".to_string(),
         };
-        let endpoint = format!("https://api.ipgeolocation.io/ipgeo{}{}", key, target);
-        let response = reqwest::get(endpoint).await;
-        super::handle_response(response).await
+        format!("https://api.ipgeolocation.io/ipgeo{}{}", key, target)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

@@ -66,11 +66,8 @@ pub struct IpInfo;
 
 #[async_trait::async_trait]
 impl Provider for IpInfo {
-    async fn make_api_request(
-        &self,
-        key: Option<String>,
-        target: Option<IpAddr>,
-    ) -> Result<String> {
+    #[inline]
+    fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?token={}", k),
             None => "".to_string(),
@@ -79,9 +76,7 @@ impl Provider for IpInfo {
             Some(t) => format!("{}/", t),
             None => "".to_string(),
         };
-        let endpoint = format!("https://ipinfo.io/{}json{}", target, key);
-        let response = reqwest::get(endpoint).await;
-        super::handle_response(response).await
+        format!("https://ipinfo.io/{}json{}", target, key)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

@@ -81,13 +81,9 @@ pub struct MyIp;
 
 #[async_trait::async_trait]
 impl Provider for MyIp {
-    async fn make_api_request(
-        &self,
-        _key: Option<String>,
-        _target: Option<IpAddr>,
-    ) -> Result<String> {
-        let response = reqwest::get("https://api.my-ip.io/v2/ip.json").await;
-        super::handle_response(response).await
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
+        "https://api.my-ip.io/v2/ip.json".to_string()
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
