@@ -78,7 +78,8 @@ pub async fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
         target,
         Some(5),
         false,
-    ).await
+    )
+    .await
 }
 
 /// Performs a lookup using a list of providers until a successful response is received.
@@ -259,7 +260,8 @@ mod tests {
         let response = perform_lookup_with(
             vec![(LookupProvider::Mock("1.1.1.1".to_string()), None)],
             None,
-        ).await;
+        )
+        .await;
         assert!(response.is_ok());
         assert_eq!(
             response.unwrap().ip,
@@ -273,7 +275,8 @@ mod tests {
         let response = perform_lookup_with(
             vec![(LookupProvider::Mock("1.1.1.1".to_string()), None)],
             Some(ip("8.8.8.8")),
-        ).await;
+        )
+        .await;
         assert!(response.is_ok());
         assert_eq!(
             response.unwrap().ip,
@@ -291,7 +294,8 @@ mod tests {
             None,
             Some(1),
             false,
-        ).await;
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("11.1.1.1"),
@@ -309,7 +313,8 @@ mod tests {
             None,
             None,
             false,
-        ).await;
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("21.1.1.1"),
@@ -320,7 +325,8 @@ mod tests {
             None,
             Some(1),
             false,
-        ).await;
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("21.1.1.1"),
@@ -331,7 +337,8 @@ mod tests {
             None,
             Some(1),
             true,
-        ).await;
+        )
+        .await;
         // the old cache should be flushed
         assert_eq!(
             response.unwrap().ip,
@@ -350,7 +357,8 @@ mod tests {
             None,
             Some(1),
             false,
-        ).await;
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("1.1.1.1"),
@@ -361,7 +369,8 @@ mod tests {
             None,
             Some(2),
             false,
-        ).await;
+        )
+        .await;
         // the old cache should be returned
         assert_eq!(
             response.unwrap().ip,
@@ -374,7 +383,8 @@ mod tests {
             None,
             Some(0),
             false,
-        ).await;
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("3.3.3.3"),
@@ -386,7 +396,8 @@ mod tests {
             None,
             Some(1),
             false,
-        ).await;
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("4.4.4.4"),
@@ -397,7 +408,8 @@ mod tests {
             None,
             Some(1),
             false,
-        ).await;
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("4.4.4.4"),

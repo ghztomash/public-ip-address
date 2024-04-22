@@ -34,13 +34,9 @@ pub struct GetJsonIp;
 
 #[async_trait::async_trait]
 impl Provider for GetJsonIp {
-    async fn make_api_request(
-        &self,
-        _key: Option<String>,
-        _target: Option<IpAddr>,
-    ) -> Result<String> {
-        let response = reqwest::get("https://ipv4.jsonip.com").await;
-        super::handle_response(response).await
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
+        format!("https://ipv4.jsonip.com")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

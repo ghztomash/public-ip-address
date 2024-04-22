@@ -1,6 +1,6 @@
 //! <https://ipapi.co> lookup provider
 
-use super::Result;
+use super::{client::RequestBuilder, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -63,23 +63,18 @@ pub struct IpApiCo;
 
 #[async_trait::async_trait]
 impl Provider for IpApiCo {
-    async fn make_api_request(
-        &self,
-        _key: Option<String>,
-        target: Option<IpAddr>,
-    ) -> Result<String> {
-        let client = reqwest::Client::new();
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => format!("{}/", t),
             None => "".to_string(),
         };
-        let response = client
-            .get(format!("https://ipapi.co/{}json", target))
-            // add header otherwise the service will return an error
-            .header("User-Agent", "nil")
-            .send()
-            .await;
-        super::handle_response(response).await
+        format!("https://ipapi.co/{}json", target)
+    }
+
+    #[inline]
+    fn add_auth(&self, request: RequestBuilder, _key: &Option<String>) -> RequestBuilder {
+        request.header("User-Agent", "nil")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

@@ -20,10 +20,13 @@
 //! ```
 
 use crate::LookupResponse;
+use client::{Client, RequestBuilder, Response};
 use error::{LookupError, Result};
-use reqwest::{Response, StatusCode};
+use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::{fmt, net::IpAddr, str::FromStr};
+
+mod client;
 
 pub mod abstractapi;
 pub mod error;
@@ -50,10 +53,33 @@ pub mod myipcom;
 /// Provider trait to define the methods that a provider must implement
 #[async_trait::async_trait]
 pub trait Provider {
-    async fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>)
-        -> Result<String>;
+    // TODO: remove
+    async fn make_api_request(
+        &self,
+        key: Option<String>,
+        target: Option<IpAddr>,
+    ) -> Result<String> {
+        let response = self.get_client(key, target).send().await;
+        handle_response(response).await
+    }
+
+    // TODO: remove default implementation
+    fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
+        "http://localhost".to_string()
+    }
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
     fn get_type(&self) -> LookupProvider;
+
+    #[inline]
+    fn get_client(&self, key: Option<String>, target: Option<IpAddr>) -> RequestBuilder {
+        let client = Client::new().get(self.get_endpoint(&key, &target));
+        self.add_auth(client, &key)
+    }
+
+    #[inline]
+    fn add_auth(&self, request: RequestBuilder, _key: &Option<String>) -> RequestBuilder {
+        request
+    }
 }
 
 /// Available lookup service providers
@@ -259,9 +285,15 @@ impl LookupService {
     ///
     /// This function makes an API request to the current lookup provider and parses the response into a `LookupResponse` instance.
     pub async fn lookup(&self, target: Option<IpAddr>) -> Result<LookupResponse> {
-        let key = self.parameters.as_ref().map(|p| p.api_key.clone());
-        let response = self.provider.make_api_request(key, target).await?;
+        let response = self.make_api_request(target).await?;
         self.provider.parse_reply(response)
+    }
+
+    /// Internal function to make the API request
+    async fn make_api_request(&self, target: Option<IpAddr>) -> Result<String> {
+        let key = self.parameters.as_ref().map(|p| p.api_key.clone());
+        let response = self.provider.get_client(key, target).send().await;
+        handle_response(response).await
     }
 }
 

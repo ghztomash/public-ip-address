@@ -1,6 +1,6 @@
 //! <https://freeipapi.com> lookup provider
 
-use super::Result;
+use super::{client::RequestBuilder, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -58,22 +58,21 @@ pub struct FreeIpApi;
 
 #[async_trait::async_trait]
 impl Provider for FreeIpApi {
-    async fn make_api_request(
-        &self,
-        key: Option<String>,
-        target: Option<IpAddr>,
-    ) -> Result<String> {
-        let client = reqwest::Client::new();
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => t,
             None => "".to_string(),
         };
-        let mut request = client.get(format!("https://freeipapi.com/api/json/{}", target));
+        format!("https://freeipapi.com/api/json/{}", target)
+    }
+
+    #[inline]
+    fn add_auth(&self, request: RequestBuilder, key: &Option<String>) -> RequestBuilder {
         if let Some(key) = key {
-            request = request.bearer_auth(key)
+            return request.bearer_auth(key);
         }
-        let response = request.send().await;
-        super::handle_response(response).await
+        request
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

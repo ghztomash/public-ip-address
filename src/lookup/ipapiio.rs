@@ -73,11 +73,8 @@ pub struct IpApiIo;
 
 #[async_trait::async_trait]
 impl Provider for IpApiIo {
-    async fn make_api_request(
-        &self,
-        key: Option<String>,
-        target: Option<IpAddr>,
-    ) -> Result<String> {
+    #[inline]
+    fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?api_key={}", k),
             None => "".to_string(),
@@ -86,9 +83,7 @@ impl Provider for IpApiIo {
             Some(t) => t,
             None => "".to_string(),
         };
-        let endpoint = format!("https://ip-api.io/json/{}{}", target, key);
-        let response = reqwest::get(endpoint).await;
-        super::handle_response(response).await
+        format!("https://ip-api.io/json/{}{}", target, key)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {

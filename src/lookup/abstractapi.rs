@@ -86,11 +86,8 @@ pub struct AbstractApi;
 
 #[async_trait::async_trait]
 impl Provider for AbstractApi {
-    async fn make_api_request(
-        &self,
-        key: Option<String>,
-        target: Option<IpAddr>,
-    ) -> Result<String> {
+    #[inline]
+    fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?api_key={}", k),
             None => "".to_string(),
@@ -99,9 +96,7 @@ impl Provider for AbstractApi {
             Some(t) => format!("&ip_address={}", t),
             None => "".to_string(),
         };
-        let endpoint = format!("https://ipgeolocation.abstractapi.com/v1/{}{}", key, target);
-        let response = reqwest::get(endpoint).await;
-        super::handle_response(response).await
+        format!("https://ipgeolocation.abstractapi.com/v1/{}{}", key, target)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
