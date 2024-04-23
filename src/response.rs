@@ -10,14 +10,23 @@ use std::{fmt, net::IpAddr};
 pub struct LookupResponse {
     /// Public IP address.
     pub ip: IpAddr,
+    /// Continent name.
     pub continent: Option<String>,
+    /// Country name.
     pub country: Option<String>,
+    /// Country ISO code.
     pub country_code: Option<String>,
+    /// Region name.
     pub region: Option<String>,
+    /// Postal code.
     pub postal_code: Option<String>,
+    /// City name.
     pub city: Option<String>,
+    /// Latitude of the IP address.
     pub latitude: Option<f64>,
+    /// Longitude of the IP address.
     pub longitude: Option<f64>,
+    /// Time zone of the IP address.
     pub time_zone: Option<String>,
     /// Autonomous System Number.
     pub asn: Option<String>,

@@ -27,6 +27,8 @@
 //!
 //! For more details, please refer to the API documentation.
 
+#![warn(missing_docs)]
+
 use log::{debug, trace, warn};
 use std::net::IpAddr;
 

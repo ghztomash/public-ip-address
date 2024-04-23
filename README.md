@@ -13,9 +13,13 @@
 
 `public-ip-address` is a simple Rust library for performing public IP lookups from over a dozen of various services.
 
-It provides a unified interface to fetch public IP address and geolocation information from multiple providers. Arbitrary IP address lookup and access API keys are supported for certain providers.
+It provides a unified interface to fetch public IP address and geolocation information from multiple providers.
+Arbitrary IP address lookup and access API keys are supported for certain providers.
+The library provides an asynchronous interface to make it easy to integrate with other `async` codebase.
 
-The library also includes caching functionality to improve performance for repeated lookups and minimize reaching rate-limiting thresholds. The cache file can be encrypted when enabled through a feature flag for additional privacy.
+The library also includes caching functionality to improve performance for repeated lookups
+and minimize reaching rate-limiting thresholds.
+The cache file can be encrypted when enabled through a feature flag for additional privacy.
 
 ## Usage
 
@@ -30,9 +34,10 @@ The simplest way to use this library is to call the `perform_lookup()` function,
 ```rust
 use std::error::Error;
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
     // Perform my public IP address lookup
-    let result = public_ip_address::perform_lookup(None)?;
+    let result = public_ip_address::perform_lookup(None).await?;
     println!("{}", result);
     Ok(())
 }
@@ -73,7 +78,7 @@ cargo run --example <example_name>
 - [x] Add more providers
 - [x] Add support for additional providers with API key
 - [x] Add reverse lookup feature
-- [ ] Add asynchronous support
+- [ ] Add asynchronous and synchronous interface support
 - [ ] Bulk lookup
 - [ ] Offline reverse lookup
 

@@ -55,7 +55,9 @@ pub type Result<T> = std::result::Result<T, CacheError>;
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[non_exhaustive]
 pub struct ResponseCache {
+    /// The current IP address lookup response
     pub current_address: Option<ResponseRecord>,
+    /// A tree of arbitrary IP address responses
     pub lookup_address: BTreeMap<IpAddr, ResponseRecord>,
 }
 
@@ -65,6 +67,7 @@ pub struct ResponseCache {
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[non_exhaustive]
 pub struct ResponseRecord {
+    /// Cached response
     pub response: LookupResponse,
     response_time: SystemTime,
     ttl: Option<u64>,
