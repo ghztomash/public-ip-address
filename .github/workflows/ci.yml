@@ -25,10 +25,16 @@ jobs:
       run: cargo build --verbose
 
     - name: Tests
+      run: cargo test --verbose -- --show-output
+
+    - name: Test encryption
       run: cargo test --features=encryption --verbose -- --show-output
 
     - name: Docs
       run: cargo doc --verbose
+
+    - name: Example
+      run: cargo run --example basic --verbose
 
   typos:
     name: Typos
