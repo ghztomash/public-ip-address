@@ -24,7 +24,8 @@ cocoon = { version = "0.4", optional = true }
 mid = { version = "2.0", optional = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt", "test-util", "full"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tokio-test = "0.4"
 crossterm = { version = "0.27" }
 ratatui = { version = "0.26" }
 rusty-hook = { version = "0.11" }
