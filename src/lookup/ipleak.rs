@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// https://ipleak.net/
+/// <https://ipleak.net/>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpLeakResponse {
     ip: String,

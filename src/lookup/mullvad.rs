@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// https://mullvad.net/
+/// <https://mullvad.net/>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MullvadResponse {
     ip: String,

@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// https://iplocate.docs.apiary.io/
+/// <https://iplocate.docs.apiary.io/>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpLocateIoResponse {
     ip: String,

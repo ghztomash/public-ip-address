@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// http://github.com/leafcloudhq/echoip/blob/master/http/http.go
+/// <http://github.com/leafcloudhq/echoip/blob/master/http/http.go>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IfConfigResponse {
     ip: String,

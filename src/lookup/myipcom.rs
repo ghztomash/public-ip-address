@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// https://www.myip.com/api-docs
+/// <https://www.myip.com/api-docs>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MyIpComResponse {
     ip: String,

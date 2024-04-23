@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// https://ipwhois.io/documentation
+/// <https://ipwhois.io/documentation>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpWhoIsResponse {
     ip: String,

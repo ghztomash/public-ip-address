@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// https://ipgeolocation.io/documentation
+/// <https://ipgeolocation.io/documentation>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpGeolocationResponse {
     ip: String,

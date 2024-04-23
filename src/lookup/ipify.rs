@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// https://www.ipify.org
+/// <https://www.ipify.org>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpifyResponse {
     ip: String,

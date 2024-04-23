@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// https://docs.abstractapi.com/ip-geolocation
+/// <https://docs.abstractapi.com/ip-geolocation>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AbstractApiResponse {
     ip_address: String,

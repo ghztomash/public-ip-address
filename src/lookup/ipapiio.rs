@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// https://ip-api.io/
+/// <https://ip-api.io/>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpApiIoResponse {
     ip: String,

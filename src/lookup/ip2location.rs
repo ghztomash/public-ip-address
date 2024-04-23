@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// http://www.ip2location.io/ip2location-documentation
+/// <http://www.ip2location.io/ip2location-documentation>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Ip2LocationResponse {
     ip: String,

@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// https://docs.ipdata.co/docs
+/// <https://docs.ipdata.co/docs>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpDataResponse {
     ip: String,

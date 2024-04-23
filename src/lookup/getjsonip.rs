@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// http://getjsonip.com
+/// <http://getjsonip.com>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetJsonIpResponse {
     ip: String,

@@ -10,7 +10,7 @@ use std::net::{IpAddr, Ipv4Addr};
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-/// http://ip-api.com/docs/api:json
+/// <http://ip-api.com/docs/api:json>
 pub struct IpApiComResponse {
     query: String,
     status: Option<String>,
