@@ -1,6 +1,6 @@
 //! <https://ifconfig.co> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://github.com/leafcloudhq/echoip/blob/master/http/http.go
+/// http://github.com/leafcloudhq/echoip/blob/master/http/http.go
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IfConfigResponse {
     ip: String,
@@ -30,13 +30,8 @@ pub struct IfConfigResponse {
     user_agent: Option<String>,
 }
 
-impl IfConfigResponse {
-    pub fn parse(input: String) -> Result<IfConfigResponse> {
-        let deserialized: IfConfigResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<IfConfigResponse> for IfConfigResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip
                 .parse()
@@ -61,9 +56,9 @@ impl IfConfigResponse {
     }
 }
 
+/// IfConfig lookup provider
 pub struct IfConfig;
 
-#[async_trait::async_trait]
 impl Provider for IfConfig {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {

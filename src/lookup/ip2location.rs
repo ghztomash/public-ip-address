@@ -1,6 +1,6 @@
 //! <https://ip2location.io> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://www.ip2location.io/ip2location-documentation
+/// http://www.ip2location.io/ip2location-documentation
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Ip2LocationResponse {
     ip: String,
@@ -26,13 +26,8 @@ pub struct Ip2LocationResponse {
     is_proxy: Option<bool>,
 }
 
-impl Ip2LocationResponse {
-    pub fn parse(input: String) -> Result<Ip2LocationResponse> {
-        let deserialized: Ip2LocationResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<Ip2LocationResponse> for Ip2LocationResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip
                 .parse()
@@ -55,9 +50,9 @@ impl Ip2LocationResponse {
     }
 }
 
+/// Ip2Location lookup provider
 pub struct Ip2Location;
 
-#[async_trait::async_trait]
 impl Provider for Ip2Location {
     #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {

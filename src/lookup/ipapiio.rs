@@ -1,6 +1,6 @@
 //! <https://ip-api.io> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://ip-api.io/
+/// https://ip-api.io/
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpApiIoResponse {
     ip: String,
@@ -37,13 +37,8 @@ struct SuspiciousFactors {
     is_tor_node: Option<bool>,
 }
 
-impl IpApiIoResponse {
-    pub fn parse(input: String) -> Result<IpApiIoResponse> {
-        let deserialized: IpApiIoResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<IpApiIoResponse> for IpApiIoResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip
                 .parse()
@@ -69,9 +64,9 @@ impl IpApiIoResponse {
     }
 }
 
+/// IpApiIo lookup provider
 pub struct IpApiIo;
 
-#[async_trait::async_trait]
 impl Provider for IpApiIo {
     #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {

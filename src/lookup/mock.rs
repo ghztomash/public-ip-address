@@ -13,7 +13,6 @@ pub struct Mock {
     pub ip: String,
 }
 
-#[async_trait::async_trait]
 impl Provider for Mock {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {

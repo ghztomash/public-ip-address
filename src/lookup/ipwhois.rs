@@ -1,6 +1,6 @@
 //! <https://ipwhois.io> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://ipwhois.io/documentation
+/// https://ipwhois.io/documentation
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpWhoIsResponse {
     ip: String,
@@ -39,13 +39,8 @@ struct Timezone {
     id: Option<String>,
 }
 
-impl IpWhoIsResponse {
-    pub fn parse(input: String) -> Result<IpWhoIsResponse> {
-        let deserialized: IpWhoIsResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<IpWhoIsResponse> for IpWhoIsResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip
                 .parse()
@@ -73,9 +68,9 @@ impl IpWhoIsResponse {
     }
 }
 
+/// IpWhoIs provider
 pub struct IpWhoIs;
 
-#[async_trait::async_trait]
 impl Provider for IpWhoIs {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {

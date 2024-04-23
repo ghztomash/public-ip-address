@@ -1,7 +1,7 @@
 use public_ip_address::lookup::{
     handle_response,
     ipwhois::{IpWhoIs, IpWhoIsResponse},
-    Provider,
+    Provider, ProviderResponse,
 };
 use std::error::Error;
 

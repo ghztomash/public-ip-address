@@ -1,6 +1,6 @@
 //! <https://myip.com> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://www.myip.com/api-docs
+/// https://www.myip.com/api-docs
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MyIpComResponse {
     ip: String,
@@ -16,13 +16,8 @@ pub struct MyIpComResponse {
     cc: Option<String>,
 }
 
-impl MyIpComResponse {
-    pub fn parse(input: String) -> Result<MyIpComResponse> {
-        let deserialized: MyIpComResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<MyIpComResponse> for MyIpComResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip
                 .parse()
@@ -36,9 +31,9 @@ impl MyIpComResponse {
     }
 }
 
+/// MyIpCom provider
 pub struct MyIpCom;
 
-#[async_trait::async_trait]
 impl Provider for MyIpCom {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {

@@ -1,6 +1,6 @@
 //! <https://ipify.org> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,19 +8,14 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://www.ipify.org
+/// https://www.ipify.org
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpifyResponse {
     ip: String,
 }
 
-impl IpifyResponse {
-    pub fn parse(input: String) -> Result<IpifyResponse> {
-        let deserialized: IpifyResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<IpifyResponse> for IpifyResponse {
+    fn into_response(self) -> LookupResponse {
         LookupResponse::new(
             self.ip
                 .parse()
@@ -30,9 +25,9 @@ impl IpifyResponse {
     }
 }
 
+/// Ipify lookup provider
 pub struct Ipify;
 
-#[async_trait::async_trait]
 impl Provider for Ipify {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {

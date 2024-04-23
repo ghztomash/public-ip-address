@@ -1,6 +1,6 @@
 //! <https://abstractapi.com> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -46,13 +46,8 @@ struct Connection {
     isp_name: Option<String>,
 }
 
-impl AbstractApiResponse {
-    pub fn parse(input: String) -> Result<AbstractApiResponse> {
-        let deserialized: AbstractApiResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<AbstractApiResponse> for AbstractApiResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip_address
                 .parse()
@@ -82,10 +77,9 @@ impl AbstractApiResponse {
     }
 }
 
-/// <https://abstractapi.com> lookup provider
+/// AbstractApi provider
 pub struct AbstractApi;
 
-#[async_trait::async_trait]
 impl Provider for AbstractApi {
     #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {

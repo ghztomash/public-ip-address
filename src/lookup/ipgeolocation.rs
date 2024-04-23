@@ -1,6 +1,6 @@
 //! <https://ipgeolocation.io> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://ipgeolocation.io/documentation
+/// https://ipgeolocation.io/documentation
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpGeolocationResponse {
     ip: String,
@@ -36,13 +36,8 @@ struct Timezone {
     name: Option<String>,
 }
 
-impl IpGeolocationResponse {
-    pub fn parse(input: String) -> Result<IpGeolocationResponse> {
-        let deserialized: IpGeolocationResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<IpGeolocationResponse> for IpGeolocationResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip
                 .parse()
@@ -72,9 +67,9 @@ impl IpGeolocationResponse {
     }
 }
 
+/// IpGeolocation lookup provider
 pub struct IpGeolocation;
 
-#[async_trait::async_trait]
 impl Provider for IpGeolocation {
     #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {

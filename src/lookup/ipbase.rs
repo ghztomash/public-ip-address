@@ -1,6 +1,6 @@
 //! <https://ipbase.com> lookup provider
 
-use super::{client::RequestBuilder, Result};
+use super::{client::RequestBuilder, ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://ipbase.com/docs/info
+/// https://ipbase.com/docs/info
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpBaseResponse {
     data: Data,
@@ -80,13 +80,8 @@ struct Security {
     is_tor: Option<bool>,
 }
 
-impl IpBaseResponse {
-    pub fn parse(input: String) -> Result<IpBaseResponse> {
-        let deserialized: IpBaseResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<IpBaseResponse> for IpBaseResponse {
+    fn into_response(self) -> LookupResponse {
         let data = self.data;
         let mut response = LookupResponse::new(
             data.ip
@@ -125,9 +120,9 @@ impl IpBaseResponse {
     }
 }
 
+/// IpBase lookup provider
 pub struct IpBase;
 
-#[async_trait::async_trait]
 impl Provider for IpBase {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {

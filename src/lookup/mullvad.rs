@@ -2,13 +2,13 @@
 
 use super::Result;
 use crate::{
-    lookup::{LookupProvider, Provider},
+    lookup::{LookupProvider, Provider, ProviderResponse},
     LookupResponse,
 };
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://mullvad.net/
+/// https://mullvad.net/
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MullvadResponse {
     ip: String,
@@ -20,13 +20,8 @@ pub struct MullvadResponse {
     mullvad_exit_ip: Option<bool>,
 }
 
-impl MullvadResponse {
-    pub fn parse(input: String) -> Result<MullvadResponse> {
-        let deserialized: MullvadResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<MullvadResponse> for MullvadResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip
                 .parse()
@@ -43,9 +38,9 @@ impl MullvadResponse {
     }
 }
 
+/// Mullvad lookup provider
 pub struct Mullvad;
 
-#[async_trait::async_trait]
 impl Provider for Mullvad {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {

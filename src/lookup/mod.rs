@@ -23,6 +23,7 @@ use crate::LookupResponse;
 use client::{Client, RequestBuilder, Response};
 use error::{LookupError, Result};
 use reqwest::StatusCode;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::{fmt, net::IpAddr, str::FromStr};
 
@@ -52,20 +53,36 @@ pub mod myipcom;
 
 /// Provider trait to define the methods that a provider must implement
 pub trait Provider {
+    /// Returns the API endpoint for the provider
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String;
+    /// Parses the response from the provider
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
+    /// Returns the type enum of the provider
     fn get_type(&self) -> LookupProvider;
 
     #[inline]
+    /// Returns a request client for the provider
     fn get_client(&self, key: Option<String>, target: Option<IpAddr>) -> RequestBuilder {
         let client = Client::new().get(self.get_endpoint(&key, &target));
         self.add_auth(client, &key)
     }
 
     #[inline]
+    /// Add authentication header to the request
     fn add_auth(&self, request: RequestBuilder, _key: &Option<String>) -> RequestBuilder {
         request
     }
+}
+
+/// ProviderResponse trait that define methods to parse the response from the provider
+pub trait ProviderResponse<T: DeserializeOwned> {
+    /// Parse the response json into a concrete type
+    fn parse(input: String) -> Result<T> {
+        let deserialized: T = serde_json::from_str(&input)?;
+        Ok(deserialized)
+    }
+    /// Convert the response into a LookupResponse
+    fn into_response(self) -> LookupResponse;
 }
 
 /// Available lookup service providers

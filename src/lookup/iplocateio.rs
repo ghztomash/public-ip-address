@@ -1,6 +1,6 @@
 //! <https://iplocate.io> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://iplocate.docs.apiary.io/
+/// https://iplocate.docs.apiary.io/
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpLocateIoResponse {
     ip: String,
@@ -32,13 +32,8 @@ struct Threat {
     is_proxy: Option<bool>,
 }
 
-impl IpLocateIoResponse {
-    pub fn parse(input: String) -> Result<IpLocateIoResponse> {
-        let deserialized: IpLocateIoResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<IpLocateIoResponse> for IpLocateIoResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip
                 .parse()
@@ -63,9 +58,9 @@ impl IpLocateIoResponse {
     }
 }
 
+/// IpLocateIo lookup provider
 pub struct IpLocateIo;
 
-#[async_trait::async_trait]
 impl Provider for IpLocateIo {
     #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {

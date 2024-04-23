@@ -1,6 +1,6 @@
 //! <https://ipleak.net> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://ipleak.net/
+/// https://ipleak.net/
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpLeakResponse {
     ip: String,
@@ -28,13 +28,8 @@ pub struct IpLeakResponse {
     reverse: Option<String>,
 }
 
-impl IpLeakResponse {
-    pub fn parse(input: String) -> Result<IpLeakResponse> {
-        let deserialized: IpLeakResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<IpLeakResponse> for IpLeakResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip
                 .parse()
@@ -59,9 +54,9 @@ impl IpLeakResponse {
     }
 }
 
+/// IpLeak lookup provider
 pub struct IpLeak;
 
-#[async_trait::async_trait]
 impl Provider for IpLeak {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {

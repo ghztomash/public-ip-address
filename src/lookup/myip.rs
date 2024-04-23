@@ -2,13 +2,13 @@
 
 use super::Result;
 use crate::{
-    lookup::{LookupProvider, Provider},
+    lookup::{LookupProvider, Provider, ProviderResponse},
     LookupResponse,
 };
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://www.my-ip.io/api-usage
+/// https://www.my-ip.io/api-usage
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct MyIpResponse {
@@ -43,13 +43,8 @@ struct Asn {
     network: Option<String>,
 }
 
-impl MyIpResponse {
-    pub fn parse(input: String) -> Result<MyIpResponse> {
-        let deserialized: MyIpResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<MyIpResponse> for MyIpResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip
                 .parse()
@@ -77,9 +72,9 @@ impl MyIpResponse {
     }
 }
 
+/// MyIp lookup provider
 pub struct MyIp;
 
-#[async_trait::async_trait]
 impl Provider for MyIp {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {

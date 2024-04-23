@@ -8,14 +8,19 @@ pub type Result<T> = std::result::Result<T, LookupError>;
 #[derive(Error, Debug)]
 #[non_exhaustive]
 pub enum LookupError {
+    /// API request error
     #[error("Reqwuest error")]
     ReqwestError(#[from] reqwest::Error),
+    /// Too many requests
     #[error("Too many API requests")]
     TooManyRequests(String),
+    /// Other HTTP code
     #[error("Request status")]
     RequestStatus(String),
+    /// Serde error
     #[error("Serde error")]
     SerdeError(#[from] serde_json::Error),
+    /// Generic error
     #[error("Lookup error")]
     GenericError(String),
 }

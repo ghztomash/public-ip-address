@@ -1,6 +1,6 @@
 //! <https://ipinfo.io> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://ipinfo.io/json
+/// https://ipinfo.io/json
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpInfoResponse {
     ip: String,
@@ -23,13 +23,8 @@ pub struct IpInfoResponse {
     readme: Option<String>,
 }
 
-impl IpInfoResponse {
-    pub fn parse(input: String) -> Result<IpInfoResponse> {
-        let deserialized: IpInfoResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<IpInfoResponse> for IpInfoResponse {
+    fn into_response(self) -> LookupResponse {
         let mut latitude = None;
         let mut longitude = None;
 
@@ -62,9 +57,9 @@ impl IpInfoResponse {
     }
 }
 
+/// IpInfo lookup provider
 pub struct IpInfo;
 
-#[async_trait::async_trait]
 impl Provider for IpInfo {
     #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {

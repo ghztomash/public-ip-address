@@ -1,6 +1,6 @@
 //! <https://ip-api.com> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,9 +8,9 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://ip-api.com/docs/api:json
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+/// http://ip-api.com/docs/api:json
 pub struct IpApiComResponse {
     query: String,
     status: Option<String>,
@@ -39,13 +39,8 @@ pub struct IpApiComResponse {
     hosting: Option<bool>,
 }
 
-impl IpApiComResponse {
-    pub fn parse(input: String) -> Result<IpApiComResponse> {
-        let deserialized: IpApiComResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<IpApiComResponse> for IpApiComResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.query
                 .parse()
@@ -68,9 +63,9 @@ impl IpApiComResponse {
     }
 }
 
+/// IpApiCom lookup provider
 pub struct IpApiCom;
 
-#[async_trait::async_trait]
 impl Provider for IpApiCom {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {

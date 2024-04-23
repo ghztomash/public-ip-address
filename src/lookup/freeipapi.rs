@@ -1,6 +1,6 @@
 //! <https://freeipapi.com> lookup provider
 
-use super::{client::RequestBuilder, Result};
+use super::{client::RequestBuilder, ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -27,13 +27,8 @@ pub struct FreeIpApiResponse {
     is_proxy: Option<bool>,
 }
 
-impl FreeIpApiResponse {
-    pub fn parse(input: String) -> Result<FreeIpApiResponse> {
-        let deserialized: FreeIpApiResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<FreeIpApiResponse> for FreeIpApiResponse {
+    fn into_response(self) -> LookupResponse {
         let mut response = LookupResponse::new(
             self.ip_address
                 .parse()
@@ -54,9 +49,9 @@ impl FreeIpApiResponse {
     }
 }
 
+/// FreeIpApi lookup provider
 pub struct FreeIpApi;
 
-#[async_trait::async_trait]
 impl Provider for FreeIpApi {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {

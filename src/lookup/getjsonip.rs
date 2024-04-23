@@ -1,6 +1,6 @@
 //! <https://getjsonip.com> lookup provider
 
-use super::Result;
+use super::{ProviderResponse, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -8,19 +8,14 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://getjsonip.com
+/// http://getjsonip.com
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetJsonIpResponse {
     ip: String,
 }
 
-impl GetJsonIpResponse {
-    pub fn parse(input: String) -> Result<GetJsonIpResponse> {
-        let deserialized: GetJsonIpResponse = serde_json::from_str(&input)?;
-        Ok(deserialized)
-    }
-
-    pub fn into_response(self) -> LookupResponse {
+impl ProviderResponse<GetJsonIpResponse> for GetJsonIpResponse {
+    fn into_response(self) -> LookupResponse {
         LookupResponse::new(
             self.ip
                 .parse()
@@ -30,9 +25,9 @@ impl GetJsonIpResponse {
     }
 }
 
+/// GetJsonIp lookup provider
 pub struct GetJsonIp;
 
-#[async_trait::async_trait]
 impl Provider for GetJsonIp {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
