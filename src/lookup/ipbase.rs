@@ -311,11 +311,8 @@ mod tests {
     #[ignore]
     async fn test_request() {
         let service = Box::new(IpBase);
-        let result = service
-            .make_api_request(None, "8.8.8.8".parse::<IpAddr>().ok())
-            .await;
-        assert!(result.is_ok(), "Failed getting result {:#?}", result);
-        let result = result.unwrap();
+        let result = service.get_client(None, None).send().await;
+        let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("IpBase: {:#?}", result);
         let response = IpBaseResponse::parse(result);

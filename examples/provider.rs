@@ -1,4 +1,5 @@
 use public_ip_address::lookup::{
+    handle_response,
     ipwhois::{IpWhoIs, IpWhoIsResponse},
     Provider,
 };
@@ -9,7 +10,8 @@ use std::error::Error;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let provider = IpWhoIs;
-    let response = provider.make_api_request(None, None).await?;
+    let response = provider.get_client(None, None).send().await;
+    let response = handle_response(response).await?;
     let result = IpWhoIsResponse::parse(response)?;
     println!("{:#?}", result);
     Ok(())

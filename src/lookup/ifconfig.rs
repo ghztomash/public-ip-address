@@ -93,9 +93,8 @@ mod tests {
     #[ignore]
     async fn test_request() {
         let service = Box::new(IfConfig);
-        let result = service.make_api_request(None, None).await;
-        assert!(result.is_ok(), "Failed getting result {:#?}", result);
-        let result = result.unwrap();
+        let result = service.get_client(None, None).send().await;
+        let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("Ifconfig: {:#?}", result);
         let response = IfConfigResponse::parse(result);

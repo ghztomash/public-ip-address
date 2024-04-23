@@ -6,9 +6,10 @@ use crate::{
     LookupResponse,
 };
 use std::net::IpAddr;
-use std::{thread, time};
 
+/// Mock lookup provider
 pub struct Mock {
+    /// IP address to return
     pub ip: String,
 }
 
@@ -17,17 +18,6 @@ impl Provider for Mock {
     #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
         "https://httpbin.org/status/200".to_string()
-    }
-
-    async fn make_api_request(
-        &self,
-        _key: Option<String>,
-        target: Option<IpAddr>,
-    ) -> Result<String> {
-        let target = target.map(|t| t.to_string());
-        // simulate blocking api call
-        thread::sleep(time::Duration::from_millis(100));
-        Ok(target.unwrap_or(self.ip.to_owned()))
     }
 
     fn parse_reply(&self, _json: String) -> Result<LookupResponse> {

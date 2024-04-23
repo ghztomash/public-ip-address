@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://docs.freeipapi.com/response.html
+/// https://docs.freeipapi.com/response.html
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct FreeIpApiResponse {
@@ -109,9 +109,8 @@ mod tests {
     #[ignore]
     async fn test_request() {
         let service = Box::new(FreeIpApi);
-        let result = service.make_api_request(None, None).await;
-        assert!(result.is_ok(), "Failed getting result {:#?}", result);
-        let result = result.unwrap();
+        let result = service.get_client(None, None).send().await;
+        let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("FreeIpApi: {:#?}", result);
         let response = FreeIpApiResponse::parse(result);

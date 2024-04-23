@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-// https://docs.abstractapi.com/ip-geolocation
+/// https://docs.abstractapi.com/ip-geolocation
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AbstractApiResponse {
     ip_address: String,
@@ -82,6 +82,7 @@ impl AbstractApiResponse {
     }
 }
 
+/// <https://abstractapi.com> lookup provider
 pub struct AbstractApi;
 
 #[async_trait::async_trait]
@@ -169,9 +170,8 @@ mod tests {
 
         let service = Box::new(AbstractApi);
         let target = "8.8.8.8".parse().ok();
-        let result = service.make_api_request(key, target).await;
-        assert!(result.is_ok(), "Failed getting result {:#?}", result);
-        let result = result.unwrap();
+        let result = service.get_client(key, target).send().await;
+        let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("AbstractApi: {:#?}", result);
 

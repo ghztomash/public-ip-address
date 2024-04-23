@@ -51,18 +51,7 @@ pub mod myip;
 pub mod myipcom;
 
 /// Provider trait to define the methods that a provider must implement
-#[async_trait::async_trait]
 pub trait Provider {
-    // TODO: remove
-    async fn make_api_request(
-        &self,
-        key: Option<String>,
-        target: Option<IpAddr>,
-    ) -> Result<String> {
-        let response = self.get_client(key, target).send().await;
-        handle_response(response).await
-    }
-
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String;
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
     fn get_type(&self) -> LookupProvider;
@@ -227,10 +216,12 @@ impl LookupProvider {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[non_exhaustive]
 pub struct Parameters {
+    /// API key for the lookup provider
     pub api_key: String,
 }
 
 impl Parameters {
+    /// Creates new Parameters with an API key
     pub fn new(api_key: String) -> Self {
         Self { api_key }
     }
@@ -295,7 +286,7 @@ impl LookupService {
 }
 
 /// Handles the response from reqwest
-async fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
+pub async fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
     match response {
         Ok(response) => match response.status() {
             StatusCode::OK => Ok(response.text().await?),

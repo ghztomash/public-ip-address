@@ -152,9 +152,8 @@ mod tests {
         assert!(key.is_some(), "Missing APIKEY");
 
         let service = Box::new(IpGeolocation);
-        let result = service.make_api_request(key, None).await;
-        assert!(result.is_ok(), "Failed getting result {:#?}", result);
-        let result = result.unwrap();
+        let result = service.get_client(None, None).send().await;
+        let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("IpGeolocation: {:#?}", result);
 
@@ -171,9 +170,8 @@ mod tests {
 
         let target = "8.8.8.8".parse().ok();
         let service = Box::new(IpGeolocation);
-        let result = service.make_api_request(key, target).await;
-        assert!(result.is_ok(), "Failed getting result {:#?}", result);
-        let result = result.unwrap();
+        let result = service.get_client(key, target).send().await;
+        let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("IpGeolocation: {:#?}", result);
 

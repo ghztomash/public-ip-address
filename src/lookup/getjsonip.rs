@@ -61,9 +61,8 @@ mod tests {
     #[tokio::test]
     async fn test_request() {
         let service = Box::new(GetJsonIp);
-        let result = service.make_api_request(None, None).await;
-        assert!(result.is_ok(), "Failed getting result {:#?}", result);
-        let result = result.unwrap();
+        let result = service.get_client(None, None).send().await;
+        let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("GetJsonIp: {:#?}", result);
         let response = GetJsonIpResponse::parse(result);
