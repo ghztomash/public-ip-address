@@ -63,8 +63,11 @@ impl IpInfoResponse {
 }
 
 pub struct IpInfo;
+
+#[async_trait::async_trait]
 impl Provider for IpInfo {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    #[inline]
+    fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?token={}", k),
             None => "".to_string(),
@@ -73,9 +76,7 @@ impl Provider for IpInfo {
             Some(t) => format!("{}/", t),
             None => "".to_string(),
         };
-        let endpoint = format!("https://ipinfo.io/{}json{}", target, key);
-        let response = reqwest::blocking::get(endpoint);
-        super::handle_response(response)
+        format!("https://ipinfo.io/{}json{}", target, key)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -105,11 +106,11 @@ mod tests {
 }
 "#;
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request() {
+    async fn test_request() {
         let service = Box::new(IpInfo);
-        let result = service.make_api_request(None, None);
+        let result = service.make_api_request(None, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

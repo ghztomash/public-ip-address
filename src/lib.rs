@@ -12,9 +12,9 @@
 //! ## Example
 //! ```rust
 //! use std::error::Error;
-//!
-//! fn main() -> Result<(), Box<dyn Error>> {
-//!     let result = public_ip_address::perform_lookup(None)?;
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn Error>> {
+//!     let result = public_ip_address::perform_lookup(None).await?;
 //!     println!("{}", result);
 //!     Ok(())
 //! }
@@ -52,8 +52,11 @@ pub mod response;
 ///
 /// # Example
 ///
-/// ```
-/// match public_ip_address::perform_lookup(None) {
+/// ```rust
+/// # use std::error::Error;
+/// # #[tokio::main]
+/// # async fn main() -> Result<(), Box<dyn Error>> {
+/// match public_ip_address::perform_lookup(None).await {
 ///     Ok(response) => {
 ///         // Handle successful response
 ///     }
@@ -61,12 +64,14 @@ pub mod response;
 ///         // Handle error
 ///     }
 /// }
+/// # Ok(())
+/// # }
 /// ```
 ///
 /// # Returns
 ///
 /// * A `Result` containing either a successful `LookupResponse` or an `Error` if the lookup or caching failed.
-pub fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
+pub async fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
     perform_cached_lookup_with(
         vec![
             (LookupProvider::IpInfo, None),
@@ -78,6 +83,7 @@ pub fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
         Some(5),
         false,
     )
+    .await
 }
 
 /// Performs a lookup using a list of providers until a successful response is received.
@@ -104,7 +110,8 @@ pub fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
 ///     // (LookupProvider::IpWhoIs, Some(Parameters::new(apikey)))
 /// ];
 ///
-/// match public_ip_address::perform_lookup_with(providers, None) {
+/// # tokio_test::block_on(async {
+/// match public_ip_address::perform_lookup_with(providers, None).await {
 ///     Ok(response) => {
 ///         // Handle successful response
 ///     }
@@ -112,12 +119,13 @@ pub fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
 ///         // Handle error
 ///     }
 /// }
+/// # })
 /// ```
 ///
 /// # Returns
 ///
 /// * A `Result` containing either a successful `LookupResponse` or a `LookupError` containing a list of all errors received.
-pub fn perform_lookup_with(
+pub async fn perform_lookup_with(
     providers: Vec<(LookupProvider, Option<Parameters>)>,
     target: Option<IpAddr>,
 ) -> Result<LookupResponse> {
@@ -130,7 +138,7 @@ pub fn perform_lookup_with(
 
     for (provider, param) in providers {
         debug!("Performing lookup with provider {}", &provider);
-        let response = LookupService::new(provider, param).lookup(target);
+        let response = LookupService::new(provider, param).lookup(target).await;
         if let Ok(response) = response {
             trace!("Successful response from provider");
             return Ok(response);
@@ -171,6 +179,9 @@ pub fn perform_lookup_with(
 /// ```rust
 /// use public_ip_address::lookup::LookupProvider;
 ///
+/// # use std::error::Error;
+/// # #[tokio::main]
+/// # async fn main() -> Result<(), Box<dyn Error>> {
 /// let providers = vec![
 ///     // List of providers to use for the lookup
 ///     // (LookupProvider::IpWhoIs, Some(Parameters::new(apikey)))
@@ -178,7 +189,7 @@ pub fn perform_lookup_with(
 /// let expire_time = Some(60); // Cache expires after 60 seconds
 /// let flush = false; // Do not force cache flush
 ///
-/// match public_ip_address::perform_cached_lookup_with(providers, None, expire_time, flush) {
+/// match public_ip_address::perform_cached_lookup_with(providers, None, expire_time, flush).await {
 ///     Ok(response) => {
 ///         // Handle successful response
 ///     }
@@ -186,12 +197,14 @@ pub fn perform_lookup_with(
 ///         // Handle error
 ///     }
 /// }
+/// # Ok(())
+/// # }
 /// ```
 ///
 /// # Returns
 ///
 /// * A `Result` containing either a successful `LookupResponse` or an `Error` if the lookup or caching failed.
-pub fn perform_cached_lookup_with(
+pub async fn perform_cached_lookup_with(
     providers: Vec<(LookupProvider, Option<Parameters>)>,
     target: Option<IpAddr>,
     ttl: Option<u64>,
@@ -223,7 +236,7 @@ pub fn perform_cached_lookup_with(
 
     trace!("Performing new lookup");
     // no cache or it's too old, make a new request.
-    match perform_lookup_with(providers, target) {
+    match perform_lookup_with(providers, target).await {
         Ok(result) => {
             if let Some(target) = target {
                 cache.update_target(target, &result, ttl);
@@ -251,12 +264,13 @@ mod tests {
         ip.parse().unwrap()
     }
 
-    #[test]
-    fn test_perform_lookup() {
+    #[tokio::test]
+    async fn test_perform_lookup() {
         let response = perform_lookup_with(
             vec![(LookupProvider::Mock("1.1.1.1".to_string()), None)],
             None,
-        );
+        )
+        .await;
         assert!(response.is_ok());
         assert_eq!(
             response.unwrap().ip,
@@ -265,12 +279,13 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_perform_lookup_target() {
+    #[tokio::test]
+    async fn test_perform_lookup_target() {
         let response = perform_lookup_with(
-            vec![(LookupProvider::Mock("1.1.1.1".to_string()), None)],
+            vec![(LookupProvider::Mock("8.8.8.8".to_string()), None)],
             Some(ip("8.8.8.8")),
-        );
+        )
+        .await;
         assert!(response.is_ok());
         assert_eq!(
             response.unwrap().ip,
@@ -279,16 +294,17 @@ mod tests {
         );
     }
 
-    #[test]
+    #[tokio::test]
     #[serial]
-    fn test_perform_lookup_cached() {
+    async fn test_perform_lookup_cached() {
         clear_cache();
         let response = perform_cached_lookup_with(
             vec![(LookupProvider::Mock("11.1.1.1".to_string()), None)],
             None,
             Some(1),
             false,
-        );
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("11.1.1.1"),
@@ -297,16 +313,17 @@ mod tests {
         clear_cache();
     }
 
-    #[test]
+    #[tokio::test]
     #[serial]
-    fn test_perform_lookup_cached_force_expire() {
+    async fn test_perform_lookup_cached_force_expire() {
         clear_cache();
         let response = perform_cached_lookup_with(
             vec![(LookupProvider::Mock("21.1.1.1".to_string()), None)],
             None,
             None,
             false,
-        );
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("21.1.1.1"),
@@ -317,7 +334,8 @@ mod tests {
             None,
             Some(1),
             false,
-        );
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("21.1.1.1"),
@@ -328,7 +346,8 @@ mod tests {
             None,
             Some(1),
             true,
-        );
+        )
+        .await;
         // the old cache should be flushed
         assert_eq!(
             response.unwrap().ip,
@@ -338,16 +357,17 @@ mod tests {
         clear_cache();
     }
 
-    #[test]
+    #[tokio::test]
     #[serial]
-    fn test_perform_lookup_cached_expired() {
+    async fn test_perform_lookup_cached_expired() {
         clear_cache();
         let response = perform_cached_lookup_with(
             vec![(LookupProvider::Mock("1.1.1.1".to_string()), None)],
             None,
             Some(1),
             false,
-        );
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("1.1.1.1"),
@@ -358,7 +378,8 @@ mod tests {
             None,
             Some(2),
             false,
-        );
+        )
+        .await;
         // the old cache should be returned
         assert_eq!(
             response.unwrap().ip,
@@ -371,7 +392,8 @@ mod tests {
             None,
             Some(0),
             false,
-        );
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("3.3.3.3"),
@@ -383,7 +405,8 @@ mod tests {
             None,
             Some(1),
             false,
-        );
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("4.4.4.4"),
@@ -394,7 +417,8 @@ mod tests {
             None,
             Some(1),
             false,
-        );
+        )
+        .await;
         assert_eq!(
             response.unwrap().ip,
             ip("4.4.4.4"),

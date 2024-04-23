@@ -31,10 +31,12 @@ impl IpifyResponse {
 }
 
 pub struct Ipify;
+
+#[async_trait::async_trait]
 impl Provider for Ipify {
-    fn make_api_request(&self, _key: Option<String>, _target: Option<IpAddr>) -> Result<String> {
-        let response = reqwest::blocking::get("https://api64.ipify.org/?format=json");
-        super::handle_response(response)
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
+        "https://api64.ipify.org/?format=json".to_string()
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -56,10 +58,10 @@ mod tests {
 }
 "#;
 
-    #[test]
-    fn test_request() {
+    #[tokio::test]
+    async fn test_request() {
         let service = Box::new(Ipify);
-        let result = service.make_api_request(None, None);
+        let result = service.make_api_request(None, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

@@ -8,21 +8,25 @@
 //! use public_ip_address::lookup::{LookupProvider, LookupService};
 //! use std::{error::Error, str::FromStr, net::IpAddr};
 //!
-//! fn main() -> Result<(), Box<dyn Error>> {
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn Error>> {
 //!     let provider = LookupProvider::from_str("ipinfo")?;
 //!     let service = LookupService::new(provider, None);
 //!     let target = "8.8.8.8".parse::<IpAddr>().ok();
-//!     let result = service.lookup(target)?;
+//!     let result = service.lookup(target).await?;
 //!     println!("{}", result);
 //!     Ok(())
 //! }
 //! ```
 
 use crate::LookupResponse;
+use client::{Client, RequestBuilder, Response};
 use error::{LookupError, Result};
-use reqwest::{blocking::Response, StatusCode};
+use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::{fmt, net::IpAddr, str::FromStr};
+
+mod client;
 
 pub mod abstractapi;
 pub mod error;
@@ -47,10 +51,32 @@ pub mod myip;
 pub mod myipcom;
 
 /// Provider trait to define the methods that a provider must implement
+#[async_trait::async_trait]
 pub trait Provider {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String>;
+    // TODO: remove
+    async fn make_api_request(
+        &self,
+        key: Option<String>,
+        target: Option<IpAddr>,
+    ) -> Result<String> {
+        let response = self.get_client(key, target).send().await;
+        handle_response(response).await
+    }
+
+    fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String;
     fn parse_reply(&self, json: String) -> Result<LookupResponse>;
     fn get_type(&self) -> LookupProvider;
+
+    #[inline]
+    fn get_client(&self, key: Option<String>, target: Option<IpAddr>) -> RequestBuilder {
+        let client = Client::new().get(self.get_endpoint(&key, &target));
+        self.add_auth(client, &key)
+    }
+
+    #[inline]
+    fn add_auth(&self, request: RequestBuilder, _key: &Option<String>) -> RequestBuilder {
+        request
+    }
 }
 
 /// Available lookup service providers
@@ -255,18 +281,24 @@ impl LookupService {
     /// Makes a request to the lookup provider
     ///
     /// This function makes an API request to the current lookup provider and parses the response into a `LookupResponse` instance.
-    pub fn lookup(&self, target: Option<IpAddr>) -> Result<LookupResponse> {
-        let key = self.parameters.as_ref().map(|p| p.api_key.clone());
-        let response = self.provider.make_api_request(key, target)?;
+    pub async fn lookup(&self, target: Option<IpAddr>) -> Result<LookupResponse> {
+        let response = self.make_api_request(target).await?;
         self.provider.parse_reply(response)
+    }
+
+    /// Internal function to make the API request
+    async fn make_api_request(&self, target: Option<IpAddr>) -> Result<String> {
+        let key = self.parameters.as_ref().map(|p| p.api_key.clone());
+        let response = self.provider.get_client(key, target).send().await;
+        handle_response(response).await
     }
 }
 
 /// Handles the response from reqwest
-fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
+async fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
     match response {
         Ok(response) => match response.status() {
-            StatusCode::OK => Ok(response.text()?),
+            StatusCode::OK => Ok(response.text().await?),
             StatusCode::TOO_MANY_REQUESTS => Err(LookupError::TooManyRequests(format!(
                 "Too many requests: {}",
                 response.status()
@@ -289,25 +321,25 @@ mod tests {
         assert_eq!(provider.get_provider_type(), LookupProvider::IpInfo);
     }
 
-    #[test]
-    fn test_make_request() {
+    #[tokio::test]
+    async fn test_make_request() {
         let address = "1.1.1.1".parse::<std::net::IpAddr>().unwrap();
         let provider = LookupService::new(LookupProvider::Mock(address.to_string()), None);
-        let response = provider.lookup(None).unwrap();
+        let response = provider.lookup(None).await.unwrap();
         assert_eq!(response.ip, address);
     }
 
-    #[test]
-    fn test_handle_response() {
-        let response = reqwest::blocking::get("https://httpbin.org/status/200");
-        let body = handle_response(response);
+    #[tokio::test]
+    async fn test_handle_response() {
+        let response = reqwest::get("https://httpbin.org/status/200").await;
+        let body = handle_response(response).await;
         assert!(body.is_ok(), "Response is an error {:#?}", body);
     }
 
-    #[test]
-    fn test_handle_response_error() {
-        let response = reqwest::blocking::get("https://httpbin.org/status/500");
-        let body = handle_response(response);
+    #[tokio::test]
+    async fn test_handle_response_error() {
+        let response = reqwest::get("https://httpbin.org/status/500").await;
+        let body = handle_response(response).await;
         assert!(body.is_err(), "Response should be an error {:#?}", body);
         let body = body.unwrap_err();
         assert_eq!(
@@ -318,10 +350,10 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_handle_response_too_many() {
-        let response = reqwest::blocking::get("https://httpbin.org/status/429");
-        let body = handle_response(response);
+    #[tokio::test]
+    async fn test_handle_response_too_many() {
+        let response = reqwest::get("https://httpbin.org/status/429").await;
+        let body = handle_response(response).await;
         assert!(body.is_err(), "Response should be an error {:#?}", body);
         let body = body.unwrap_err();
         assert_eq!(

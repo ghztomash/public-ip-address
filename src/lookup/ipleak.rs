@@ -60,15 +60,16 @@ impl IpLeakResponse {
 }
 
 pub struct IpLeak;
+
+#[async_trait::async_trait]
 impl Provider for IpLeak {
-    fn make_api_request(&self, _key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => t,
             None => "".to_string(),
         };
-        let endpoint = format!("https://ipleak.net/json/{}", target);
-        let response = reqwest::blocking::get(endpoint);
-        super::handle_response(response)
+        format!("https://ipleak.net/json/{}", target)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -112,11 +113,11 @@ mod tests {
 }
 "#;
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request() {
+    async fn test_request() {
         let service = Box::new(IpLeak);
-        let result = service.make_api_request(None, None);
+        let result = service.make_api_request(None, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

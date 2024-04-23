@@ -1,6 +1,6 @@
 //! <https://freeipapi.com> lookup provider
 
-use super::Result;
+use super::{client::RequestBuilder, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -55,19 +55,24 @@ impl FreeIpApiResponse {
 }
 
 pub struct FreeIpApi;
+
+#[async_trait::async_trait]
 impl Provider for FreeIpApi {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
-        let client = reqwest::blocking::Client::new();
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => t,
             None => "".to_string(),
         };
-        let mut request = client.get(format!("https://freeipapi.com/api/json/{}", target));
+        format!("https://freeipapi.com/api/json/{}", target)
+    }
+
+    #[inline]
+    fn add_auth(&self, request: RequestBuilder, key: &Option<String>) -> RequestBuilder {
         if let Some(key) = key {
-            request = request.bearer_auth(key)
+            return request.bearer_auth(key);
         }
-        let response = request.send();
-        super::handle_response(response)
+        request
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -100,11 +105,11 @@ mod tests {
 }
 "#;
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request() {
+    async fn test_request() {
         let service = Box::new(FreeIpApi);
-        let result = service.make_api_request(None, None);
+        let result = service.make_api_request(None, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

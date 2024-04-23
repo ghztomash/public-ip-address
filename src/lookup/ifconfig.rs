@@ -62,15 +62,16 @@ impl IfConfigResponse {
 }
 
 pub struct IfConfig;
+
+#[async_trait::async_trait]
 impl Provider for IfConfig {
-    fn make_api_request(&self, _key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => format!("?ip={}", t),
             None => "".to_string(),
         };
-        let endpoint = format!("http://ifconfig.co/json{}", target);
-        let response = reqwest::blocking::get(endpoint);
-        super::handle_response(response)
+        format!("http://ifconfig.co/json{}", target)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -88,11 +89,11 @@ mod tests {
     use super::*;
     const TEST_INPUT: &str = "{\n \"ip\": \"1.1.1.1\",\n \"ip_decimal\": 16843009\n}";
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request() {
+    async fn test_request() {
         let service = Box::new(IfConfig);
-        let result = service.make_api_request(None, None);
+        let result = service.make_api_request(None, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

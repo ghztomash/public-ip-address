@@ -1,6 +1,6 @@
 //! <https://ipapi.co> lookup provider
 
-use super::Result;
+use super::{client::RequestBuilder, Result};
 use crate::{
     lookup::{LookupProvider, Provider},
     LookupResponse,
@@ -60,19 +60,21 @@ impl IpApiCoResponse {
 }
 
 pub struct IpApiCo;
+
+#[async_trait::async_trait]
 impl Provider for IpApiCo {
-    fn make_api_request(&self, _key: Option<String>, target: Option<IpAddr>) -> Result<String> {
-        let client = reqwest::blocking::Client::new();
+    #[inline]
+    fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => format!("{}/", t),
             None => "".to_string(),
         };
-        let response = client
-            .get(format!("https://ipapi.co/{}json", target))
-            // add header otherwise the service will return an error
-            .header("User-Agent", "nil")
-            .send();
-        super::handle_response(response)
+        format!("https://ipapi.co/{}json", target)
+    }
+
+    #[inline]
+    fn add_auth(&self, request: RequestBuilder, _key: &Option<String>) -> RequestBuilder {
+        request.header("User-Agent", "nil")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -111,11 +113,11 @@ mod tests {
 }
 "#;
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request() {
+    async fn test_request() {
         let service = Box::new(IpApiCo);
-        let result = service.make_api_request(None, None);
+        let result = service.make_api_request(None, None).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");

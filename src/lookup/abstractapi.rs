@@ -84,8 +84,10 @@ impl AbstractApiResponse {
 
 pub struct AbstractApi;
 
+#[async_trait::async_trait]
 impl Provider for AbstractApi {
-    fn make_api_request(&self, key: Option<String>, target: Option<IpAddr>) -> Result<String> {
+    #[inline]
+    fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?api_key={}", k),
             None => "".to_string(),
@@ -94,9 +96,7 @@ impl Provider for AbstractApi {
             Some(t) => format!("&ip_address={}", t),
             None => "".to_string(),
         };
-        let endpoint = format!("https://ipgeolocation.abstractapi.com/v1/{}{}", key, target);
-        let response = reqwest::blocking::get(endpoint);
-        super::handle_response(response)
+        format!("https://ipgeolocation.abstractapi.com/v1/{}{}", key, target)
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -160,16 +160,16 @@ mod tests {
 }
 "#;
 
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn test_request_target() {
+    async fn test_request_target() {
         use std::env;
         let key = env::var("ABSTRACT_APIKEY").ok();
         assert!(key.is_some(), "Missing APIKEY");
 
         let service = Box::new(AbstractApi);
         let target = "8.8.8.8".parse().ok();
-        let result = service.make_api_request(key, target);
+        let result = service.make_api_request(key, target).await;
         assert!(result.is_ok(), "Failed getting result {:#?}", result);
         let result = result.unwrap();
         assert!(!result.is_empty(), "Result is empty");
