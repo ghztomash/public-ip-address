@@ -30,10 +30,10 @@ impl Provider for Mock {
         Ok(target.unwrap_or(self.ip.to_owned()))
     }
 
-    fn parse_reply(&self, json: String) -> Result<LookupResponse> {
+    fn parse_reply(&self, _json: String) -> Result<LookupResponse> {
         Ok(LookupResponse::new(
-            json.parse::<std::net::IpAddr>().unwrap(),
-            LookupProvider::Mock(json),
+            self.ip.parse::<std::net::IpAddr>().unwrap(),
+            LookupProvider::Mock(self.ip.to_string()),
         ))
     }
 

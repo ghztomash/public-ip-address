@@ -12,7 +12,6 @@
 //! ## Example
 //! ```rust
 //! use std::error::Error;
-//!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn Error>> {
 //!     let result = public_ip_address::perform_lookup(None).await?;
@@ -53,7 +52,10 @@ pub mod response;
 ///
 /// # Example
 ///
-/// ```
+/// ```rust
+/// # use std::error::Error;
+/// # #[tokio::main]
+/// # async fn main() -> Result<(), Box<dyn Error>> {
 /// match public_ip_address::perform_lookup(None).await {
 ///     Ok(response) => {
 ///         // Handle successful response
@@ -62,6 +64,8 @@ pub mod response;
 ///         // Handle error
 ///     }
 /// }
+/// # Ok(())
+/// # }
 /// ```
 ///
 /// # Returns
@@ -175,6 +179,9 @@ pub async fn perform_lookup_with(
 /// ```rust
 /// use public_ip_address::lookup::LookupProvider;
 ///
+/// # use std::error::Error;
+/// # #[tokio::main]
+/// # async fn main() -> Result<(), Box<dyn Error>> {
 /// let providers = vec![
 ///     // List of providers to use for the lookup
 ///     // (LookupProvider::IpWhoIs, Some(Parameters::new(apikey)))
@@ -190,6 +197,8 @@ pub async fn perform_lookup_with(
 ///         // Handle error
 ///     }
 /// }
+/// # Ok(())
+/// # }
 /// ```
 ///
 /// # Returns
@@ -273,7 +282,7 @@ mod tests {
     #[tokio::test]
     async fn test_perform_lookup_target() {
         let response = perform_lookup_with(
-            vec![(LookupProvider::Mock("1.1.1.1".to_string()), None)],
+            vec![(LookupProvider::Mock("8.8.8.8".to_string()), None)],
             Some(ip("8.8.8.8")),
         )
         .await;
