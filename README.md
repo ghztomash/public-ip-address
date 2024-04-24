@@ -15,7 +15,7 @@
 
 It provides a unified interface to fetch public IP address and geolocation information from multiple providers.
 Arbitrary IP address lookup and access API keys are supported for certain providers.
-The library provides an asynchronous interface to make it easy to integrate with other `async` codebase.
+The library provides an asynchronous and blocking interfaces to make it easy to integrate with other `async` codebase.
 
 The library also includes caching functionality to improve performance for repeated lookups
 and minimize reaching rate-limiting thresholds.
@@ -26,7 +26,13 @@ The cache file can be encrypted when enabled through a feature flag for addition
 Add the following to your `Cargo.toml` file:
 ```toml
 [dependencies]
-public-ip-address = { version = "0.2", features = ["encryption"] }
+public-ip-address = { version = "0.3" }
+
+# with cache encryption enabled
+public-ip-address = { version = "0.3", features = ["encryption"] }
+
+# with `async` disabled
+public-ip-address = { version = "0.3", features = ["blocking"] }
 ```
 ## Example
 
@@ -42,10 +48,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 ```
+With `blocking` interface enabled:
+```rust
+use std::error::Error;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    // Perform my public IP address lookup
+    let result = public_ip_address::perform_lookup(None)?;
+    println!("{}", result);
+    Ok(())
+}
+```
 
 More examples can be found in the `examples` directory. And run them with the following command:
 ```bash
 cargo run --example <example_name>
+```
+
+Running the examples with the `blocking` feature enabled: 
+```bash
+cargo run --example <example_name> --features blocking
 ```
 
 ## Providers
@@ -78,7 +100,7 @@ cargo run --example <example_name>
 - [x] Add more providers
 - [x] Add support for additional providers with API key
 - [x] Add reverse lookup feature
-- [ ] Add asynchronous and synchronous interface support
+- [x] Add asynchronous and synchronous interface support
 - [ ] Bulk lookup
 - [ ] Offline reverse lookup
 

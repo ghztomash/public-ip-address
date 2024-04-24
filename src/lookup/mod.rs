@@ -8,7 +8,8 @@
 //! use public_ip_address::lookup::{LookupProvider, LookupService};
 //! use std::{error::Error, str::FromStr, net::IpAddr};
 //!
-//! #[tokio::main]
+//! #[cfg_attr(not(feature = "blocking"), tokio::main)]
+//! #[maybe_async::maybe_async]
 //! async fn main() -> Result<(), Box<dyn Error>> {
 //!     let provider = LookupProvider::from_str("ipinfo")?;
 //!     let service = LookupService::new(provider, None);

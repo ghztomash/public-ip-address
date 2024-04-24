@@ -1,10 +1,12 @@
 //! # 🗄️ Response cache Module
 //!
 //! This module provides a `ResponseCache` struct that holds the current IP address lookup response and the time it was created, and when it should expire.
+//! 
 //! The `ResponseCache` can be saved to disk, loaded from disk, and deleted from disk. It also provides methods to clear the cache,
 //! update the cache with a new response, check if the cache has expired, and retrieve the IP address or the entire response from the cache.
 //!
-//! The cache is stored in a JSON format by default in the system cache directory.
+//! The cache is stored in a JSON format by default in the system cache directory. And a custom file name can be provided.
+//! 
 //! If the `encryption` feature is enabled, the cache is encrypted using AEAD.
 //!
 //! ## Example
@@ -118,8 +120,7 @@ impl ResponseCache {
     ///
     /// # Arguments
     ///
-    /// * `current_response` - A `LookupResponse` instance representing the current address to be cached.
-    /// * `ttl` - An `Option<u64>` representing the time-to-live (TTL) in seconds for the cached response. If `None`, the cache never expires.
+    /// * `file_name` - An `Option<String>` representing the name of the file where the cache will be stored. If `None`, no file will be used.
     ///
     /// # Examples
     ///
@@ -133,6 +134,12 @@ impl ResponseCache {
     /// let mut cache = ResponseCache::new(None);
     /// cache.update_current(&response, None);
     /// ```
+    /// 
+    /// ```
+    /// # use public_ip_address::cache::ResponseCache;
+    /// let cache = ResponseCache::new(Some("cache.txt".to_string()));
+    /// ```
+    /// 
     pub fn new(file_name: Option<String>) -> ResponseCache {
         trace!("Creating new cache structure");
         ResponseCache {
@@ -142,7 +149,7 @@ impl ResponseCache {
         }
     }
 
-    /// Clears the `current_address` cache.
+    /// Clears the cache.
     ///
     /// # Examples
     ///
@@ -158,7 +165,7 @@ impl ResponseCache {
         self.lookup_address.clear();
     }
 
-    /// Updates the current cache entry with a new response.
+    /// Updates the cache entry for the current host with a new response.
     ///
     /// # Arguments
     ///
@@ -177,7 +184,7 @@ impl ResponseCache {
         }
     }
 
-    /// Returns the IP address of the current cache entry.
+    /// Returns the IP address of the current host cache entry.
     pub fn current_ip(&self) -> Option<std::net::IpAddr> {
         self.current_address.as_ref().map(|current| current.ip())
     }
@@ -210,10 +217,18 @@ impl ResponseCache {
             .map(|lookup| lookup.response.to_owned())
     }
 
-    /// Saves the `ResponseCache` instance to disk.
+    /// Writes the `ResponseCache` instance to a file on disk.
     ///
-    /// This function serializes the `ResponseCache` instance to a JSON string, if feature `encryption` is enabled it's encrypted using AEAD, and then writes it to a file on disk.
-    /// The file is located at the path returned by the `get_cache_path` function.
+    /// This method serializes the `ResponseCache` instance into a JSON string, encrypts the data if the "encryption" feature is enabled, 
+    /// and then writes the encrypted (or plain text) data to a file. The file is located at the path specified by the `file_name` field of the `ResponseCache` instance.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use public_ip_address::cache::ResponseCache;
+    /// let cache = ResponseCache::new(Some("cache.txt".to_string()));
+    /// cache.save().unwrap();
+    /// ```
     pub fn save(&self) -> Result<()> {
         debug!("Saving cache to {}", get_cache_path(&self.file_name));
         let data = serde_json::to_string(self)?.into_bytes();
@@ -226,7 +241,22 @@ impl ResponseCache {
         Ok(())
     }
 
-    /// Loads the `ResponseCache` instance from disk.
+    /// Loads the `ResponseCache` instance from a file on disk.
+    /// 
+    /// This method reads the file specified by `file_name`, decrypts the data if the "encryption" feature is enabled, 
+    /// and then deserializes the data into a `ResponseCache` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `file_name` - An `Option<String>` representing the name of the file from which the cache will be loaded. 
+    /// If `None`, the default file name `lookup.cache` will be used.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use public_ip_address::cache::ResponseCache;
+    /// let cache = ResponseCache::load(Some("cache.txt".to_string())).unwrap();
+    /// ```
     pub fn load(file_name: Option<String>) -> Result<ResponseCache> {
         debug!("Loading cache from {}", get_cache_path(&file_name));
         let mut file = File::open(get_cache_path(&file_name))?;
@@ -249,14 +279,31 @@ impl ResponseCache {
     }
 }
 
-/// Returns the path to the cache file.
+/// Determines the path for the cache file.
 ///
-/// This function attempts to get the system's cache directory using the `BaseDirs` struct.
-/// If the cache directory doesn't exist, it attempts to create it.
-/// If it can't create the cache directory, it falls back to the data directory.
-/// If it can't get the data directory, it falls back to the home directory.
-/// If it can't get the home directory, it falls back to the current directory.
-/// The cache file is named "lookup.cache" by  default if no parameter is provided.
+/// This function uses a series of fallbacks to find a suitable directory for the cache file:
+/// 1. It first tries to use the system's cache directory, as determined by the `BaseDirs` struct.
+/// 2. If the cache directory doesn't exist, it tries to create it.
+/// 3. If it can't create the cache directory, it falls back to the system's data directory.
+/// 4. If it can't use the data directory, it falls back to the user's home directory.
+/// 5. If it can't use the home directory, it falls back to the current directory.
+///
+/// The cache file is named "lookup.cache" by default. However, this can be overridden by providing a different name as a parameter.
+///
+/// # Arguments
+///
+/// * `file_name` - An `Option<String>` representing the desired name of the cache file. If `None`, the default name "lookup.cache" is used.
+///
+/// # Returns
+///
+/// * `String` - The path to the cache file.
+///
+/// # Examples
+///
+/// ```
+/// # use public_ip_address::cache::get_cache_path;
+/// let cache_path = get_cache_path(&Some("my_cache.txt".to_string()));
+/// ```
 pub fn get_cache_path(file_name: &Option<String>) -> String {
     let file_name = if let Some(file_name) = file_name {
         file_name

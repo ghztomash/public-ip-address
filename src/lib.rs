@@ -2,17 +2,24 @@
 //!
 //! `public-ip-address` is a simple, easy-to-use Rust library for performing public IP lookups from various services.
 //! It provides a unified interface to fetch public IP address and geolocation information from multiple providers.
+//! 
+//! Arbitrary IP address lookup and access API keys are supported for certain providers.
+//!
+//! The library provides an asynchronous and blocking interfaces to make it easy to integrate with other `async` codebase.
+//!
 //! The library also includes caching functionality to improve performance for repeated lookups and minimaze rate-limiting.
+//! The cache file can be encrypted when enabled through the `encryption` feature flag for additional privacy.
 //!
 //! ## Usage
 //! ```toml
 //! [dependencies]
-//! public-ip-address = { version = "0.2" }
+//! public-ip-address = { version = "0.3" }
 //! ```
 //! ## Example
 //! ```rust
 //! use std::error::Error;
-//! #[tokio::main]
+//! #[cfg_attr(not(feature = "blocking"), tokio::main)]
+//! #[maybe_async::maybe_async]
 //! async fn main() -> Result<(), Box<dyn Error>> {
 //!     let result = public_ip_address::perform_lookup(None).await?;
 //!     println!("{}", result);
@@ -56,7 +63,8 @@ pub mod response;
 ///
 /// ```rust
 /// # use std::error::Error;
-/// # #[tokio::main]
+/// # #[cfg_attr(not(feature = "blocking"), tokio::main)]
+/// # #[maybe_async::maybe_async]
 /// # async fn main() -> Result<(), Box<dyn Error>> {
 /// match public_ip_address::perform_lookup(None).await {
 ///     Ok(response) => {
@@ -108,12 +116,16 @@ pub async fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
 /// ```rust
 /// use public_ip_address::lookup::LookupProvider;
 ///
+/// # use std::error::Error;
+/// # #[cfg_attr(not(feature = "blocking"), tokio::main)]
+/// # #[maybe_async::maybe_async]
+/// # async fn main() -> Result<(), Box<dyn Error>> {
+///
 /// let providers = vec![
 ///     // List of providers to use for the lookup
 ///     // (LookupProvider::IpWhoIs, Some(Parameters::new(apikey)))
 /// ];
 ///
-/// # tokio_test::block_on(async {
 /// match public_ip_address::perform_lookup_with(providers, None).await {
 ///     Ok(response) => {
 ///         // Handle successful response
@@ -122,7 +134,8 @@ pub async fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
 ///         // Handle error
 ///     }
 /// }
-/// # })
+/// # Ok(())
+/// # }
 /// ```
 ///
 /// # Returns
@@ -184,7 +197,8 @@ pub async fn perform_lookup_with(
 /// use public_ip_address::lookup::LookupProvider;
 ///
 /// # use std::error::Error;
-/// # #[tokio::main]
+/// # #[cfg_attr(not(feature = "blocking"), tokio::main)]
+/// # #[maybe_async::maybe_async]
 /// # async fn main() -> Result<(), Box<dyn Error>> {
 /// let providers = vec![
 ///     // List of providers to use for the lookup
