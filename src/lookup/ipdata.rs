@@ -204,8 +204,8 @@ mod tests {
 }
 "#;
 
-    #[tokio::test]
     #[ignore]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_request() {
         use std::env;
         let key = env::var("IPDATA_APIKEY").ok();
@@ -221,8 +221,8 @@ mod tests {
         assert!(response.is_ok(), "Failed parsing response {:#?}", response);
     }
 
-    #[tokio::test]
     #[ignore]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_request_target() {
         use std::env;
         let key = env::var("IPDATA_APIKEY").ok();

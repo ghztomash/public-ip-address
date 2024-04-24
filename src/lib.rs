@@ -73,6 +73,7 @@ pub mod response;
 /// # Returns
 ///
 /// * A `Result` containing either a successful `LookupResponse` or an `Error` if the lookup or caching failed.
+#[maybe_async::maybe_async]
 pub async fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
     perform_cached_lookup_with(
         vec![
@@ -127,6 +128,7 @@ pub async fn perform_lookup(target: Option<IpAddr>) -> Result<LookupResponse> {
 /// # Returns
 ///
 /// * A `Result` containing either a successful `LookupResponse` or a `LookupError` containing a list of all errors received.
+#[maybe_async::maybe_async]
 pub async fn perform_lookup_with(
     providers: Vec<(LookupProvider, Option<Parameters>)>,
     target: Option<IpAddr>,
@@ -206,6 +208,7 @@ pub async fn perform_lookup_with(
 /// # Returns
 ///
 /// * A `Result` containing either a successful `LookupResponse` or an `Error` if the lookup or caching failed.
+#[maybe_async::maybe_async]
 pub async fn perform_cached_lookup_with(
     providers: Vec<(LookupProvider, Option<Parameters>)>,
     target: Option<IpAddr>,

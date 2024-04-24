@@ -84,8 +84,8 @@ mod tests {
     use super::*;
     const TEST_INPUT: &str = "{\n \"ip\": \"1.1.1.1\",\n \"ip_decimal\": 16843009\n}";
 
-    #[tokio::test]
     #[ignore]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_request() {
         let service = Box::new(IfConfig);
         let result = service.get_client(None, None).send().await;

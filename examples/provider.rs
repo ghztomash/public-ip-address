@@ -7,7 +7,8 @@ use std::error::Error;
 
 /// This example demonstrates how to use the IpWhoIs provider directly
 /// and get access to the provider specific response.
-#[tokio::main]
+#[cfg_attr(not(feature = "blocking"), tokio::main)]
+#[maybe_async::maybe_async]
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
     let provider = IpWhoIs;

@@ -302,8 +302,8 @@ mod tests {
 }
 "#;
 
-    #[tokio::test]
     #[ignore]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_request() {
         let service = Box::new(IpBase);
         let result = service.get_client(None, None).send().await;

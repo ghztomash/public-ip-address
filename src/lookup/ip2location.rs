@@ -97,8 +97,8 @@ mod tests {
 }
 "#;
 
-    #[tokio::test]
     #[ignore]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_request() {
         let service = Box::new(Ip2Location);
         let result = service.get_client(None, None).send().await;
@@ -110,8 +110,8 @@ mod tests {
         assert!(response.is_ok(), "Failed parsing response {:#?}", response);
     }
 
-    #[tokio::test]
     #[ignore]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_request_with_key() {
         use std::env;
         let key = env::var("IP2LOCATION_APIKEY").ok();
@@ -127,8 +127,8 @@ mod tests {
         assert!(response.is_ok(), "Failed parsing response {:#?}", response);
     }
 
-    #[tokio::test]
     #[ignore]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_request_with_key_for_target() {
         use std::env;
         let key = env::var("IP2LOCATION_APIKEY").ok();

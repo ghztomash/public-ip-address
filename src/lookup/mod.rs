@@ -289,12 +289,14 @@ impl LookupService {
     /// Makes a request to the lookup provider
     ///
     /// This function makes an API request to the current lookup provider and parses the response into a `LookupResponse` instance.
+    #[maybe_async::maybe_async]
     pub async fn lookup(&self, target: Option<IpAddr>) -> Result<LookupResponse> {
         let response = self.make_api_request(target).await?;
         self.provider.parse_reply(response)
     }
 
     /// Internal function to make the API request
+    #[maybe_async::maybe_async]
     async fn make_api_request(&self, target: Option<IpAddr>) -> Result<String> {
         let key = self.parameters.as_ref().map(|p| p.api_key.clone());
         let response = self.provider.get_client(key, target).send().await;
@@ -303,6 +305,7 @@ impl LookupService {
 }
 
 /// Handles the response from reqwest
+#[maybe_async::maybe_async]
 pub async fn handle_response(response: reqwest::Result<Response>) -> Result<String> {
     match response {
         Ok(response) => match response.status() {
@@ -329,7 +332,7 @@ mod tests {
         assert_eq!(provider.get_provider_type(), LookupProvider::IpInfo);
     }
 
-    #[tokio::test]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_make_request() {
         let address = "1.1.1.1".parse::<std::net::IpAddr>().unwrap();
         let provider = LookupService::new(LookupProvider::Mock(address.to_string()), None);
@@ -337,16 +340,16 @@ mod tests {
         assert_eq!(response.ip, address);
     }
 
-    #[tokio::test]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_handle_response() {
-        let response = reqwest::get("https://httpbin.org/status/200").await;
+        let response = client::get("https://httpbin.org/status/200").await;
         let body = handle_response(response).await;
         assert!(body.is_ok(), "Response is an error {:#?}", body);
     }
 
-    #[tokio::test]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_handle_response_error() {
-        let response = reqwest::get("https://httpbin.org/status/500").await;
+        let response = client::get("https://httpbin.org/status/500").await;
         let body = handle_response(response).await;
         assert!(body.is_err(), "Response should be an error {:#?}", body);
         let body = body.unwrap_err();
@@ -358,9 +361,9 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_handle_response_too_many() {
-        let response = reqwest::get("https://httpbin.org/status/429").await;
+        let response = client::get("https://httpbin.org/status/429").await;
         let body = handle_response(response).await;
         assert!(body.is_err(), "Response should be an error {:#?}", body);
         let body = body.unwrap_err();

@@ -155,8 +155,8 @@ mod tests {
 }
 "#;
 
-    #[tokio::test]
     #[ignore]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_request_target() {
         use std::env;
         let key = env::var("ABSTRACT_APIKEY").ok();

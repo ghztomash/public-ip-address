@@ -11,7 +11,7 @@ fn ip(ip: &str) -> IpAddr {
     ip.parse().unwrap()
 }
 
-#[tokio::test]
+#[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
 async fn test_perform_lookup() {
     let response = perform_lookup_with(
         vec![(LookupProvider::Mock("1.1.1.1".to_string()), None)],
@@ -26,7 +26,7 @@ async fn test_perform_lookup() {
     );
 }
 
-#[tokio::test]
+#[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
 async fn test_perform_lookup_target() {
     let response = perform_lookup_with(
         vec![(LookupProvider::Mock("8.8.8.8".to_string()), None)],
@@ -41,7 +41,7 @@ async fn test_perform_lookup_target() {
     );
 }
 
-#[tokio::test]
+#[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
 #[serial]
 async fn test_perform_lookup_cached() {
     clear_cache();
@@ -60,7 +60,7 @@ async fn test_perform_lookup_cached() {
     clear_cache();
 }
 
-#[tokio::test]
+#[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
 #[serial]
 async fn test_perform_lookup_cached_force_expire() {
     clear_cache();
@@ -104,7 +104,7 @@ async fn test_perform_lookup_cached_force_expire() {
     clear_cache();
 }
 
-#[tokio::test]
+#[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
 #[serial]
 async fn test_perform_lookup_cached_expired() {
     clear_cache();

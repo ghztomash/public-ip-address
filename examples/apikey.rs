@@ -1,7 +1,8 @@
 use public_ip_address::lookup::{LookupProvider, LookupService, Parameters};
 use std::{env, error::Error};
 
-#[tokio::main]
+#[cfg_attr(not(feature = "blocking"), tokio::main)]
+#[maybe_async::maybe_async]
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
     // read the API key from the environment variables

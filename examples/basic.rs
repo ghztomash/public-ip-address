@@ -1,7 +1,8 @@
 use public_ip_address::lookup::LookupProvider;
 use std::error::Error;
 
-#[tokio::main]
+#[cfg_attr(not(feature = "blocking"), tokio::main)]
+#[maybe_async::maybe_async]
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
     let result = public_ip_address::perform_cached_lookup_with(

@@ -13,7 +13,8 @@ use std::{
     time::{Duration, Instant},
 };
 
-#[tokio::main]
+#[cfg_attr(not(feature = "blocking"), tokio::main)]
+#[maybe_async::maybe_async]
 async fn main() -> io::Result<()> {
     App::run().await
 }
@@ -47,6 +48,7 @@ impl App {
         }
     }
 
+    #[maybe_async::maybe_async]
     pub async fn run() -> io::Result<()> {
         let mut terminal = init_terminal()?;
         let mut app = App::new();
@@ -88,6 +90,7 @@ impl App {
         restore_terminal()
     }
 
+    #[maybe_async::maybe_async]
     async fn lookup(&mut self) {
         self.geolocation = public_ip_address::perform_cached_lookup_with(
             vec![
