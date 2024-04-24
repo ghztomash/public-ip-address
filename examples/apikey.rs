@@ -3,6 +3,7 @@ use std::{env, error::Error};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    env_logger::init();
     // read the API key from the environment variables
     let key = env::var("ABSTRACT_APIKEY")?;
     let provider = LookupProvider::AbstractApi;

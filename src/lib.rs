@@ -212,7 +212,7 @@ pub async fn perform_cached_lookup_with(
     ttl: Option<u64>,
     flush: bool,
 ) -> Result<LookupResponse> {
-    let cached_file = ResponseCache::load();
+    let cached_file = ResponseCache::load(None);
     // load the cache if it exists
     let mut cache = match cached_file {
         Ok(cache) => {

@@ -14,15 +14,14 @@
 //! use public_ip_address::lookup::LookupProvider;
 //!
 //! fn main() -> Result<(), Box<dyn Error>> {
-//!     let response_cache = ResponseCache::new(
-//!         &LookupResponse::new(
+//!     let response = LookupResponse::new(
 //!             "1.1.1.1".parse::<std::net::IpAddr>()?,
 //!             LookupProvider::IpBase,
-//!         ),
-//!         None
 //!     );
+//!     let mut response_cache = ResponseCache::new(None);
+//!     response_cache.update_current(&response, None);
 //!     response_cache.save()?;
-//!     let cached = ResponseCache::load()?;
+//!     let cached = ResponseCache::load(None)?;
 //!     println!("{:?}", cached);
 //!     cached.delete()?;
 //!     Ok(())
@@ -47,19 +46,6 @@ use cocoon::Cocoon;
 
 /// Result type wrapper for the cache
 pub type Result<T> = std::result::Result<T, CacheError>;
-
-/// Holds the current IP address lookup response
-///
-/// The cache can be saved to disk, loaded from disk, and deleted from disk. It also provides methods to clear the cache,
-/// update the cache with a new response, check if the cache has expired, and retrieve the IP address or the entire response from the cache.
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
-#[non_exhaustive]
-pub struct ResponseCache {
-    /// The current IP address lookup response
-    pub current_address: Option<ResponseRecord>,
-    /// A tree of arbitrary IP address responses
-    pub lookup_address: BTreeMap<IpAddr, ResponseRecord>,
-}
 
 /// Represents an entry of the cached response
 ///
@@ -110,6 +96,21 @@ impl ResponseRecord {
     }
 }
 
+/// Holds the current IP address lookup response
+///
+/// The cache can be saved to disk, loaded from disk, and deleted from disk. It also provides methods to clear the cache,
+/// update the cache with a new response, check if the cache has expired, and retrieve the IP address or the entire response from the cache.
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[non_exhaustive]
+pub struct ResponseCache {
+    /// The current IP address lookup response
+    pub current_address: Option<ResponseRecord>,
+    /// A tree of arbitrary IP address responses
+    pub lookup_address: BTreeMap<IpAddr, ResponseRecord>,
+    /// The cache file name
+    file_name: Option<String>,
+}
+
 impl ResponseCache {
     /// Creates a new `ResponseCache` instance.
     ///
@@ -129,13 +130,15 @@ impl ResponseCache {
     /// let response = LookupResponse::new(
     ///             "1.1.1.1".parse::<std::net::IpAddr>().unwrap(),
     ///             LookupProvider::IpBase);
-    /// let cache = ResponseCache::new(&response, Some(60));
+    /// let mut cache = ResponseCache::new(None);
+    /// cache.update_current(&response, None);
     /// ```
-    pub fn new(current_response: &LookupResponse, ttl: Option<u64>) -> ResponseCache {
+    pub fn new(file_name: Option<String>) -> ResponseCache {
         trace!("Creating new cache structure");
         ResponseCache {
-            current_address: Some(ResponseRecord::new(current_response.to_owned(), ttl)),
+            current_address: None,
             lookup_address: BTreeMap::new(),
+            file_name,
         }
     }
 
@@ -212,21 +215,21 @@ impl ResponseCache {
     /// This function serializes the `ResponseCache` instance to a JSON string, if feature `encryption` is enabled it's encrypted using AEAD, and then writes it to a file on disk.
     /// The file is located at the path returned by the `get_cache_path` function.
     pub fn save(&self) -> Result<()> {
-        debug!("Saving cache to {}", get_cache_path());
+        debug!("Saving cache to {}", get_cache_path(&self.file_name));
         let data = serde_json::to_string(self)?.into_bytes();
 
         #[cfg(feature = "encryption")]
         let data = encrypt(data)?;
 
-        let mut file = File::create(get_cache_path())?;
+        let mut file = File::create(get_cache_path(&self.file_name))?;
         file.write_all(&data)?;
         Ok(())
     }
 
     /// Loads the `ResponseCache` instance from disk.
-    pub fn load() -> Result<ResponseCache> {
-        debug!("Loading cache from {}", get_cache_path());
-        let mut file = File::open(get_cache_path())?;
+    pub fn load(file_name: Option<String>) -> Result<ResponseCache> {
+        debug!("Loading cache from {}", get_cache_path(&file_name));
+        let mut file = File::open(get_cache_path(&file_name))?;
         let mut data = Vec::new();
         file.read_to_end(&mut data)?;
 
@@ -240,8 +243,8 @@ impl ResponseCache {
 
     /// Deletes the `ResponseCache` instance from disk.
     pub fn delete(self) -> Result<()> {
-        trace!("Deleting cache file {}", get_cache_path());
-        fs::remove_file(get_cache_path())?;
+        trace!("Deleting cache file {}", get_cache_path(&self.file_name));
+        fs::remove_file(get_cache_path(&self.file_name))?;
         Ok(())
     }
 }
@@ -253,9 +256,13 @@ impl ResponseCache {
 /// If it can't create the cache directory, it falls back to the data directory.
 /// If it can't get the data directory, it falls back to the home directory.
 /// If it can't get the home directory, it falls back to the current directory.
-/// The cache file is named "lookup.cache".
-pub fn get_cache_path() -> String {
-    let file_name = "lookup.cache";
+/// The cache file is named "lookup.cache" by  default if no parameter is provided.
+pub fn get_cache_path(file_name: &Option<String>) -> String {
+    let file_name = if let Some(file_name) = file_name {
+        file_name
+    } else {
+        "lookup.cache"
+    };
 
     if let Some(base_dirs) = BaseDirs::new() {
         let mut dir = base_dirs.cache_dir();
@@ -349,10 +356,11 @@ mod tests {
             "1.1.1.1".parse().unwrap(),
             LookupProvider::Mock("1.1.1.1".to_string()),
         );
-        println!("{}", get_cache_path());
-        let cache = ResponseCache::new(&response, None);
+        println!("{}", get_cache_path(&None));
+        let mut cache = ResponseCache::new(None);
+        cache.update_current(&response, None);
         cache.save().unwrap();
-        let cached = ResponseCache::load().unwrap();
+        let cached = ResponseCache::load(None).unwrap();
         assert_eq!(
             cached.current_ip().unwrap(),
             "1.1.1.1".parse::<std::net::IpAddr>().unwrap(),
@@ -422,7 +430,8 @@ mod tests {
             "1.1.1.1".parse().unwrap(),
             LookupProvider::Mock("1.1.1.1".to_string()),
         );
-        let mut cache = ResponseCache::new(&response, None);
+        let mut cache = ResponseCache::new(None);
+        cache.update_current(&response, None);
         let response = LookupResponse::new("2.2.2.2".parse().unwrap(), LookupProvider::Ipify);
         cache.update_target(response.ip, &response, None);
         cache.clear();
