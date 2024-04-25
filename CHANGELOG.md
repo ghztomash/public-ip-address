@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] - 2024-04-25
+
+### 🚀 Features
+
+- Return error if provider does not support target lookup
+
+### ⚙️ Miscellaneous Tasks
+
+- Remove inline
+
 ## [0.3.1] - 2024-04-25
 
 ### 🚀 Features
