@@ -183,7 +183,7 @@ impl FromStr for LookupProvider {
 
 impl LookupProvider {
     /// Builds the concrete lookup service out of a LookupProvider enum
-    pub fn build(self) -> Box<dyn Provider> {
+    pub fn build(self) -> Box<dyn Provider + Send + Sync> {
         match self {
             LookupProvider::FreeIpApi => Box::new(freeipapi::FreeIpApi),
             LookupProvider::IfConfig => Box::new(ifconfig::IfConfig),
@@ -255,7 +255,7 @@ impl Parameters {
 /// ```
 #[non_exhaustive]
 pub struct LookupService {
-    provider: Box<dyn Provider>,
+    provider: Box<dyn Provider + Send + Sync>,
     parameters: Option<Parameters>,
 }
 
