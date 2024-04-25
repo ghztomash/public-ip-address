@@ -227,7 +227,7 @@ impl ResponseCache {
     /// ```
     /// # use public_ip_address::cache::ResponseCache;
     /// let cache = ResponseCache::new(Some("cache.txt".to_string()));
-    /// cache.save().unwrap();
+    /// _ = cache.save();
     /// ```
     pub fn save(&self) -> Result<()> {
         debug!("Saving cache to {}", get_cache_path(&self.file_name));
@@ -255,7 +255,7 @@ impl ResponseCache {
     ///
     /// ```
     /// # use public_ip_address::cache::ResponseCache;
-    /// let cache = ResponseCache::load(Some("cache.txt".to_string())).unwrap();
+    /// let cache = ResponseCache::load(Some("cache.txt".to_string()));
     /// ```
     pub fn load(file_name: Option<String>) -> Result<ResponseCache> {
         debug!("Loading cache from {}", get_cache_path(&file_name));
