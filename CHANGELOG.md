@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2024-04-25
+
+### 🚀 Features
+
+- Add ProviderRepsponse trait
+- Provide cache file name
+- Maybe async feature flag
+
+### 🚜 Refactor
+
+- Provider trait
+- Remove make_api_request from Provider trait
+
+### 📚 Documentation
+
+- Update doc tests
+- Update documentation for async
+- Update documentation for blocking feature
+- Add blocking example
+
+### ⚙️ Miscellaneous Tasks
+
+- Remove changelog workflow
+- Update dev dependencies
+- Run basic example in ci
+- Move integration tests to separate module
+
 ## [0.2.2] - 2024-04-19
 
 ### 🚀 Features

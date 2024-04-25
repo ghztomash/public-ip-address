@@ -1,12 +1,12 @@
 //! # 🗄️ Response cache Module
 //!
 //! This module provides a `ResponseCache` struct that holds the current IP address lookup response and the time it was created, and when it should expire.
-//! 
+//!
 //! The `ResponseCache` can be saved to disk, loaded from disk, and deleted from disk. It also provides methods to clear the cache,
 //! update the cache with a new response, check if the cache has expired, and retrieve the IP address or the entire response from the cache.
 //!
 //! The cache is stored in a JSON format by default in the system cache directory. And a custom file name can be provided.
-//! 
+//!
 //! If the `encryption` feature is enabled, the cache is encrypted using AEAD.
 //!
 //! ## Example
@@ -134,12 +134,12 @@ impl ResponseCache {
     /// let mut cache = ResponseCache::new(None);
     /// cache.update_current(&response, None);
     /// ```
-    /// 
+    ///
     /// ```
     /// # use public_ip_address::cache::ResponseCache;
     /// let cache = ResponseCache::new(Some("cache.txt".to_string()));
     /// ```
-    /// 
+    ///
     pub fn new(file_name: Option<String>) -> ResponseCache {
         trace!("Creating new cache structure");
         ResponseCache {
@@ -219,7 +219,7 @@ impl ResponseCache {
 
     /// Writes the `ResponseCache` instance to a file on disk.
     ///
-    /// This method serializes the `ResponseCache` instance into a JSON string, encrypts the data if the "encryption" feature is enabled, 
+    /// This method serializes the `ResponseCache` instance into a JSON string, encrypts the data if the "encryption" feature is enabled,
     /// and then writes the encrypted (or plain text) data to a file. The file is located at the path specified by the `file_name` field of the `ResponseCache` instance.
     ///
     /// # Examples
@@ -242,13 +242,13 @@ impl ResponseCache {
     }
 
     /// Loads the `ResponseCache` instance from a file on disk.
-    /// 
-    /// This method reads the file specified by `file_name`, decrypts the data if the "encryption" feature is enabled, 
+    ///
+    /// This method reads the file specified by `file_name`, decrypts the data if the "encryption" feature is enabled,
     /// and then deserializes the data into a `ResponseCache` instance.
     ///
     /// # Arguments
     ///
-    /// * `file_name` - An `Option<String>` representing the name of the file from which the cache will be loaded. 
+    /// * `file_name` - An `Option<String>` representing the name of the file from which the cache will be loaded.
     /// If `None`, the default file name `lookup.cache` will be used.
     ///
     /// # Examples

@@ -2,7 +2,7 @@
 //!
 //! `public-ip-address` is a simple, easy-to-use Rust library for performing public IP lookups from various services.
 //! It provides a unified interface to fetch public IP address and geolocation information from multiple providers.
-//! 
+//!
 //! Arbitrary IP address lookup and access API keys are supported for certain providers.
 //!
 //! The library provides an asynchronous and blocking interfaces to make it easy to integrate with other `async` codebase.
