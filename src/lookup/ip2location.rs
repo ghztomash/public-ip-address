@@ -54,7 +54,6 @@ impl ProviderResponse<Ip2LocationResponse> for Ip2LocationResponse {
 pub struct Ip2Location;
 
 impl Provider for Ip2Location {
-    #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?key={}", k),

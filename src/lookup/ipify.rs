@@ -29,7 +29,6 @@ impl ProviderResponse<IpifyResponse> for IpifyResponse {
 pub struct Ipify;
 
 impl Provider for Ipify {
-    #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
         "https://api64.ipify.org/?format=json".to_string()
     }

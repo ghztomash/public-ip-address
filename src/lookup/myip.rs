@@ -76,7 +76,6 @@ impl ProviderResponse<MyIpResponse> for MyIpResponse {
 pub struct MyIp;
 
 impl Provider for MyIp {
-    #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
         "https://api.my-ip.io/v2/ip.json".to_string()
     }

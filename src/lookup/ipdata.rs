@@ -110,7 +110,6 @@ impl ProviderResponse<IpDataResponse> for IpDataResponse {
 pub struct IpData;
 
 impl Provider for IpData {
-    #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?api-key={}", k),

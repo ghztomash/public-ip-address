@@ -60,7 +60,6 @@ impl ProviderResponse<IfConfigResponse> for IfConfigResponse {
 pub struct IfConfig;
 
 impl Provider for IfConfig {
-    #[inline]
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => format!("?ip={}", t),

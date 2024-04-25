@@ -29,7 +29,6 @@ impl ProviderResponse<GetJsonIpResponse> for GetJsonIpResponse {
 pub struct GetJsonIp;
 
 impl Provider for GetJsonIp {
-    #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
         "https://ipv4.jsonip.com".to_string()
     }

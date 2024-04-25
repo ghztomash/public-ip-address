@@ -42,7 +42,6 @@ impl ProviderResponse<MullvadResponse> for MullvadResponse {
 pub struct Mullvad;
 
 impl Provider for Mullvad {
-    #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
         "https://am.i.mullvad.net/json".to_string()
     }

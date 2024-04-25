@@ -58,7 +58,6 @@ impl ProviderResponse<IpApiCoResponse> for IpApiCoResponse {
 pub struct IpApiCo;
 
 impl Provider for IpApiCo {
-    #[inline]
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => format!("{}/", t),
@@ -67,7 +66,6 @@ impl Provider for IpApiCo {
         format!("https://ipapi.co/{}json", target)
     }
 
-    #[inline]
     fn add_auth(&self, request: RequestBuilder, _key: &Option<String>) -> RequestBuilder {
         request.header("User-Agent", "nil")
     }

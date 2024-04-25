@@ -124,7 +124,6 @@ impl ProviderResponse<IpBaseResponse> for IpBaseResponse {
 pub struct IpBase;
 
 impl Provider for IpBase {
-    #[inline]
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => format!("?ip={}", t),
@@ -133,7 +132,6 @@ impl Provider for IpBase {
         format!("https://api.ipbase.com/v2/info{}", target)
     }
 
-    #[inline]
     fn add_auth(&self, request: RequestBuilder, key: &Option<String>) -> RequestBuilder {
         if let Some(key) = key {
             return request.header("apikey", key);

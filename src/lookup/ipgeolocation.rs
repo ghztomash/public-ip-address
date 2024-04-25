@@ -71,7 +71,6 @@ impl ProviderResponse<IpGeolocationResponse> for IpGeolocationResponse {
 pub struct IpGeolocation;
 
 impl Provider for IpGeolocation {
-    #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?apiKey={}", k),

@@ -81,7 +81,6 @@ impl ProviderResponse<AbstractApiResponse> for AbstractApiResponse {
 pub struct AbstractApi;
 
 impl Provider for AbstractApi {
-    #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?api_key={}", k),

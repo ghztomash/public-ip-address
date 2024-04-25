@@ -61,14 +61,12 @@ pub trait Provider {
     /// Returns the type enum of the provider
     fn get_type(&self) -> LookupProvider;
 
-    #[inline]
     /// Returns a request client for the provider
     fn get_client(&self, key: Option<String>, target: Option<IpAddr>) -> RequestBuilder {
         let client = Client::new().get(self.get_endpoint(&key, &target));
         self.add_auth(client, &key)
     }
 
-    #[inline]
     /// Add authentication header to the request
     fn add_auth(&self, request: RequestBuilder, _key: &Option<String>) -> RequestBuilder {
         request
@@ -397,7 +395,11 @@ mod tests {
         let address = "1.1.1.1".parse::<std::net::IpAddr>().unwrap();
         let provider = LookupService::new(LookupProvider::MyIp, None);
         let response = provider.lookup(Some(address)).await.unwrap_err();
-        assert_eq!(response.to_string(), "Target lookup not supported", "Target lookup should fail");
+        assert_eq!(
+            response.to_string(),
+            "Target lookup not supported",
+            "Target lookup should fail"
+        );
     }
 
     #[test]

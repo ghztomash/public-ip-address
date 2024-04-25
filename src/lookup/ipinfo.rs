@@ -61,7 +61,6 @@ impl ProviderResponse<IpInfoResponse> for IpInfoResponse {
 pub struct IpInfo;
 
 impl Provider for IpInfo {
-    #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?token={}", k),

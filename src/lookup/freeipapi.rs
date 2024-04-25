@@ -53,7 +53,6 @@ impl ProviderResponse<FreeIpApiResponse> for FreeIpApiResponse {
 pub struct FreeIpApi;
 
 impl Provider for FreeIpApi {
-    #[inline]
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
             Some(t) => t,
@@ -62,7 +61,6 @@ impl Provider for FreeIpApi {
         format!("https://freeipapi.com/api/json/{}", target)
     }
 
-    #[inline]
     fn add_auth(&self, request: RequestBuilder, key: &Option<String>) -> RequestBuilder {
         if let Some(key) = key {
             return request.bearer_auth(key);

@@ -72,7 +72,6 @@ impl ProviderResponse<IpWhoIsResponse> for IpWhoIsResponse {
 pub struct IpWhoIs;
 
 impl Provider for IpWhoIs {
-    #[inline]
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = target.map(|t| t.to_string()).unwrap_or_default();
         format!("https://ipwho.is/{}", target)

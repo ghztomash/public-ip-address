@@ -35,7 +35,6 @@ impl ProviderResponse<MyIpComResponse> for MyIpComResponse {
 pub struct MyIpCom;
 
 impl Provider for MyIpCom {
-    #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
         "https://api.myip.com".to_string()
     }

@@ -14,7 +14,6 @@ pub struct Mock {
 }
 
 impl Provider for Mock {
-    #[inline]
     fn get_endpoint(&self, _key: &Option<String>, _target: &Option<IpAddr>) -> String {
         "https://httpbin.org/status/200".to_string()
     }

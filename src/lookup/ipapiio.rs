@@ -68,7 +68,6 @@ impl ProviderResponse<IpApiIoResponse> for IpApiIoResponse {
 pub struct IpApiIo;
 
 impl Provider for IpApiIo {
-    #[inline]
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
             Some(k) => format!("?api_key={}", k),
