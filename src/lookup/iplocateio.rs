@@ -83,6 +83,10 @@ impl Provider for IpLocateIo {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::IpLocateIo
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

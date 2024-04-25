@@ -92,6 +92,10 @@ impl Provider for IpGeolocation {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::IpGeolocation
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

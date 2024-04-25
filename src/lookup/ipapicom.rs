@@ -84,6 +84,10 @@ impl Provider for IpApiCom {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::IpApiCom
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

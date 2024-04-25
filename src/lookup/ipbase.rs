@@ -149,6 +149,10 @@ impl Provider for IpBase {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::IpBase
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

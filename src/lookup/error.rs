@@ -23,4 +23,7 @@ pub enum LookupError {
     /// Generic error
     #[error("Lookup error")]
     GenericError(String),
+    /// Target address not supported by this provider
+    #[error("Target lookup not supported")]
+    TargetNotSupported,
 }

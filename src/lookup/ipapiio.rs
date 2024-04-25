@@ -89,6 +89,10 @@ impl Provider for IpApiIo {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::IpApiIo
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

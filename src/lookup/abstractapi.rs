@@ -102,6 +102,10 @@ impl Provider for AbstractApi {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::AbstractApi
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

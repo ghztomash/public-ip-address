@@ -131,6 +131,10 @@ impl Provider for IpData {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::IpData
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

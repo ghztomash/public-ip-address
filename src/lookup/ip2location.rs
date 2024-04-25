@@ -75,6 +75,10 @@ impl Provider for Ip2Location {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::Ip2Location
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

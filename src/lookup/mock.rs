@@ -29,4 +29,8 @@ impl Provider for Mock {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::Mock(self.ip.to_string())
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }

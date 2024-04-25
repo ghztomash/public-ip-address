@@ -82,6 +82,10 @@ impl Provider for IpInfo {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::IpInfo
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

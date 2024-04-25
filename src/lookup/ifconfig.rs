@@ -77,6 +77,10 @@ impl Provider for IfConfig {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::IfConfig
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

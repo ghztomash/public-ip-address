@@ -73,6 +73,11 @@ pub trait Provider {
     fn add_auth(&self, request: RequestBuilder, _key: &Option<String>) -> RequestBuilder {
         request
     }
+
+    /// Check if the provider supports target lookup
+    fn supports_target_lookup(&self) -> bool {
+        false
+    }
 }
 
 /// ProviderResponse trait that define methods to parse the response from the provider
@@ -292,6 +297,9 @@ impl LookupService {
     /// This function makes an API request to the current lookup provider and parses the response into a `LookupResponse` instance.
     #[maybe_async::maybe_async]
     pub async fn lookup(&self, target: Option<IpAddr>) -> Result<LookupResponse> {
+        if target.is_some() && !self.provider.supports_target_lookup() {
+            return Err(LookupError::TargetNotSupported);
+        }
         let response = self.make_api_request(target).await?;
         self.provider.parse_reply(response)
     }
@@ -374,6 +382,22 @@ mod tests {
             "Wrong error {:#?}",
             body
         );
+    }
+
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+    async fn test_target_supported() {
+        let address = "8.8.8.8".parse::<std::net::IpAddr>().unwrap();
+        let provider = LookupService::new(LookupProvider::Mock(address.to_string()), None);
+        let response = provider.lookup(Some(address)).await;
+        assert!(response.is_ok());
+    }
+
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+    async fn test_target_not_supported() {
+        let address = "1.1.1.1".parse::<std::net::IpAddr>().unwrap();
+        let provider = LookupService::new(LookupProvider::MyIp, None);
+        let response = provider.lookup(Some(address)).await.unwrap_err();
+        assert_eq!(response.to_string(), "Target lookup not supported", "Target lookup should fail");
     }
 
     #[test]

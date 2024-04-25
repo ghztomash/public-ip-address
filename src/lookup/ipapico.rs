@@ -80,6 +80,10 @@ impl Provider for IpApiCo {
     fn get_type(&self) -> LookupProvider {
         LookupProvider::IpApiCo
     }
+
+    fn supports_target_lookup(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]
