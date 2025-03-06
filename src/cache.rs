@@ -31,7 +31,7 @@
 //! ```
 
 use crate::{error::CacheError, LookupResponse};
-use directories::BaseDirs;
+use directories_next::BaseDirs;
 use log::{debug, trace};
 use serde::{Deserialize, Serialize};
 use std::{

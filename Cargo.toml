@@ -17,7 +17,7 @@ blocking = ["maybe-async/is_sync", "reqwest/blocking"]
 reqwest = { version = "0.12" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-directories = "5.0"
+directories-next = "2.0"
 thiserror = "1.0"
 log = "0.4"
 maybe-async = "0.2"
