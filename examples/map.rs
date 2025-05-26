@@ -6,6 +6,7 @@ use crossterm::{
 use public_ip_address::{lookup::LookupProvider, response::LookupResponse};
 use ratatui::{
     prelude::*,
+    symbols::Marker,
     widgets::{canvas::*, *},
 };
 use std::{
@@ -118,7 +119,7 @@ impl App {
     fn ui(&self, frame: &mut Frame) {
         let horizontal =
             Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]);
-        let [map, right] = horizontal.areas(frame.size());
+        let [map, right] = horizontal.areas(frame.area());
 
         frame.render_widget(self.map_canvas(), map);
         frame.render_widget(self.data_block(), right);
