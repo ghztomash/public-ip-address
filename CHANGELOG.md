@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.3] - 2025-05-26
+
+### 🚜 Refactor
+
+- Replace `directories` with `etcetera`
+
+### 📚 Documentation
+
+- Fix indentation
+
+### ⚙️ Miscellaneous Tasks
+
+- Changelog typo
+- Bump dependencies and update map example
+
 ## [0.3.2] - 2024-04-25
 
 ### 🚀 Features
