@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Tomash Ghz <ghz.tomash@hotmail.com>"]
 description = "A simple library for performing public IP and geolocation lookups from various services."
 repository = "https://github.com/ghztomash/public-ip-address"
-keywords = ["network", "geolocation", "geoip", "public", "ip" ]
+keywords = ["network", "geolocation", "geoip", "public", "ip"]
 categories = ["network-programming", "web-programming"]
 license = "MIT OR Apache-2.0"
 
@@ -17,12 +17,12 @@ blocking = ["maybe-async/is_sync", "reqwest/blocking"]
 reqwest = { version = "0.12" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-directories = "5.0"
 thiserror = "1.0"
 log = "0.4"
 maybe-async = "0.2"
 cocoon = { version = "0.4", optional = true }
 mid = { version = "2.0", optional = true }
+etcetera = "0.10"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

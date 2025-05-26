@@ -31,7 +31,7 @@
 //! ```
 
 use crate::{error::CacheError, LookupResponse};
-use directories::BaseDirs;
+use etcetera::{choose_base_strategy, BaseStrategy};
 use log::{debug, trace};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -282,7 +282,7 @@ impl ResponseCache {
 /// Determines the path for the cache file.
 ///
 /// This function uses a series of fallbacks to find a suitable directory for the cache file:
-/// 1. It first tries to use the system's cache directory, as determined by the `BaseDirs` struct.
+/// 1. It first tries to use the system's cache directory, as determined by the `BaseStrategy`.
 /// 2. If the cache directory doesn't exist, it tries to create it.
 /// 3. If it can't create the cache directory, it falls back to the system's data directory.
 /// 4. If it can't use the data directory, it falls back to the user's home directory.
@@ -311,15 +311,15 @@ pub fn get_cache_path(file_name: &Option<String>) -> String {
         "lookup.cache"
     };
 
-    if let Some(base_dirs) = BaseDirs::new() {
+    if let Ok(base_dirs) = choose_base_strategy() {
         let mut dir = base_dirs.cache_dir();
         // Create cache directory if it doesn't exist
-        if !dir.exists() && fs::create_dir_all(dir).is_err() {
+        if !dir.exists() && fs::create_dir_all(&dir).is_err() {
             // If we can't create the cache directory, fallback to data directory
             dir = base_dirs.data_dir();
-            if !dir.exists() && fs::create_dir_all(dir).is_err() {
+            if !dir.exists() && fs::create_dir_all(&dir).is_err() {
                 // If we can't create the data directory, fallback to home directory
-                dir = base_dirs.home_dir();
+                dir = base_dirs.home_dir().to_path_buf();
             }
         }
         if let Some(path) = dir.join(file_name).to_str() {
