@@ -68,7 +68,7 @@ impl ResponseRecord {
     ///
     /// * `response` - A `LookupResponse` to be cached.
     /// * `ttl` - An optional `u64` value representing after how many seconds the cached value expires.
-    /// None means the cache never expires.
+    ///   None means the cache never expires.
     pub fn new(response: LookupResponse, ttl: Option<u64>) -> ResponseRecord {
         ResponseRecord {
             response,
@@ -249,7 +249,7 @@ impl ResponseCache {
     /// # Arguments
     ///
     /// * `file_name` - An `Option<String>` representing the name of the file from which the cache will be loaded.
-    /// If `None`, the default file name `lookup.cache` will be used.
+    ///   If `None`, the default file name `lookup.cache` will be used.
     ///
     /// # Examples
     ///
