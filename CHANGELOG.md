@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- Add ProviderRepsponse trait
+- Add ProviderResponse trait
 - Provide cache file name
 - Maybe async feature flag
 
