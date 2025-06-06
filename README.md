@@ -24,6 +24,7 @@ The cache file can be encrypted when enabled through a feature flag for addition
 ## Usage
 
 Add the following to your `Cargo.toml` file:
+
 ```toml
 [dependencies]
 public-ip-address = { version = "0.3" }
@@ -34,9 +35,11 @@ public-ip-address = { version = "0.3", features = ["encryption"] }
 # with `async` disabled
 public-ip-address = { version = "0.3", features = ["blocking"] }
 ```
+
 ## Example
 
 The simplest way to use this library is to call the `perform_lookup()` function, which returns a `Result` with a `LookupResponse`.
+
 ```rust
 use std::error::Error;
 
@@ -48,7 +51,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 ```
+
 With `blocking` interface enabled:
+
 ```rust
 use std::error::Error;
 
@@ -61,11 +66,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 ```
 
 More examples can be found in the `examples` directory. And run them with the following command:
+
 ```bash
 cargo run --example <example_name>
 ```
 
-Running the examples with the `blocking` feature enabled: 
+Running the examples with the `blocking` feature enabled:
+
 ```bash
 cargo run --example <example_name> --features blocking
 ```
@@ -89,7 +96,7 @@ cargo run --example <example_name> --features blocking
 | AbstractApi | [https://abstractapi.com](https://abstractapi.com) | 1000 / day | ✔️ | ✔️ |
 | IpGeolocation | [https://ipgeolocation.io](https://ipgeolocation.io) | 1000 / day | ✔️ | ✔️ |
 | IpData | [https://ipdata.co](https://ipdata.co) | 1500 / day | ✔️ | ✔️ |
-| Ip2Location | [https://ip2location.io](https://ip2location.io) | 500 / day (with key 30000 / month) | ✔️ | ✔️ |
+| Ip2Location | [https://ip2location.io](https://ip2location.io) | 500 / day (with key 50000 / month) | ✔️ | ✔️ |
 | MyIpCom | [https://myip.com](https://myip.com) | unlimited | ️ | ️ |
 | GetJsonIp | [https://getjsonip.com](https://getjsonip.com) | unlimited | ️ | ️ |
 | Ipify | [https://www.ipify.org](https://www.ipify.org) | unlimited | ️ | ️ |
@@ -108,10 +115,10 @@ cargo run --example <example_name> --features blocking
 
 Licensed under either of
 
- * Apache License, Version 2.0
-   ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
- * MIT license
-   ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- Apache License, Version 2.0
+   ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license
+   ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
 
