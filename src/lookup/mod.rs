@@ -46,6 +46,7 @@ pub mod ipify;
 pub mod ipinfo;
 pub mod ipleak;
 pub mod iplocateio;
+pub mod ipquery;
 pub mod ipwhois;
 pub mod mock;
 pub mod mullvad;
@@ -131,6 +132,8 @@ pub enum LookupProvider {
     Ipify,
     /// GetJsonIp provider (<https://getjsonip.com>)
     GetJsonIp,
+    /// IpQuery provider (<https://ipquery.io>)
+    IpQuery,
     /// Mock provider for testing
     Mock(String),
 }
@@ -176,6 +179,7 @@ impl FromStr for LookupProvider {
             "myipcom" => Ok(LookupProvider::MyIpCom),
             "ipify" => Ok(LookupProvider::Ipify),
             "getjsonip" => Ok(LookupProvider::GetJsonIp),
+            "ipquery" => Ok(LookupProvider::IpQuery),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {}",
                 p
@@ -207,6 +211,7 @@ impl LookupProvider {
             LookupProvider::MyIpCom => Box::new(myipcom::MyIpCom),
             LookupProvider::Ipify => Box::new(ipify::Ipify),
             LookupProvider::GetJsonIp => Box::new(getjsonip::GetJsonIp),
+            LookupProvider::IpQuery => Box::new(ipquery::IpQuery),
             LookupProvider::Mock(ip) => Box::new(mock::Mock { ip }),
         }
     }
