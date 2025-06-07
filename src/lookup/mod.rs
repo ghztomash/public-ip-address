@@ -335,6 +335,7 @@ pub async fn handle_response(response: reqwest::Result<Response>) -> Result<Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
 
     #[test]
     fn test_set_provider() {
@@ -353,6 +354,7 @@ mod tests {
     }
 
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+    #[serial]
     async fn test_handle_response() {
         let response = client::get("https://httpbin.org/status/200").await;
         let body = handle_response(response).await;
@@ -360,6 +362,7 @@ mod tests {
     }
 
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+    #[serial]
     async fn test_handle_response_error() {
         let response = client::get("https://httpbin.org/status/500").await;
         let body = handle_response(response).await;
@@ -374,6 +377,7 @@ mod tests {
     }
 
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+    #[serial]
     async fn test_handle_response_too_many() {
         let response = client::get("https://httpbin.org/status/429").await;
         let body = handle_response(response).await;
@@ -388,6 +392,7 @@ mod tests {
     }
 
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+    #[serial]
     async fn test_target_supported() {
         let address = "8.8.8.8".parse::<std::net::IpAddr>().unwrap();
         let provider = LookupService::new(LookupProvider::Mock(address.to_string()), None);

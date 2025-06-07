@@ -30,7 +30,7 @@ tokio-test = "0.4"
 crossterm = { version = "0.29" }
 ratatui = { version = "0.29" }
 rusty-hook = { version = "0.11" }
-serial_test = { version = "3.0" }
+serial_test = { version = "3.2" }
 env_logger = { version = "0.11" }
 
 [profile.dev.package.cocoon]
