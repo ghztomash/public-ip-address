@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr};
 
-/// <https://iplocate.docs.apiary.io/>
+/// <https://www.iplocate.io/docs/>
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IpLocateIoResponse {
     ip: String,
@@ -22,14 +22,44 @@ pub struct IpLocateIoResponse {
     time_zone: Option<String>,
     postal_code: Option<String>,
     subdivision: Option<String>,
-    org: Option<String>,
-    asn: Option<String>,
-    threat: Option<Threat>,
+    network: Option<String>,
+    asn: Option<Asn>,
+    company: Option<Company>,
+    privacy: Option<Privacy>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Threat {
+struct Asn {
+    asn: Option<String>,
+    route: Option<String>,
+    netname: Option<String>,
+    name: Option<String>,
+    country_code: Option<String>,
+    domain: Option<String>,
+    #[serde(rename = "type")]
+    asn_type: Option<String>,
+    rir: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Company {
+    name: Option<String>,
+    domain: Option<String>,
+    country_code: Option<String>,
+    #[serde(rename = "type")]
+    company_type: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Privacy {
+    is_abuser: Option<bool>,
+    is_anonymous: Option<bool>,
+    is_bogon: Option<bool>,
+    is_icoud_relay: Option<bool>,
+    is_vpn: Option<bool>,
+    is_tor: Option<bool>,
     is_proxy: Option<bool>,
+    is_datacenter: Option<bool>,
 }
 
 impl ProviderResponse<IpLocateIoResponse> for IpLocateIoResponse {
@@ -49,10 +79,15 @@ impl ProviderResponse<IpLocateIoResponse> for IpLocateIoResponse {
         response.latitude = self.latitude;
         response.longitude = self.longitude;
         response.time_zone = self.time_zone;
-        response.asn_org = self.org;
-        response.asn = self.asn;
-        if let Some(threat) = self.threat {
-            response.is_proxy = threat.is_proxy;
+        if let Some(asn) = self.asn {
+            response.asn_org = asn.name;
+            response.asn = asn.asn;
+        }
+        if let Some(privacy) = self.privacy {
+            let is_proxy = privacy.is_proxy.unwrap_or(false)
+                || privacy.is_vpn.unwrap_or(false)
+                || privacy.is_tor.unwrap_or(false);
+            response.is_proxy = Some(is_proxy);
         }
         response
     }
@@ -93,20 +128,53 @@ mod tests {
     use super::*;
     const TEST_INPUT: &str = r#"
 {
-  "asn": "AS6185",
-  "city": "Cupertino",
-  "continent": "North America",
-  "country": "United States",
-  "country_code": "US",
   "ip": "1.1.1.1",
-  "org": "Apple Inc.",
-  "latitude": 37.3042,
-  "longitude": -122.0946,
-  "postal_code": "95014",
-  "subdivision": "California",
-  "time_zone": "America/Los_Angeles"
-}
-"#;
+  "country": "Australia",
+  "country_code": "AU",
+  "is_eu": false,
+  "city": "Sydney",
+  "continent": "Oceania",
+  "latitude": -33.8672,
+  "longitude": 151.1997,
+  "time_zone": "Australia/Sydney",
+  "postal_code": "2049",
+  "subdivision": "New South Wales",
+  "subdivision2": null,
+  "network": "123.243.240.0/20",
+  "asn": {
+    "asn": "AS7545",
+    "route": "123.243.246.0/24",
+    "netname": "TPG-INTERNET-AP",
+    "name": "TPG Telecom Limited",
+    "country_code": "AU",
+    "domain": "tpgtelecom.com.au",
+    "type": "isp",
+    "rir": "APNIC"
+  },
+  "privacy": {
+    "is_abuser": false,
+    "is_anonymous": false,
+    "is_bogon": false,
+    "is_datacenter": false,
+    "is_icloud_relay": false,
+    "is_proxy": false,
+    "is_tor": false,
+    "is_vpn": false
+  },
+  "company": {
+    "name": "TPG Telecom",
+    "domain": "www.tpgtelecom.com.au",
+    "country_code": "AU",
+    "type": "isp"
+  },
+  "abuse": {
+    "address": "TPG Internet Pty Ltd., (Part of the Total Peripherals Group), 65 Waterloo Road, North Ryde NSW 2113",
+    "email": "hostmaster@tpgtelecom.com.au",
+    "name": "ABUSE TPGCOMAU",
+    "network": "123.243.246.192 - 123.243.246.223",
+    "phone": "+000000000"
+  }
+}"#;
 
     #[ignore]
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
