@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.4] - 2025-06-26
+
+### 🚀 Features
+
+- Add IpQuery provider
+
+### ⚙️ Miscellaneous Tasks
+
+- Update readme
+- Fix httpbin tests
+- Bump reqwest
+
 ## [0.3.3] - 2025-05-26
 
 ### 🚜 Refactor
