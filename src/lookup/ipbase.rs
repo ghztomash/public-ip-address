@@ -116,6 +116,13 @@ impl ProviderResponse<IpBaseResponse> for IpBaseResponse {
             response.time_zone = timezone.id;
         }
 
+        if let Some(risk) = data.security {
+            let is_proxy = risk.is_proxy.unwrap_or(false)
+                || risk.is_vpn.unwrap_or(false)
+                || risk.is_tor.unwrap_or(false);
+            response.is_proxy = Some(is_proxy);
+        }
+
         response
     }
 }

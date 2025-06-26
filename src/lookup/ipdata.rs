@@ -99,7 +99,10 @@ impl ProviderResponse<IpDataResponse> for IpDataResponse {
             response.asn = asn.asn;
         }
         if let Some(threat) = self.threat {
-            response.is_proxy = threat.is_proxy;
+            let is_proxy = threat.is_proxy.unwrap_or(false)
+                || threat.is_vpn.unwrap_or(false)
+                || threat.is_tor.unwrap_or(false);
+            response.is_proxy = Some(is_proxy);
         }
 
         response
