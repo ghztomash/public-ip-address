@@ -10,11 +10,14 @@ categories = ["network-programming", "web-programming"]
 license = "MIT OR Apache-2.0"
 
 [features]
+default = ["default-tls"]
 encryption = ["dep:cocoon", "dep:mid"]
 blocking = ["maybe-async/is_sync", "reqwest/blocking"]
+default-tls = ["reqwest/default-tls"]
+rustls-tls = ["reqwest/rustls-tls"]
 
 [dependencies]
-reqwest = { version = "0.12.20" }
+reqwest = { version = "0.12.20", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2.0"
