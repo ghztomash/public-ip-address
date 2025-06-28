@@ -202,12 +202,32 @@ impl ResponseCache {
             .insert(ip, ResponseRecord::new(response.to_owned(), ttl));
     }
 
+    /// Updates the lookup cache with a new responses.
+    pub fn update_targets(&mut self, responses: &[(&IpAddr, LookupResponse)], ttl: Option<u64>) {
+        for (ip, response) in responses {
+            self.lookup_address.insert(
+                *ip.to_owned(),
+                ResponseRecord::new(response.to_owned(), ttl),
+            );
+        }
+    }
+
     /// Checks if the lookup cache entry for the given IP address has expired.
     pub fn target_is_expired(&self, ip: &IpAddr) -> bool {
         match self.lookup_address.get(ip) {
             Some(lookup) => lookup.is_expired(),
             None => true,
         }
+    }
+
+    /// Checks if the lookup cache entry for at least one of IP addresses has expired.
+    pub fn targets_contain_expired(&self, ips: &[IpAddr]) -> bool {
+        for ip in ips {
+            if self.target_is_expired(ip) {
+                return true;
+            }
+        }
+        false
     }
 
     /// Returns lookup cached entry for the given IP address.

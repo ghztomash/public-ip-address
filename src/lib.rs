@@ -172,40 +172,6 @@ pub async fn perform_lookup_with(
     ))))
 }
 
-/// TODO: documentation
-#[maybe_async::maybe_async]
-pub async fn perform_batched_lookup_with(
-    providers: Vec<(LookupProvider, Option<Parameters>)>,
-    targets: Vec<IpAddr>,
-) -> Result<Vec<LookupResponse>> {
-    let mut errors = Vec::new();
-    if providers.is_empty() {
-        return Err(Error::LookupError(LookupError::GenericError(
-            "No providers given".to_string(),
-        )));
-    }
-
-    for (provider, param) in providers {
-        debug!("Performing lookup with provider {}", &provider);
-        let response = LookupService::new(provider, param)
-            .lookup_bulk(&targets)
-            .await;
-        if let Ok(response) = response {
-            trace!("Successful response from provider");
-            return Ok(response);
-        }
-        warn!("Provider failed to perform lookup");
-        errors.push(response.unwrap_err());
-    }
-
-    // if we reach here no responses were found
-    warn!("No responses from providers");
-    Err(Error::LookupError(LookupError::GenericError(format!(
-        "No responses from providers: {:?}",
-        errors
-    ))))
-}
-
 /// Performs a lookup with a list of specific service providers and caches the result.
 ///
 /// This function performs a lookup using the provided list of `LookupProvider`s. The result of the lookup
@@ -296,6 +262,84 @@ pub async fn perform_cached_lookup_with(
             } else {
                 cache.update_current(&result, ttl);
             }
+            cache.save()?;
+            Ok(result)
+        }
+        Err(e) => Err(e),
+    }
+}
+
+/// TODO: documentation
+#[maybe_async::maybe_async]
+pub async fn perform_bulk_lookup_with(
+    providers: Vec<(LookupProvider, Option<Parameters>)>,
+    targets: Vec<IpAddr>,
+) -> Result<Vec<LookupResponse>> {
+    let mut errors = Vec::new();
+    if providers.is_empty() {
+        return Err(Error::LookupError(LookupError::GenericError(
+            "No providers given".to_string(),
+        )));
+    }
+
+    for (provider, param) in providers {
+        debug!("Performing lookup with provider {}", &provider);
+        let response = LookupService::new(provider, param)
+            .lookup_bulk(&targets)
+            .await;
+        if let Ok(response) = response {
+            trace!("Successful response from provider");
+            return Ok(response);
+        }
+        warn!("Provider failed to perform lookup");
+        errors.push(response.unwrap_err());
+    }
+
+    // if we reach here no responses were found
+    warn!("No responses from providers");
+    Err(Error::LookupError(LookupError::GenericError(format!(
+        "No responses from providers: {:?}",
+        errors
+    ))))
+}
+
+/// TODO: documentation
+#[maybe_async::maybe_async]
+pub async fn perform_cached_bulk_lookup_with(
+    providers: Vec<(LookupProvider, Option<Parameters>)>,
+    targets: Vec<IpAddr>,
+    ttl: Option<u64>,
+    flush: bool,
+) -> Result<Vec<LookupResponse>> {
+    let cached_file = ResponseCache::load(None);
+    // load the cache if it exists
+    let mut cache = match cached_file {
+        Ok(cache) => {
+            if !cache.targets_contain_expired(&targets) && !flush {
+                let mut result = Vec::new();
+                trace!("Using cached values");
+                for target in targets {
+                    if let Some(target) = cache.lookup_address.get(&target) {
+                        result.push(target.response.to_owned());
+                    }
+                }
+                return Ok(result);
+            }
+            cache
+        }
+        // no cache file, create a new cache
+        Err(_) => ResponseCache::default(),
+    };
+
+    trace!("Performing new lookup");
+    // no cache or it's too old, make a new request.
+    match perform_bulk_lookup_with(providers, targets.clone()).await {
+        Ok(result) => {
+            let results = targets
+                .iter()
+                .zip(result.clone())
+                .collect::<Vec<(&IpAddr, LookupResponse)>>();
+            cache.update_targets(&results, ttl);
             cache.save()?;
             Ok(result)
         }
