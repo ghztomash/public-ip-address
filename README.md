@@ -96,7 +96,7 @@ cargo run --example <example_name> --features blocking
 | AbstractApi | [https://abstractapi.com](https://abstractapi.com) | 1000 / day | ✔️ | ✔️ |
 | IpGeolocation | [https://ipgeolocation.io](https://ipgeolocation.io) | 1000 / day | ✔️ | ✔️ |
 | IpData | [https://ipdata.co](https://ipdata.co) | 1500 / day | ✔️ | ✔️ |
-| Ip2Location | [https://ip2location.io](https://ip2location.io) | 500 / day (with key 50000 / month) | ✔️ | ✔️ |
+| Ip2Location | [https://ip2location.io](https://ip2location.io) | 50000 / month | ✔️ | ✔️ |
 | MyIpCom | [https://myip.com](https://myip.com) | unlimited | ️ | ️ |
 | GetJsonIp | [https://getjsonip.com](https://getjsonip.com) | unlimited | ️ | ️ |
 | Ipify | [https://www.ipify.org](https://www.ipify.org) | unlimited | ️ | ️ |

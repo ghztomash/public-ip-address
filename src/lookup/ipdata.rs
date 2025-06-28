@@ -218,7 +218,7 @@ mod tests {
         assert!(key.is_some(), "Missing APIKEY");
 
         let service = Box::new(IpData);
-        let result = service.get_client(None, None).send().await;
+        let result = service.get_client(key, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("IpData: {:#?}", result);
