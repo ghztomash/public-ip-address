@@ -1,6 +1,6 @@
 [package]
 name = "public-ip-address"
-version = "0.3.4"
+version = "0.3.5"
 edition = "2021"
 authors = ["Tomash Ghz <ghz.tomash@hotmail.com>"]
 description = "A simple library for performing public IP and geolocation lookups from various services."

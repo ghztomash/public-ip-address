@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.5] - 2025-06-28
+
+### 🚀 Features
+
+- Improve is_proxy handling
+
+### Bug
+
+- Update iplocateio structs
+- Fix using key in tests
+- All integration tests run in serial
+
 ## [0.3.4] - 2025-06-26
 
 ### 🚀 Features
