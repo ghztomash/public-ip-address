@@ -77,6 +77,11 @@ pub trait Provider {
     fn supports_target_lookup(&self) -> bool {
         false
     }
+
+    /// Check if the provider supports bulk lookup
+    fn supports_bulk_lookup(&self) -> bool {
+        false
+    }
 }
 
 /// ProviderResponse trait that define methods to parse the response from the provider
