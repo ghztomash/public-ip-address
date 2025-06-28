@@ -12,6 +12,7 @@ fn ip(ip: &str) -> IpAddr {
 }
 
 #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+#[serial]
 async fn test_perform_lookup() {
     let response = perform_lookup_with(
         vec![(LookupProvider::Mock("1.1.1.1".to_string()), None)],
@@ -27,6 +28,7 @@ async fn test_perform_lookup() {
 }
 
 #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+#[serial]
 async fn test_perform_lookup_target() {
     let response = perform_lookup_with(
         vec![(LookupProvider::Mock("8.8.8.8".to_string()), None)],
