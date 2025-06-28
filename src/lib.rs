@@ -172,6 +172,40 @@ pub async fn perform_lookup_with(
     ))))
 }
 
+/// TODO: documentation
+#[maybe_async::maybe_async]
+pub async fn perform_batched_lookup_with(
+    providers: Vec<(LookupProvider, Option<Parameters>)>,
+    targets: Vec<IpAddr>,
+) -> Result<Vec<LookupResponse>> {
+    let mut errors = Vec::new();
+    if providers.is_empty() {
+        return Err(Error::LookupError(LookupError::GenericError(
+            "No providers given".to_string(),
+        )));
+    }
+
+    for (provider, param) in providers {
+        debug!("Performing lookup with provider {}", &provider);
+        let response = LookupService::new(provider, param)
+            .lookup_bulk(&targets)
+            .await;
+        if let Ok(response) = response {
+            trace!("Successful response from provider");
+            return Ok(response);
+        }
+        warn!("Provider failed to perform lookup");
+        errors.push(response.unwrap_err());
+    }
+
+    // if we reach here no responses were found
+    warn!("No responses from providers");
+    Err(Error::LookupError(LookupError::GenericError(format!(
+        "No responses from providers: {:?}",
+        errors
+    ))))
+}
+
 /// Performs a lookup with a list of specific service providers and caches the result.
 ///
 /// This function performs a lookup using the provided list of `LookupProvider`s. The result of the lookup

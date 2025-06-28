@@ -26,4 +26,7 @@ pub enum LookupError {
     /// Target address not supported by this provider
     #[error("Target lookup not supported")]
     TargetNotSupported,
+    /// Bulk lookup not supported by this provider
+    #[error("Bulk lookup not supported")]
+    BulkNotSupported,
 }
