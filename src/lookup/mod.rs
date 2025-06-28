@@ -68,6 +68,28 @@ pub trait Provider {
         self.add_auth(client, &key)
     }
 
+    /// Returns the API bulk endpoint for the provider
+    fn get_bulk_endpoint(&self, _key: &Option<String>, _targets: &[IpAddr]) -> String {
+        String::new()
+    }
+
+    /// Parses the bulk response from the provider
+    fn parse_bulk_reply(&self, _json: String) -> Result<Vec<LookupResponse>> {
+        Err(LookupError::BulkNotSupported)
+    }
+
+    /// Returns a bulk request client for the provider
+    fn get_bulk_client(&self, key: Option<String>, targets: &[IpAddr]) -> RequestBuilder {
+        let mut client = Client::new().get(self.get_bulk_endpoint(&key, targets));
+        client = self.add_auth(client, &key);
+        self.add_bulk_data(client, targets)
+    }
+
+    /// Add bulk data to the request
+    fn add_bulk_data(&self, request: RequestBuilder, _targets: &[IpAddr]) -> RequestBuilder {
+        request
+    }
+
     /// Add authentication header to the request
     fn add_auth(&self, request: RequestBuilder, _key: &Option<String>) -> RequestBuilder {
         request
@@ -75,6 +97,11 @@ pub trait Provider {
 
     /// Check if the provider supports target lookup
     fn supports_target_lookup(&self) -> bool {
+        false
+    }
+
+    /// Check if the provider supports bulk lookup
+    fn supports_bulk_lookup(&self) -> bool {
         false
     }
 }
@@ -306,11 +333,31 @@ impl LookupService {
         self.provider.parse_reply(response)
     }
 
+    /// Makes a request to the bulk lookup provider
+    ///
+    /// This function makes an API request to the bulk lookup provider and parses the response into a `Vec<LookupResponse>`.
+    #[maybe_async::maybe_async]
+    pub async fn lookup_bulk(&self, targets: &[IpAddr]) -> Result<Vec<LookupResponse>> {
+        if !targets.is_empty() && !self.provider.supports_bulk_lookup() {
+            return Err(LookupError::BulkNotSupported);
+        }
+        let response = self.make_api_bulk_request(targets).await?;
+        self.provider.parse_bulk_reply(response)
+    }
+
     /// Internal function to make the API request
     #[maybe_async::maybe_async]
     async fn make_api_request(&self, target: Option<IpAddr>) -> Result<String> {
         let key = self.parameters.as_ref().map(|p| p.api_key.clone());
         let response = self.provider.get_client(key, target).send().await;
+        handle_response(response).await
+    }
+
+    /// Internal function to make the bulk API request
+    #[maybe_async::maybe_async]
+    async fn make_api_bulk_request(&self, targets: &[IpAddr]) -> Result<String> {
+        let key = self.parameters.as_ref().map(|p| p.api_key.clone());
+        let response = self.provider.get_bulk_client(key, targets).send().await;
         handle_response(response).await
     }
 }
