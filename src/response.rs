@@ -67,49 +67,49 @@ impl fmt::Display for LookupResponse {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "IP: {}", self.ip)?;
         if let Some(continent) = &self.continent {
-            writeln!(f, "Continent: {}", continent)?;
+            writeln!(f, "Continent: {continent}")?;
         }
         if let Some(country) = &self.country {
-            write!(f, "Country: {}", country)?;
+            write!(f, "Country: {country}")?;
         }
         if let Some(country_code) = &self.country_code {
-            writeln!(f, " ({})", country_code)?;
+            writeln!(f, " ({country_code})")?;
         } else {
             writeln!(f)?;
         }
         if let Some(region) = &self.region {
-            writeln!(f, "Region: {}", region)?;
+            writeln!(f, "Region: {region}")?;
         }
         if let Some(postal_code) = &self.postal_code {
-            writeln!(f, "Postal code: {}", postal_code)?;
+            writeln!(f, "Postal code: {postal_code}")?;
         }
         if let Some(city) = &self.city {
-            writeln!(f, "City: {}", city)?;
+            writeln!(f, "City: {city}")?;
         }
         if let Some(latitude) = &self.latitude {
-            write!(f, "Coordinates: {}", latitude)?;
+            write!(f, "Coordinates: {latitude}")?;
         }
         if let Some(longitude) = &self.longitude {
-            writeln!(f, ", {}", longitude)?;
+            writeln!(f, ", {longitude}")?;
         } else {
             writeln!(f)?;
         }
         if let Some(time_zone) = &self.time_zone {
-            writeln!(f, "Time zone: {}", time_zone)?;
+            writeln!(f, "Time zone: {time_zone}")?;
         }
         if let Some(asn_org) = &self.asn_org {
-            write!(f, "Organization: {}", asn_org)?;
+            write!(f, "Organization: {asn_org}")?;
         }
         if let Some(asn) = &self.asn {
-            writeln!(f, " ({})", asn)?;
+            writeln!(f, " ({asn})")?;
         } else {
             writeln!(f)?;
         }
         if let Some(hostname) = &self.hostname {
-            writeln!(f, "Hostname: {}", hostname)?;
+            writeln!(f, "Hostname: {hostname}")?;
         }
         if let Some(proxy) = &self.is_proxy {
-            writeln!(f, "Proxy: {}", proxy)?;
+            writeln!(f, "Proxy: {proxy}")?;
         }
         write!(f, "Provider: {}", self.provider)?;
 

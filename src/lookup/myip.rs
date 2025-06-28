@@ -124,9 +124,9 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("MyIp: {:#?}", result);
+        println!("MyIp: {result:#?}");
         let response = MyIpResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

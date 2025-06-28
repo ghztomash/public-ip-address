@@ -156,7 +156,7 @@ impl App {
 
                 let text = ratatui::prelude::Line::from(vec![
                     Span::styled("X", Style::new().red().bold()),
-                    Span::styled(format!(" <- {} ({})", ip, location), Style::new().yellow()),
+                    Span::styled(format!(" <- {ip} ({location})"), Style::new().yellow()),
                 ]);
                 // geolocation
                 ctx.print(x, y, text);

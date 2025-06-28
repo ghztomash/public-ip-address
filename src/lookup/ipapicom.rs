@@ -72,7 +72,7 @@ impl Provider for IpApiCom {
             Some(t) => t,
             None => "".to_string(),
         };
-        format!("http://ip-api.com/json/{}?fields=66846719", target)
+        format!("http://ip-api.com/json/{target}?fields=66846719")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -128,9 +128,9 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpApiCom: {:#?}", result);
+        println!("IpApiCom: {result:#?}");
         let response = IpApiComResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

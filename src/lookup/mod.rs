@@ -140,7 +140,7 @@ pub enum LookupProvider {
 
 impl fmt::Display for LookupProvider {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -181,8 +181,7 @@ impl FromStr for LookupProvider {
             "getjsonip" => Ok(LookupProvider::GetJsonIp),
             "ipquery" => Ok(LookupProvider::IpQuery),
             _ => Err(LookupError::GenericError(format!(
-                "Provider not found: {}",
-                p
+                "Provider not found: {p}"
             ))),
         }
     }
@@ -326,7 +325,7 @@ pub async fn handle_response(response: reqwest::Result<Response>) -> Result<Stri
                 "Too many requests: {}",
                 response.status()
             ))),
-            s => Err(LookupError::RequestStatus(format!("Status: {}", s))),
+            s => Err(LookupError::RequestStatus(format!("Status: {s}"))),
         },
         Err(e) => Err(LookupError::ReqwestError(e)),
     }
@@ -358,7 +357,7 @@ mod tests {
     async fn test_handle_response() {
         let response = client::get("https://httpbin.org/status/200").await;
         let body = handle_response(response).await;
-        assert!(body.is_ok(), "Response is an error {:#?}", body);
+        assert!(body.is_ok(), "Response is an error {body:#?}");
     }
 
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
@@ -366,14 +365,9 @@ mod tests {
     async fn test_handle_response_error() {
         let response = client::get("https://httpbin.org/status/500").await;
         let body = handle_response(response).await;
-        assert!(body.is_err(), "Response should be an error {:#?}", body);
+        assert!(body.is_err(), "Response should be an error {body:#?}");
         let body = body.unwrap_err();
-        assert_eq!(
-            body.to_string(),
-            "Request status",
-            "Wrong error {:#?}",
-            body
-        );
+        assert_eq!(body.to_string(), "Request status", "Wrong error {body:#?}");
     }
 
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
@@ -381,13 +375,12 @@ mod tests {
     async fn test_handle_response_too_many() {
         let response = client::get("https://httpbin.org/status/429").await;
         let body = handle_response(response).await;
-        assert!(body.is_err(), "Response should be an error {:#?}", body);
+        assert!(body.is_err(), "Response should be an error {body:#?}");
         let body = body.unwrap_err();
         assert_eq!(
             body.to_string(),
             "Too many API requests",
-            "Wrong error {:#?}",
-            body
+            "Wrong error {body:#?}"
         );
     }
 

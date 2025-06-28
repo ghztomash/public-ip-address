@@ -70,14 +70,14 @@ pub struct IpApiIo;
 impl Provider for IpApiIo {
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
-            Some(k) => format!("?api_key={}", k),
+            Some(k) => format!("?api_key={k}"),
             None => "".to_string(),
         };
         let target = match target.map(|t| t.to_string()) {
             Some(t) => t,
             None => "".to_string(),
         };
-        format!("https://ip-api.io/json/{}{}", target, key)
+        format!("https://ip-api.io/json/{target}{key}")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -134,9 +134,9 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpApiIo: {:#?}", result);
+        println!("IpApiIo: {result:#?}");
         let response = IpApiIoResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

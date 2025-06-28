@@ -15,6 +15,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let response = provider.get_client(None, None).send().await;
     let response = handle_response(response).await?;
     let result = IpWhoIsResponse::parse(response)?;
-    println!("{:#?}", result);
+    println!("{result:#?}");
     Ok(())
 }

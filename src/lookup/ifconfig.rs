@@ -62,10 +62,10 @@ pub struct IfConfig;
 impl Provider for IfConfig {
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
-            Some(t) => format!("?ip={}", t),
+            Some(t) => format!("?ip={t}"),
             None => "".to_string(),
         };
-        format!("http://ifconfig.co/json{}", target)
+        format!("http://ifconfig.co/json{target}")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -94,9 +94,9 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("Ifconfig: {:#?}", result);
+        println!("Ifconfig: {result:#?}");
         let response = IfConfigResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

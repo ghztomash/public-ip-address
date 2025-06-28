@@ -74,7 +74,7 @@ pub struct IpWhoIs;
 impl Provider for IpWhoIs {
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = target.map(|t| t.to_string()).unwrap_or_default();
-        format!("https://ipwho.is/{}", target)
+        format!("https://ipwho.is/{target}")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -142,9 +142,9 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpWhoIs: {:#?}", result);
+        println!("IpWhoIs: {result:#?}");
         let response = IpWhoIsResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

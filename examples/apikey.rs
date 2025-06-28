@@ -14,6 +14,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let service = LookupService::new(provider, parameters);
     // lookup own public IP address
     let result = service.lookup(None).await?;
-    println!("{}", result);
+    println!("{result}");
     Ok(())
 }

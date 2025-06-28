@@ -437,8 +437,7 @@ mod tests {
         cache.update_current(&response, Some(1));
         assert!(
             !cache.current_is_expired(),
-            "Fresh cache should not be expired {:#?}",
-            cache
+            "Fresh cache should not be expired {cache:#?}"
         );
         // Wait for cache to expire
         std::thread::sleep(Duration::from_secs(1));
@@ -465,8 +464,7 @@ mod tests {
             assert_eq!(
                 cache.target_response(address).unwrap().ip,
                 *address,
-                "IP address not matching: {:#?}",
-                cache
+                "IP address not matching: {cache:#?}"
             );
         }
     }
@@ -486,8 +484,7 @@ mod tests {
         assert_eq!(
             cache,
             ResponseCache::default(),
-            "Cache not cleared properly: {:#?}",
-            cache
+            "Cache not cleared properly: {cache:#?}"
         );
     }
 

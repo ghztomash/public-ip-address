@@ -115,14 +115,14 @@ pub struct IpData;
 impl Provider for IpData {
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
-            Some(k) => format!("?api-key={}", k),
+            Some(k) => format!("?api-key={k}"),
             None => "".to_string(),
         };
         let target = match target.map(|t| t.to_string()) {
             Some(t) => t.to_string(),
             None => "".to_string(),
         };
-        format!("https://api.ipdata.co/{}{}", target, key)
+        format!("https://api.ipdata.co/{target}{key}")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -221,10 +221,10 @@ mod tests {
         let result = service.get_client(key, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpData: {:#?}", result);
+        println!("IpData: {result:#?}");
 
         let response = IpDataResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[ignore]
@@ -239,10 +239,10 @@ mod tests {
         let result = service.get_client(key, target).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpData: {:#?}", result);
+        println!("IpData: {result:#?}");
 
         let response = IpDataResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

@@ -58,7 +58,7 @@ impl Provider for FreeIpApi {
             Some(t) => t,
             None => "".to_string(),
         };
-        format!("https://freeipapi.com/api/json/{}", target)
+        format!("https://freeipapi.com/api/json/{target}")
     }
 
     fn add_auth(&self, request: RequestBuilder, key: &Option<String>) -> RequestBuilder {
@@ -109,9 +109,9 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("FreeIpApi: {:#?}", result);
+        println!("FreeIpApi: {result:#?}");
         let response = FreeIpApiResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

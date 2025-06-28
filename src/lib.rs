@@ -167,8 +167,7 @@ pub async fn perform_lookup_with(
     // if we reach here no responses were found
     warn!("No responses from providers");
     Err(Error::LookupError(LookupError::GenericError(format!(
-        "No responses from providers: {:?}",
-        errors
+        "No responses from providers: {errors:?}"
     ))))
 }
 

@@ -85,7 +85,7 @@ pub struct IpQuery;
 impl Provider for IpQuery {
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = target.map(|t| t.to_string()).unwrap_or_default();
-        format!("https://api.ipquery.io/{}?format=json", target)
+        format!("https://api.ipquery.io/{target}?format=json")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -142,9 +142,9 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpQuery: {:#?}", result);
+        println!("IpQuery: {result:#?}");
         let response = IpQueryResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

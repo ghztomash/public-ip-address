@@ -99,14 +99,14 @@ pub struct IpLocateIo;
 impl Provider for IpLocateIo {
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
-            Some(k) => format!("?apikey={}", k),
+            Some(k) => format!("?apikey={k}"),
             None => "".to_string(),
         };
         let target = match target.map(|t| t.to_string()) {
-            Some(t) => format!("{}/", t),
+            Some(t) => format!("{t}/"),
             None => "".to_string(),
         };
-        format!("https://www.iplocate.io/api/lookup{}/json{}", target, key)
+        format!("https://www.iplocate.io/api/lookup{target}/json{key}")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -183,9 +183,9 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpLocateIo: {:#?}", result);
+        println!("IpLocateIo: {result:#?}");
         let response = IpLocateIoResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

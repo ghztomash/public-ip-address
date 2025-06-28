@@ -60,10 +60,10 @@ pub struct IpApiCo;
 impl Provider for IpApiCo {
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
-            Some(t) => format!("{}/", t),
+            Some(t) => format!("{t}/"),
             None => "".to_string(),
         };
-        format!("https://ipapi.co/{}json", target)
+        format!("https://ipapi.co/{target}json")
     }
 
     fn add_auth(&self, request: RequestBuilder, _key: &Option<String>) -> RequestBuilder {
@@ -117,9 +117,9 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpApiCo: {:#?}", result);
+        println!("IpApiCo: {result:#?}");
         let response = IpApiCoResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

@@ -73,14 +73,14 @@ pub struct IpGeolocation;
 impl Provider for IpGeolocation {
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
-            Some(k) => format!("?apiKey={}", k),
+            Some(k) => format!("?apiKey={k}"),
             None => "".to_string(),
         };
         let target = match target.map(|t| t.to_string()) {
-            Some(t) => format!("&ip={}", t),
+            Some(t) => format!("&ip={t}"),
             None => "".to_string(),
         };
-        format!("https://api.ipgeolocation.io/ipgeo{}{}", key, target)
+        format!("https://api.ipgeolocation.io/ipgeo{key}{target}")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -153,10 +153,10 @@ mod tests {
         let result = service.get_client(key, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpGeolocation: {:#?}", result);
+        println!("IpGeolocation: {result:#?}");
 
         let response = IpGeolocationResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[ignore]
@@ -171,10 +171,10 @@ mod tests {
         let result = service.get_client(key, target).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpGeolocation: {:#?}", result);
+        println!("IpGeolocation: {result:#?}");
 
         let response = IpGeolocationResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

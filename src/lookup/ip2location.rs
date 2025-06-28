@@ -56,14 +56,14 @@ pub struct Ip2Location;
 impl Provider for Ip2Location {
     fn get_endpoint(&self, key: &Option<String>, target: &Option<IpAddr>) -> String {
         let key = match key {
-            Some(k) => format!("?key={}", k),
+            Some(k) => format!("?key={k}"),
             None => "".to_string(),
         };
         let target = match target.map(|t| t.to_string()) {
-            Some(t) => format!("&ip={}", t),
+            Some(t) => format!("&ip={t}"),
             None => "".to_string(),
         };
-        format!("https://api.ip2location.io/{}{}", key, target)
+        format!("https://api.ip2location.io/{key}{target}")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -107,10 +107,10 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("Ip2Location: {:#?}", result);
+        println!("Ip2Location: {result:#?}");
 
         let response = Ip2LocationResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[ignore]
@@ -124,10 +124,10 @@ mod tests {
         let result = service.get_client(key, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("Ip2Location: {:#?}", result);
+        println!("Ip2Location: {result:#?}");
 
         let response = Ip2LocationResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[ignore]
@@ -142,7 +142,7 @@ mod tests {
         let result = service.get_client(key, target).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("Ip2Location: {:#?}", result);
+        println!("Ip2Location: {result:#?}");
 
         let response = Ip2LocationResponse::parse(result).unwrap();
         assert_eq!(response.ip, "8.8.8.8", "IP address not matching");

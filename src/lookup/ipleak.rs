@@ -63,7 +63,7 @@ impl Provider for IpLeak {
             Some(t) => t,
             None => "".to_string(),
         };
-        format!("https://ipleak.net/json/{}", target)
+        format!("https://ipleak.net/json/{target}")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
@@ -118,9 +118,9 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpLeak: {:#?}", result);
+        println!("IpLeak: {result:#?}");
         let response = IpLeakResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]

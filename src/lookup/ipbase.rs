@@ -133,10 +133,10 @@ pub struct IpBase;
 impl Provider for IpBase {
     fn get_endpoint(&self, _key: &Option<String>, target: &Option<IpAddr>) -> String {
         let target = match target.map(|t| t.to_string()) {
-            Some(t) => format!("?ip={}", t),
+            Some(t) => format!("?ip={t}"),
             None => "".to_string(),
         };
-        format!("https://api.ipbase.com/v2/info{}", target)
+        format!("https://api.ipbase.com/v2/info{target}")
     }
 
     fn add_auth(&self, request: RequestBuilder, key: &Option<String>) -> RequestBuilder {
@@ -318,9 +318,9 @@ mod tests {
         let result = service.get_client(None, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
-        println!("IpBase: {:#?}", result);
+        println!("IpBase: {result:#?}");
         let response = IpBaseResponse::parse(result);
-        assert!(response.is_ok(), "Failed parsing response {:#?}", response);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
     #[test]
