@@ -34,6 +34,9 @@ public-ip-address = { version = "0.3", features = ["encryption"] }
 
 # with `async` disabled
 public-ip-address = { version = "0.3", features = ["blocking"] }
+
+# for targets that do not support openssl
+public-ip-address = { version = "0.3", default-features = false, features = ["rustls-tls"] }
 ```
 
 ## Example
