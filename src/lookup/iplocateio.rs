@@ -106,7 +106,7 @@ impl Provider for IpLocateIo {
             Some(t) => format!("{t}/"),
             None => "".to_string(),
         };
-        format!("https://www.iplocate.io/api/lookup{target}/json{key}")
+        format!("https://iplocate.io/api/lookup{target}/json{key}")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
