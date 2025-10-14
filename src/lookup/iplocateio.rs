@@ -103,7 +103,7 @@ impl Provider for IpLocateIo {
             None => "".to_string(),
         };
         let target = match target.map(|t| t.to_string()) {
-            Some(t) => format!("{t}/"),
+            Some(t) => format!("/{t}"),
             None => "".to_string(),
         };
         format!("https://iplocate.io/api/lookup{target}/json{key}")
