@@ -25,7 +25,7 @@ log = "0.4"
 maybe-async = "0.2"
 cocoon = { version = "0.4", optional = true }
 mid = { version = "3.0", optional = true }
-etcetera = "0.10"
+etcetera = "0.11"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
