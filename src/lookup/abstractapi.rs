@@ -174,6 +174,7 @@ mod tests {
 
         let response = AbstractApiResponse::parse(result);
         assert!(response.is_ok(), "Failed parsing response {response:#?}");
+        assert_eq!(response.unwrap().ip_address, "8.8.8.8");
     }
 
     #[test]

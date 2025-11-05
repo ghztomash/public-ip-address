@@ -116,6 +116,22 @@ mod tests {
         assert!(response.is_ok(), "Failed parsing response {response:#?}");
     }
 
+    #[ignore]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+    async fn test_request_target() {
+        let service = Box::new(IpInfo);
+        let result = service
+            .get_client(None, Some("8.8.8.8".parse().unwrap()))
+            .send()
+            .await;
+        let result = super::super::handle_response(result).await.unwrap();
+        assert!(!result.is_empty(), "Result is empty");
+        println!("IpInfo: {result:#?}");
+        let response = IpInfoResponse::parse(result);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
+        assert_eq!(response.unwrap().ip, "8.8.8.8");
+    }
+
     #[test]
     fn test_parse() {
         let response = IpInfoResponse::parse(TEST_INPUT.to_string()).unwrap();

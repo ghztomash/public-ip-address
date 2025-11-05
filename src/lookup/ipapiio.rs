@@ -130,13 +130,37 @@ mod tests {
     #[ignore]
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_request() {
+        use std::env;
+        let key = env::var("IPAPIIO_APIKEY").ok();
+        assert!(key.is_some(), "Missing APIKEY");
+
         let service = Box::new(IpApiIo);
-        let result = service.get_client(None, None).send().await;
+        let result = service.get_client(key, None).send().await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("IpApiIo: {result:#?}");
         let response = IpApiIoResponse::parse(result);
         assert!(response.is_ok(), "Failed parsing response {response:#?}");
+    }
+
+    #[ignore]
+    #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+    async fn test_request_target() {
+        use std::env;
+        let key = env::var("IPAPIIO_APIKEY").ok();
+        assert!(key.is_some(), "Missing APIKEY");
+
+        let service = Box::new(IpApiIo);
+        let result = service
+            .get_client(key, Some("8.8.8.8".parse().unwrap()))
+            .send()
+            .await;
+        let result = super::super::handle_response(result).await.unwrap();
+        assert!(!result.is_empty(), "Result is empty");
+        println!("IpApiIo: {result:#?}");
+        let response = IpApiIoResponse::parse(result);
+        assert!(response.is_ok(), "Failed parsing response {response:#?}");
+        assert_eq!(response.unwrap().ip, "8.8.8.8");
     }
 
     #[test]

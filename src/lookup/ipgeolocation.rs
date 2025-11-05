@@ -175,6 +175,7 @@ mod tests {
 
         let response = IpGeolocationResponse::parse(result);
         assert!(response.is_ok(), "Failed parsing response {response:#?}");
+        assert_eq!(response.unwrap().ip, "8.8.8.8");
     }
 
     #[test]
