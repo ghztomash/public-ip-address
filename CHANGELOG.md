@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2025-11-05
+
+### 🚀 Features
+
+- Add rustls-tls feature
+
+### 🧪 Testing
+
+- Request targets
+- Wiremock for api requests
+
+### ⚙️ Miscellaneous Tasks
+
+- Fix clippy for rust 1.88
+- Update deny
+- Bump dependencies
+
+### Bug
+
+- Fix iplocate url formatting
+
 ## [0.3.5] - 2025-06-28
 
 ### 🚀 Features

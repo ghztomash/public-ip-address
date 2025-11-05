@@ -6,7 +6,7 @@ use std::error::Error;
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
     let result = public_ip_address::perform_cached_lookup_with(
-        vec![(LookupProvider::MyIp, None)],
+        vec![(LookupProvider::FreeIpApi, None)],
         None,
         Some(2),
         false,

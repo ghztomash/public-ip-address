@@ -1,6 +1,6 @@
 [package]
 name = "public-ip-address"
-version = "0.3.5"
+version = "0.4.0"
 edition = "2021"
 authors = ["Tomash Ghz <ghz.tomash@hotmail.com>"]
 description = "A simple library for performing public IP and geolocation lookups from various services."
@@ -17,7 +17,7 @@ default-tls = ["reqwest/default-tls"]
 rustls-tls = ["reqwest/rustls-tls"]
 
 [dependencies]
-reqwest = { version = "0.12.20", default-features = false }
+reqwest = { version = "0.12.24", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2.0"
