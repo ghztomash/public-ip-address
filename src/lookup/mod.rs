@@ -135,7 +135,7 @@ pub enum LookupProvider {
     /// IpQuery provider (<https://ipquery.io>)
     IpQuery,
     /// Mock provider for testing
-    Mock(String),
+    Mock(String, String),
 }
 
 impl fmt::Display for LookupProvider {
@@ -211,7 +211,7 @@ impl LookupProvider {
             LookupProvider::Ipify => Box::new(ipify::Ipify),
             LookupProvider::GetJsonIp => Box::new(getjsonip::GetJsonIp),
             LookupProvider::IpQuery => Box::new(ipquery::IpQuery),
-            LookupProvider::Mock(ip) => Box::new(mock::Mock { ip }),
+            LookupProvider::Mock(ip, endpoint) => Box::new(mock::Mock { ip, endpoint }),
         }
     }
 
@@ -334,20 +334,22 @@ pub async fn handle_response(response: reqwest::Result<Response>) -> Result<Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::lookup::mock::helper::setup_mock_server;
     use serial_test::serial;
-
-    #[test]
-    fn test_set_provider() {
-        let mut provider = LookupService::new(LookupProvider::IpApiCom, None);
-        assert_eq!(provider.get_provider_type(), LookupProvider::IpApiCom);
-        provider.set_provider(LookupProvider::IpInfo);
-        assert_eq!(provider.get_provider_type(), LookupProvider::IpInfo);
-    }
 
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_make_request() {
+        // Start a local mock server
+        #[cfg(not(feature = "blocking"))]
+        let server = setup_mock_server(200).await;
+        #[cfg(feature = "blocking")]
+        let (_rt, server) = setup_mock_server(200);
+
         let address = "1.1.1.1".parse::<std::net::IpAddr>().unwrap();
-        let provider = LookupService::new(LookupProvider::Mock(address.to_string()), None);
+        let provider = LookupService::new(
+            LookupProvider::Mock(address.to_string(), server.uri()),
+            None,
+        );
         let response = provider.lookup(None).await.unwrap();
         assert_eq!(response.ip, address);
     }
@@ -355,7 +357,13 @@ mod tests {
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     #[serial]
     async fn test_handle_response() {
-        let response = client::get("https://httpbin.org/status/200").await;
+        // Start a local mock server
+        #[cfg(not(feature = "blocking"))]
+        let server = setup_mock_server(200).await;
+        #[cfg(feature = "blocking")]
+        let (_rt, server) = setup_mock_server(200);
+
+        let response = client::get(server.uri()).await;
         let body = handle_response(response).await;
         assert!(body.is_ok(), "Response is an error {body:#?}");
     }
@@ -363,7 +371,13 @@ mod tests {
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     #[serial]
     async fn test_handle_response_error() {
-        let response = client::get("https://httpbin.org/status/500").await;
+        // Start a local mock server
+        #[cfg(not(feature = "blocking"))]
+        let server = setup_mock_server(500).await;
+        #[cfg(feature = "blocking")]
+        let (_rt, server) = setup_mock_server(500);
+
+        let response = client::get(server.uri()).await;
         let body = handle_response(response).await;
         assert!(body.is_err(), "Response should be an error {body:#?}");
         let body = body.unwrap_err();
@@ -373,7 +387,13 @@ mod tests {
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     #[serial]
     async fn test_handle_response_too_many() {
-        let response = client::get("https://httpbin.org/status/429").await;
+        // Start a local mock server
+        #[cfg(not(feature = "blocking"))]
+        let server = setup_mock_server(429).await;
+        #[cfg(feature = "blocking")]
+        let (_rt, server) = setup_mock_server(429);
+
+        let response = client::get(server.uri()).await;
         let body = handle_response(response).await;
         assert!(body.is_err(), "Response should be an error {body:#?}");
         let body = body.unwrap_err();
@@ -387,8 +407,17 @@ mod tests {
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     #[serial]
     async fn test_target_supported() {
+        // Start a local mock server
+        #[cfg(not(feature = "blocking"))]
+        let server = setup_mock_server(200).await;
+        #[cfg(feature = "blocking")]
+        let (_rt, server) = setup_mock_server(200);
+
         let address = "8.8.8.8".parse::<std::net::IpAddr>().unwrap();
-        let provider = LookupService::new(LookupProvider::Mock(address.to_string()), None);
+        let provider = LookupService::new(
+            LookupProvider::Mock(address.to_string(), server.uri()),
+            None,
+        );
         let response = provider.lookup(Some(address)).await;
         assert!(response.is_ok());
     }

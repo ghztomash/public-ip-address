@@ -35,6 +35,7 @@ ratatui = { version = "0.29" }
 rusty-hook = { version = "0.11" }
 serial_test = { version = "3.2" }
 env_logger = { version = "0.11" }
+wiremock = { version = "0.6" }
 
 [profile.dev.package.cocoon]
 opt-level = 3

@@ -401,7 +401,7 @@ mod tests {
     fn test_cache_file() {
         let response = LookupResponse::new(
             "1.1.1.1".parse().unwrap(),
-            LookupProvider::Mock("1.1.1.1".to_string()),
+            LookupProvider::Mock("1.1.1.1".to_string(), "localhost".to_string()),
         );
         println!("{}", get_cache_path(&None));
         let mut cache = ResponseCache::new(None);
@@ -420,7 +420,7 @@ mod tests {
     fn test_expired() {
         let response = LookupResponse::new(
             "1.1.1.1".parse().unwrap(),
-            LookupProvider::Mock("1.1.1.1".to_string()),
+            LookupProvider::Mock("1.1.1.1".to_string(), "localhost".to_string()),
         );
         let mut cache = ResponseCache::default();
         assert!(cache.current_is_expired(), "Empty cache should be expired");
@@ -473,7 +473,7 @@ mod tests {
     fn test_cache_clear() {
         let response = LookupResponse::new(
             "1.1.1.1".parse().unwrap(),
-            LookupProvider::Mock("1.1.1.1".to_string()),
+            LookupProvider::Mock("1.1.1.1".to_string(), "localhost".to_string()),
         );
         let mut cache = ResponseCache::new(None);
         cache.update_current(&response, None);
