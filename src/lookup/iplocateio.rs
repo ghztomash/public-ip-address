@@ -103,10 +103,10 @@ impl Provider for IpLocateIo {
             None => "".to_string(),
         };
         let target = match target.map(|t| t.to_string()) {
-            Some(t) => format!("{t}/"),
+            Some(t) => format!("/{t}"),
             None => "".to_string(),
         };
-        format!("https://www.iplocate.io/api/lookup{target}/json{key}")
+        format!("https://iplocate.io/api/lookup{target}/json{key}")
     }
 
     fn parse_reply(&self, json: String) -> Result<LookupResponse> {
