@@ -192,7 +192,10 @@ mod tests {
     #[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
     async fn test_request_target() {
         let service = Box::new(IpLocateIo);
-        let result = service.get_client(None, Some("8.8.8.8".parse().unwrap())).send().await;
+        let result = service
+            .get_client(None, Some("8.8.8.8".parse().unwrap()))
+            .send()
+            .await;
         let result = super::super::handle_response(result).await.unwrap();
         assert!(!result.is_empty(), "Result is empty");
         println!("IpLocateIo: {result:#?}");
