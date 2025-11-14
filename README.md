@@ -27,16 +27,16 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-public-ip-address = { version = "0.3" }
+public-ip-address = { version = "0.4" }
 
 # with cache encryption enabled
-public-ip-address = { version = "0.3", features = ["encryption"] }
+public-ip-address = { version = "0.4", features = ["encryption"] }
 
 # with `async` disabled
-public-ip-address = { version = "0.3", features = ["blocking"] }
+public-ip-address = { version = "0.4", features = ["blocking"] }
 
 # for targets that do not support openssl
-public-ip-address = { version = "0.3", default-features = false, features = ["rustls-tls"] }
+public-ip-address = { version = "0.4", default-features = false, features = ["rustls-tls"] }
 ```
 
 ## Example

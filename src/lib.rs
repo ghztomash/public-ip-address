@@ -13,7 +13,7 @@
 //! ## Usage
 //! ```toml
 //! [dependencies]
-//! public-ip-address = { version = "0.3" }
+//! public-ip-address = { version = "0.4" }
 //! ```
 //! ## Example
 //! ```rust
