@@ -23,7 +23,7 @@ serde_json = "1.0"
 thiserror = "2.0"
 log = "0.4"
 maybe-async = "0.2"
-cocoon = { version = "0.4", optional = true }
+cocoon = { version = "0.5", optional = true }
 mid = { version = "5.0", optional = true }
 etcetera = "0.11"
 
