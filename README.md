@@ -80,6 +80,39 @@ Running the examples with the `blocking` feature enabled:
 cargo run --example <example_name> --features blocking
 ```
 
+## Using your own HTTP client
+
+By default, `perform_lookup` and friends build their own `reqwest::Client` for each request. If you need control over the transport — a proxy, an explicit `no_proxy()`, custom timeouts, or a shared connection pool — build a client yourself and pass it to `perform_lookup_with_client`:
+
+```rust
+use std::error::Error;
+use public_ip_address::lookup::{Client, LookupProvider};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    // Ignore any proxy configured in the environment or by the OS, and cap the timeout.
+    let client = Client::builder()
+        .no_proxy()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()?;
+
+    let providers = vec![
+        // List of providers to use for the lookup
+        // (LookupProvider::IpWhoIs, Some(Parameters::new(apikey)))
+    ];
+
+    let result = public_ip_address::perform_lookup_with_client(&client, providers, None).await?;
+    println!("{}", result);
+    Ok(())
+}
+```
+
+The same client can also be given to a single provider through `LookupService::with_client`.
+
+With the `blocking` feature enabled the example above drops `#[tokio::main]` and `.await`, exactly like the other examples. The re-exported `Client`, `RequestBuilder`, and `Response` types come from `reqwest`, and follow the build: they are the asynchronous types by default and the `reqwest::blocking` ones under the `blocking` feature.
+
+Note that the cached helpers, such as `perform_lookup` and `perform_cached_lookup_with`, always use a default client; only `perform_lookup_with_client` accepts a caller-supplied one. A caller that wants both can drive the cache directly through `public_ip_address::cache::ResponseCache`.
+
 ## Providers
 
 | Provider | URL | Rate Limit | API Key | Target Lookup |

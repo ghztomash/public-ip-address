@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### 🚀 Features
+
+- Add `Provider::get_client_with` and export the client types
+- Add `LookupService::with_client`
+- Add `perform_lookup_with_client`
+
+### 📚 Documentation
+
+- Document the caller-supplied client API
+
 ## [0.4.0] - 2025-11-05
 
 ### 🚀 Features

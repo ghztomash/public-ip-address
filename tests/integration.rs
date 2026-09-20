@@ -1,8 +1,17 @@
 use public_ip_address::*;
-use public_ip_address::{cache::ResponseCache, lookup::LookupProvider};
+use public_ip_address::{
+    cache::ResponseCache,
+    lookup::{Client, LookupProvider, LookupService},
+};
 use serial_test::serial;
 use std::net::IpAddr;
-use wiremock::{matchers::method, Mock as WireMock, MockServer, ResponseTemplate};
+use wiremock::{
+    matchers::{header, method},
+    Mock as WireMock, MockServer, ResponseTemplate,
+};
+
+/// User agent that only a caller-supplied client sets
+const CUSTOM_USER_AGENT: &str = "public-ip-address-custom-client";
 
 /// Setup mock API endpoint
 #[cfg(not(feature = "blocking"))]
@@ -38,6 +47,55 @@ pub fn setup_mock_server(code: u16) -> (tokio::runtime::Runtime, MockServer) {
     });
 
     (rt, server)
+}
+
+/// Setup mock API endpoint that only answers requests carrying `CUSTOM_USER_AGENT`
+///
+/// Any request made by a default client is answered with `404`, so a successful
+/// lookup proves the caller-supplied client is the one that made the request.
+#[cfg(not(feature = "blocking"))]
+pub async fn setup_mock_server_expecting_custom_client() -> MockServer {
+    let server = MockServer::start().await;
+
+    let resp = ResponseTemplate::new(200);
+
+    WireMock::given(method("GET"))
+        .and(header("user-agent", CUSTOM_USER_AGENT))
+        .respond_with(resp)
+        .mount(&server)
+        .await;
+
+    server
+}
+
+/// Setup mock API endpoint that only answers requests carrying `CUSTOM_USER_AGENT`
+/// In blocking builds, provide a sync API that internally spins a Tokio runtime.
+#[cfg(feature = "blocking")]
+pub fn setup_mock_server_expecting_custom_client() -> (tokio::runtime::Runtime, MockServer) {
+    let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
+    let server = rt.block_on(async {
+        let s = MockServer::start().await;
+
+        let resp = ResponseTemplate::new(200);
+
+        WireMock::given(method("GET"))
+            .and(header("user-agent", CUSTOM_USER_AGENT))
+            .respond_with(resp)
+            .mount(&s)
+            .await;
+
+        s
+    });
+
+    (rt, server)
+}
+
+/// Client carrying a setting that a default client does not have
+fn custom_client() -> Client {
+    Client::builder()
+        .user_agent(CUSTOM_USER_AGENT)
+        .build()
+        .expect("build custom client")
 }
 
 fn clear_cache() {
@@ -274,4 +332,68 @@ async fn test_perform_lookup_cached_expired() {
         "Cached value should be used"
     );
     clear_cache();
+}
+
+#[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+#[serial]
+async fn test_lookup_service_with_client() {
+    // Start a local mock server that only accepts the caller-supplied client
+    #[cfg(not(feature = "blocking"))]
+    let server = setup_mock_server_expecting_custom_client().await;
+    #[cfg(feature = "blocking")]
+    let (_rt, server) = setup_mock_server_expecting_custom_client();
+
+    let provider = LookupProvider::Mock("1.1.1.1".to_string(), server.uri());
+    let client = custom_client();
+
+    let response = LookupService::with_client(provider.clone(), None, &client)
+        .lookup(None)
+        .await;
+    assert!(
+        response.is_ok(),
+        "The caller-supplied client should have performed the request {response:#?}"
+    );
+    assert_eq!(
+        response.unwrap().ip,
+        ip("1.1.1.1"),
+        "IP address not matching"
+    );
+
+    // A default client does not carry the setting, so the same server rejects it
+    let response = LookupService::new(provider, None).lookup(None).await;
+    assert!(
+        response.is_err(),
+        "The default client should not be accepted by the mock server {response:#?}"
+    );
+}
+
+#[maybe_async::test(feature = "blocking", async(not(feature = "blocking"), tokio::test))]
+#[serial]
+async fn test_perform_lookup_with_client() {
+    // Start a local mock server that only accepts the caller-supplied client
+    #[cfg(not(feature = "blocking"))]
+    let server = setup_mock_server_expecting_custom_client().await;
+    #[cfg(feature = "blocking")]
+    let (_rt, server) = setup_mock_server_expecting_custom_client();
+
+    let provider = LookupProvider::Mock("1.1.1.1".to_string(), server.uri());
+    let client = custom_client();
+
+    let response = perform_lookup_with_client(&client, vec![(provider.clone(), None)], None).await;
+    assert!(
+        response.is_ok(),
+        "The caller-supplied client should have performed the request {response:#?}"
+    );
+    assert_eq!(
+        response.unwrap().ip,
+        ip("1.1.1.1"),
+        "IP address not matching"
+    );
+
+    // A default client does not carry the setting, so the same server rejects it
+    let response = perform_lookup_with(vec![(provider, None)], None).await;
+    assert!(
+        response.is_err(),
+        "The default client should not be accepted by the mock server {response:#?}"
+    );
 }

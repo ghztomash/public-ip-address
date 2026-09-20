@@ -31,6 +31,8 @@
 //! - Unified interface for multiple IP lookup providers
 //! - Caching of lookup results to improve performance
 //! - Customizable cache expiration time
+//! - Optional caller-supplied `reqwest` client, for callers that need to control
+//!   the transport (proxy or `no_proxy()`, timeouts, a shared connection pool)
 //!
 //! For more details, please refer to the API documentation.
 
@@ -41,7 +43,7 @@ use std::net::IpAddr;
 
 use cache::ResponseCache;
 use error::{Error, Result};
-use lookup::{error::LookupError, LookupProvider, LookupService, Parameters};
+use lookup::{error::LookupError, Client, LookupProvider, LookupService, Parameters};
 use response::LookupResponse;
 
 pub mod cache;
@@ -146,6 +148,82 @@ pub async fn perform_lookup_with(
     providers: Vec<(LookupProvider, Option<Parameters>)>,
     target: Option<IpAddr>,
 ) -> Result<LookupResponse> {
+    perform_lookup_impl(None, providers, target).await
+}
+
+/// Performs a lookup using a list of providers, sending every request with `client`.
+///
+/// This behaves exactly like [`perform_lookup_with`], except that each provider
+/// request is issued by the client the caller supplies instead of a default one.
+/// Use it when the transport matters: a proxy, an explicit `no_proxy()` so the
+/// request is never tunneled, a custom timeout, or a shared connection pool.
+///
+/// # Arguments
+///
+/// * `client` - The client every provider request is sent with.
+/// * `providers` - A vector of `LookupProvider`s and their `Parameters` to use for the lookup.
+/// * `target` - Target address for the lookup, `None` will look up the current public address.
+///
+/// # Example
+///
+/// ```rust
+/// use public_ip_address::lookup::{Client, LookupProvider};
+///
+/// # use std::error::Error;
+/// # #[cfg_attr(not(feature = "blocking"), tokio::main)]
+/// # #[maybe_async::maybe_async]
+/// # async fn main() -> Result<(), Box<dyn Error>> {
+/// // A client that ignores every proxy, including the ones configured in the
+/// // environment or by the operating system.
+/// let client = Client::builder()
+///     .no_proxy()
+///     .timeout(std::time::Duration::from_secs(10))
+///     .build()?;
+///
+/// let providers = vec![
+///     // List of providers to use for the lookup
+///     // (LookupProvider::IpWhoIs, Some(Parameters::new(apikey)))
+/// ];
+///
+/// match public_ip_address::perform_lookup_with_client(&client, providers, None).await {
+///     Ok(response) => {
+///         // Handle successful response
+///     }
+///     Err(e) => {
+///         // Handle error
+///     }
+/// }
+/// # Ok(())
+/// # }
+/// ```
+///
+/// # Note
+///
+/// There is deliberately no cached counterpart to this function. A caller that wants both
+/// a custom client and a cache can drive [`cache::ResponseCache`] directly around this call.
+///
+/// # Returns
+///
+/// * A `Result` containing either a successful `LookupResponse` or a `LookupError` containing a list of all errors received.
+#[maybe_async::maybe_async]
+pub async fn perform_lookup_with_client(
+    client: &Client,
+    providers: Vec<(LookupProvider, Option<Parameters>)>,
+    target: Option<IpAddr>,
+) -> Result<LookupResponse> {
+    perform_lookup_impl(Some(client), providers, target).await
+}
+
+/// Shared body of `perform_lookup_with` and `perform_lookup_with_client`.
+///
+/// `client` of `None` keeps the historic behaviour: every provider builds its
+/// own default client through `Provider::get_client`.
+#[maybe_async::maybe_async]
+async fn perform_lookup_impl(
+    client: Option<&Client>,
+    providers: Vec<(LookupProvider, Option<Parameters>)>,
+    target: Option<IpAddr>,
+) -> Result<LookupResponse> {
     let mut errors = Vec::new();
     if providers.is_empty() {
         return Err(Error::LookupError(LookupError::GenericError(
@@ -155,7 +233,11 @@ pub async fn perform_lookup_with(
 
     for (provider, param) in providers {
         debug!("Performing lookup with provider {}", &provider);
-        let response = LookupService::new(provider, param).lookup(target).await;
+        let service = match client {
+            Some(client) => LookupService::with_client(provider, param, client),
+            None => LookupService::new(provider, param),
+        };
+        let response = service.lookup(target).await;
         if let Ok(response) = response {
             trace!("Successful response from provider");
             return Ok(response);
