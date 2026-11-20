@@ -35,6 +35,7 @@ pub mod error;
 pub mod freeipapi;
 pub mod getjsonip;
 pub mod ifconfig;
+pub mod internetdata;
 pub mod ip2location;
 pub mod ipapico;
 pub mod ipapicom;
@@ -134,6 +135,8 @@ pub enum LookupProvider {
     GetJsonIp,
     /// IpQuery provider (<https://ipquery.io>)
     IpQuery,
+    /// InternetData provider (<https://internetdata.io>)
+    InternetData,
     /// Mock provider for testing
     Mock(String, String),
 }
@@ -180,6 +183,7 @@ impl FromStr for LookupProvider {
             "ipify" => Ok(LookupProvider::Ipify),
             "getjsonip" => Ok(LookupProvider::GetJsonIp),
             "ipquery" => Ok(LookupProvider::IpQuery),
+            "internetdata" => Ok(LookupProvider::InternetData),
             _ => Err(LookupError::GenericError(format!(
                 "Provider not found: {p}"
             ))),
@@ -211,6 +215,7 @@ impl LookupProvider {
             LookupProvider::Ipify => Box::new(ipify::Ipify),
             LookupProvider::GetJsonIp => Box::new(getjsonip::GetJsonIp),
             LookupProvider::IpQuery => Box::new(ipquery::IpQuery),
+            LookupProvider::InternetData => Box::new(internetdata::InternetData),
             LookupProvider::Mock(ip, endpoint) => Box::new(mock::Mock { ip, endpoint }),
         }
     }
