@@ -104,6 +104,7 @@ cargo run --example <example_name> --features blocking
 | GetJsonIp | [https://getjsonip.com](https://getjsonip.com) | unlimited | ️ | ️ |
 | Ipify | [https://www.ipify.org](https://www.ipify.org) | unlimited | ️ | ️ |
 | IpQuery | [https://ipquery.io](https://ipquery.io) | unlimited |  | ✔️ |
+| InternetData | [https://internetdata.io](https://internetdata.io) | unlimited | ✔️ | ✔️ |
 
 ## Roadmap
 
